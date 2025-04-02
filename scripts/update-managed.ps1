@@ -33,6 +33,7 @@ $rustManagedLibs = @(
     "RTLTMPro.dll",
     "Rust*.dll",
     "SingularityGroup.HotReload*.dll",
+    "System.dll",
     "TimeZoneConverter.dll",
     "UIEffect.dll",
     "Unity*.dll",
@@ -55,7 +56,7 @@ foreach ($pattern in $rustManagedLibs)
     foreach ($file in $files)
     {
         Copy-Item -Path $file.FullName -Destination (Join-Path $DestinationPath $file.Name) -Force
-        Write-Host "Updating: $($file.Name)"
+        Write-Host "Updating: $($file.Name) -> $($DestinationPath)"
         $copied++
     }
 }

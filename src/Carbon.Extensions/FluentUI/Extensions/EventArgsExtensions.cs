@@ -3,7 +3,7 @@ using System;
 
 namespace HizenLabs.FluentUI;
 
-public static class EventArgsExtensions
+internal static class EventArgsExtensions
 {
     public static bool TryGet<T>(this EventArgs args, out T payload)
     {

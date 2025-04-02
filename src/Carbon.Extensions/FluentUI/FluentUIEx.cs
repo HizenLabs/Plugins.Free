@@ -16,7 +16,6 @@ namespace HizenLabs.FluentUI;
 public class FluentUIEx : ICarbonExtension
 {
     private static FluentUIEx _instance;
-    private readonly FluentUIManager _manager = new();
 
     public void OnLoaded(EventArgs args)
     {
@@ -28,7 +27,7 @@ public class FluentUIEx : ICarbonExtension
 
     public void OnUnloaded(EventArgs args)
     {
-        _manager.Dispose();
+        PluginHandleManager.ShutDown();
     }
 
     /// <summary>
@@ -38,7 +37,7 @@ public class FluentUIEx : ICarbonExtension
     {
         if (args.TryGet<CarbonPlugin>(out var plugin))
         {
-            _manager.Remove(plugin);
+            PluginHandleManager.Remove(plugin);
         }
     }
 }

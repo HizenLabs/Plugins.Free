@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace HizenLabs.FluentUI.Extensions;
 
-public static class DictionaryExtensions
+internal static class DictionaryExtensions
 {
     public static TValue GetOrAdd<TKey, TValue>(this Dictionary<TKey, TValue> dict, TKey key, Func<TValue> valueFactory)
     {

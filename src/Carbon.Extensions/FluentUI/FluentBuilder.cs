@@ -9,11 +9,9 @@ namespace HizenLabs.FluentUI;
 /// </summary>
 public class FluentBuilder
 {
-    private readonly CarbonPlugin _plugin;
-
     public FluentBuilder(CarbonPlugin plugin)
     {
-        _plugin = plugin;
+
     }
 
     public CuiElementContainer Build()

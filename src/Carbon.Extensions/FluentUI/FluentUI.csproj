@@ -49,11 +49,12 @@
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Extensions\CarbonPluginExtensions.cs" />
     <Compile Include="Extensions\DictionaryExtensions.cs" />
     <Compile Include="Extensions\EventArgsExtensions.cs" />
     <Compile Include="FluentUIEx.cs" />
     <Compile Include="FluentBuilder.cs" />
-    <Compile Include="Internals\FluentUIManager.cs" />
+    <Compile Include="Internals\PluginHandleManager.cs" />
     <Compile Include="Internals\PluginHandle.cs" />
     <Compile Include="Primitives\FluentColor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -369,6 +370,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\managed\SingularityGroup.HotReload.Runtime.Public.dll</HintPath>
     </Reference>
+    <Reference Include="System" />
     <Reference Include="TimeZoneConverter, Version=6.1.0.0, Culture=neutral, PublicKeyToken=e20ab7d0d9479841, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\managed\TimeZoneConverter.dll</HintPath>
