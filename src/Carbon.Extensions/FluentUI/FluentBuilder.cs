@@ -1,21 +1,42 @@
 ﻿using Carbon.Plugins;
-using Oxide.Game.Rust.Cui;
+using Facepunch;
+using HizenLabs.FluentUI.Elements;
+using HizenLabs.FluentUI.Managers;
 using System;
+using System.Collections.Generic;
 
 namespace HizenLabs.FluentUI;
 
 /// <summary>
-/// Builder for constructing and sending UI containers to players.
+/// A helper plugin to simplify and extend Carbon's CUI with fluent syntax.
 /// </summary>
-public class FluentBuilder
+public class FluentBuilder : IDisposable
 {
-    public FluentBuilder(CarbonPlugin plugin)
-    {
+    private readonly string _id;
 
+    private List<FluentElement> _elements;
+
+    private FluentBuilder(string id)
+    {
+        _id = id;
+        _elements = Pool.Get<List<FluentElement>>();
     }
 
-    public CuiElementContainer Build()
+    public static FluentBuilder Create(CarbonPlugin plugin, string id)
     {
-        throw new NotImplementedException();
+        ContainerManager.AddContainer(plugin, id);
+
+        return new(id);
+    }
+
+    public void AddElement(string name)
+    {
+        var element = FluentElement.Create(name);
+        _elements.Add(element);
+    }
+
+    public void Dispose()
+    {
+        Pool.Free(ref _elements, true);
     }
 }

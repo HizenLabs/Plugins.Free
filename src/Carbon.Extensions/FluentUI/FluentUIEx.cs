@@ -2,7 +2,7 @@
 using API.Events;
 using Carbon;
 using Carbon.Plugins;
-using HizenLabs.FluentUI.Internals;
+using HizenLabs.FluentUI.Managers;
 using System;
 
 namespace HizenLabs.FluentUI;
@@ -20,6 +20,9 @@ public class FluentUIEx : ICarbonExtension
     public void OnLoaded(EventArgs args)
     {
         _instance = this;
+
+        ContainerManager.Initialize(_instance);
+
         Community.Runtime.Events.Subscribe(CarbonEvent.PluginUnloaded, OnPluginUnloaded);
     }
 
@@ -27,7 +30,7 @@ public class FluentUIEx : ICarbonExtension
 
     public void OnUnloaded(EventArgs args)
     {
-        PluginHandleManager.ShutDown();
+        ContainerManager.ShutDown(_instance);
     }
 
     /// <summary>
@@ -37,7 +40,7 @@ public class FluentUIEx : ICarbonExtension
     {
         if (args.TryGet<CarbonPlugin>(out var plugin))
         {
-            PluginHandleManager.Remove(plugin);
+            ContainerManager.RemovePlugin(plugin);
         }
     }
 }

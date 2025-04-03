@@ -49,22 +49,19 @@
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Extensions\CarbonPluginExtensions.cs" />
+    <Compile Include="Elements\FluentElement.cs" />
     <Compile Include="Extensions\DictionaryExtensions.cs" />
     <Compile Include="Extensions\EventArgsExtensions.cs" />
     <Compile Include="FluentUIEx.cs" />
     <Compile Include="FluentBuilder.cs" />
-    <Compile Include="Internals\PluginHandleManager.cs" />
-    <Compile Include="Internals\PluginHandle.cs" />
+    <Compile Include="Managers\ContainerManager.cs" />
     <Compile Include="Primitives\FluentColor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Builder\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Reference Include="0Harmony, Version=2.3.1.1, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>

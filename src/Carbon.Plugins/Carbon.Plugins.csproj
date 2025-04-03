@@ -361,9 +361,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\managed\System.Buffers.dll</HintPath>
     </Reference>
-    <Reference Include="System.ClientModel">
-      <HintPath>..\managed\System.ClientModel.dll</HintPath>
-    </Reference>
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Configuration" />
     <Reference Include="TimeZoneConverter, Version=6.1.0.0, Culture=neutral, PublicKeyToken=e20ab7d0d9479841, processorArchitecture=MSIL">
