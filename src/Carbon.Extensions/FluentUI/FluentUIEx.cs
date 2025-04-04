@@ -2,7 +2,7 @@
 using API.Events;
 using Carbon;
 using Carbon.Plugins;
-using HizenLabs.FluentUI.Managers;
+using HizenLabs.FluentUI.Internals;
 using System;
 
 namespace HizenLabs.FluentUI;

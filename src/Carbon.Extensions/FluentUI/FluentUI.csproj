@@ -49,13 +49,23 @@
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Elements\FluentElement.cs" />
+    <Compile Include="Abstractions\FluentElement.cs" />
+    <Compile Include="Builders\FluentContainerBuilder.cs" />
+    <Compile Include="Builders\FluentElementBuilder.cs" />
+    <Compile Include="Abstractions\IFluentElement.cs" />
+    <Compile Include="Abstractions\IFluentElementBuilder.cs" />
+    <Compile Include="Abstractions\IFluentPanelBuilder.cs" />
+    <Compile Include="Elements\FluentContainer.cs" />
+    <Compile Include="Elements\FluentElementOptions.cs" />
+    <Compile Include="Elements\FluentPanel.cs" />
+    <Compile Include="Builders\FluentPanelBuilder.cs" />
     <Compile Include="Enums\FluentAnchor.cs" />
     <Compile Include="Extensions\DictionaryExtensions.cs" />
     <Compile Include="Extensions\EventArgsExtensions.cs" />
+    <Compile Include="Internals\PoolHelper.cs" />
     <Compile Include="FluentUIEx.cs" />
     <Compile Include="FluentBuilder.cs" />
-    <Compile Include="Managers\ContainerManager.cs" />
+    <Compile Include="Internals\ContainerManager.cs" />
     <Compile Include="Primitives\FluentColor.cs" />
     <Compile Include="Primitives\FluentArea.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

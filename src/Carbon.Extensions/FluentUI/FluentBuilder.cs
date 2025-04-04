@@ -1,9 +1,9 @@
 ﻿using Carbon.Plugins;
 using Facepunch;
-using HizenLabs.FluentUI.Elements;
-using HizenLabs.FluentUI.Managers;
+using HizenLabs.FluentUI.Abstractions;
+using HizenLabs.FluentUI.Builders;
+using HizenLabs.FluentUI.Internals;
 using System;
-using System.Collections.Generic;
 
 namespace HizenLabs.FluentUI;
 
@@ -13,18 +13,21 @@ namespace HizenLabs.FluentUI;
 /// </summary>
 public class FluentBuilder : IDisposable
 {
-    private readonly string _id;
+    private readonly CarbonPlugin _plugin;
+    private readonly string _containerId;
+    private FluentContainerBuilder _containerBuilder;
 
-    private List<FluentElement> _elements;
+    private float _duration = 0f;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FluentBuilder"/> class.
     /// </summary>
     /// <param name="id">The unique identifier for the UI container.</param>
-    private FluentBuilder(string id)
+    private FluentBuilder(CarbonPlugin plugin, string containerId)
     {
-        _id = id;
-        _elements = Pool.Get<List<FluentElement>>();
+        _plugin = plugin;
+        _containerBuilder = Pool.Get<FluentContainerBuilder>();
+        _containerId = containerId;
     }
 
     /// <summary>
@@ -37,7 +40,55 @@ public class FluentBuilder : IDisposable
     public static FluentBuilder Create(CarbonPlugin plugin, string id)
     {
         ContainerManager.AddContainer(plugin, id);
-        return new(id);
+
+        return new(plugin, id);
+    }
+
+    public FluentBuilder Panel(Action<IFluentPanelBuilder> setupAction)
+    {
+        _containerBuilder.Panel(setupAction);
+        return this;
+    }
+
+    /// <summary>
+    /// Builds the cui and sends it to the player.
+    /// </summary>
+    /// <param name="players">The players to whom the UI will be sent.</param>
+    /// <returns>The current instance of <see cref="FluentBuilder"/>.</returns>
+    public FluentBuilder Show(params BasePlayer[] players)
+    {
+        using var cui = _plugin.CreateCUI();
+        var container = _containerBuilder
+            .Build(_containerId)
+            .Render(cui);
+
+        foreach (var player in players)
+        {
+            cui.Send(container, player);
+        }
+        
+        if (_duration > 0)
+        {
+            _plugin.timer.In(_duration, () =>
+            {
+                using var timerCui = _plugin.CreateCUI();
+                foreach (var player in players)
+                {
+                    timerCui.Destroy(_containerId, player);
+                }
+            });
+        }
+
+        return this;
+    }
+
+    public FluentBuilder Duration(int seconds) =>
+        Duration((float)seconds);
+
+    public FluentBuilder Duration(float seconds)
+    {
+        _duration = seconds;
+        return this;
     }
 
     /// <summary>
@@ -46,9 +97,6 @@ public class FluentBuilder : IDisposable
     /// </summary>
     public void Dispose()
     {
-        if (_elements != null)
-        {
-            Pool.Free(ref _elements, true);
-        }
+        Pool.Free(ref _containerBuilder);
     }
 }

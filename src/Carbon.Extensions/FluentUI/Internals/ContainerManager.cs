@@ -5,7 +5,7 @@ using Oxide.Game.Rust.Cui;
 using System;
 using System.Collections.Generic;
 
-namespace HizenLabs.FluentUI.Managers;
+namespace HizenLabs.FluentUI.Internals;
 
 /// <summary>
 /// Manages UI containers for plugins that use the FluentUI system.

@@ -12,7 +12,8 @@ namespace HizenLabs.FluentUI.Primitives;
 /// </summary>
 public readonly struct FluentArea
 {
-    // Pre-calculated relative coordinates (0-1 range, origin at bottom-left)
+    public static readonly FluentArea Empty = Absolute(0, 0, 0, 0);
+    public static readonly FluentArea FullScreen = Relative(0, 0, 1, 1);
 
     /// <summary>Gets the minimum X coordinate (left edge) in relative units (0-1).</summary>
     public float xMin { get; }
@@ -26,36 +27,41 @@ public readonly struct FluentArea
     /// <summary>Gets the maximum Y coordinate (top edge) in relative units (0-1).</summary>
     public float yMax { get; }
 
-    // Pre-calculated absolute coordinates
-
     /// <summary>Gets the minimum X coordinate (left edge) in absolute pixels.</summary>
-    public int OxMin { get; }
+    public float OxMin { get; }
 
     /// <summary>Gets the maximum X coordinate (right edge) in absolute pixels.</summary>
-    public int OxMax { get; }
+    public float OxMax { get; }
 
     /// <summary>Gets the minimum Y coordinate (bottom edge) in absolute pixels.</summary>
-    public int OyMin { get; }
+    public float OyMin { get; }
 
     /// <summary>Gets the maximum Y coordinate (top edge) in absolute pixels.</summary>
-    public int OyMax { get; }
+    public float OyMax { get; }
 
     /// <summary>
     /// Creates a new FluentArea with both absolute and relative values.
     /// </summary>
-    /// <param name="anchor">The anchor point.</param>
-    /// <param name="absX">The X position in pixels.</param>
-    /// <param name="absY">The Y position in pixels.</param>
-    /// <param name="absWidth">The width in pixels.</param>
-    /// <param name="absHeight">The height in pixels.</param>
     /// <param name="relX">The X position as a proportion (0.0-1.0).</param>
     /// <param name="relY">The Y position as a proportion (0.0-1.0).</param>
     /// <param name="relWidth">The width as a proportion (0.0-1.0).</param>
     /// <param name="relHeight">The height as a proportion (0.0-1.0).</param>
+    /// <param name="absX">The X position in pixels.</param>
+    /// <param name="absY">The Y position in pixels.</param>
+    /// <param name="absWidth">The width in pixels.</param>
+    /// <param name="absHeight">The height in pixels.</param>
+    /// <param name="anchor">The anchor pofloat.</param>
     public FluentArea(
-        FluentAnchor anchor,
-        int absX, int absY, int absWidth, int absHeight,
-        float relX, float relY, float relWidth, float relHeight)
+        float relX,
+        float relY,
+        float relWidth,
+        float relHeight,
+        float absX,
+        float absY,
+        float absWidth,
+        float absHeight,
+        FluentAnchor anchor = FluentAnchor.TopLeft
+    )
     {
         // Clamp relative values to 0-1 range
         relX = Mathf.Clamp(relX, 0f, 1f);
@@ -63,7 +69,7 @@ public readonly struct FluentArea
         relWidth = Mathf.Clamp(relWidth, 0f, 1f);
         relHeight = Mathf.Clamp(relHeight, 0f, 1f);
 
-        // Pre-calculate all coordinates based on anchor point
+        // Pre-calculate all coordinates based on anchor pofloat
         // For a bottom-left origin system, Y increases upward
         switch (anchor)
         {
@@ -185,33 +191,49 @@ public readonly struct FluentArea
                 break;
 
             default:
-                throw new ArgumentOutOfRangeException(nameof(anchor), anchor, "Unknown anchor point");
+                throw new ArgumentOutOfRangeException(nameof(anchor), anchor, "Unknown anchor pofloat");
         }
+    }
+
+    public FluentArea(
+        Vector2 relativePosition,
+        Vector2 relativeSize,
+        Vector2 absolutePosition,
+        Vector2 absoluteSize,
+        FluentAnchor anchor = FluentAnchor.TopLeft
+    ) : this(
+        relativePosition.x,
+        relativePosition.y,
+        relativeSize.x,
+        relativeSize.y,
+        absolutePosition.x,
+        absolutePosition.y,
+        absoluteSize.x,
+        absoluteSize.y,
+        anchor
+    )
+    {
     }
 
     /// <summary>
     /// Creates a new FluentArea with absolute values only.
     /// </summary>
-    /// <param name="anchor">The anchor point.</param>
     /// <param name="x">The X position in pixels.</param>
     /// <param name="y">The Y position in pixels.</param>
     /// <param name="width">The width in pixels.</param>
     /// <param name="height">The height in pixels.</param>
-    public FluentArea(FluentAnchor anchor, int x, int y, int width, int height)
-        : this(anchor, x, y, width, height, 0, 0, 0, 0)
-    {
-    }
+    /// <param name="anchor">The anchor pofloat.</param>
+    public static FluentArea Absolute(float x, float y, float width, float height, FluentAnchor anchor = FluentAnchor.TopLeft) =>
+        new(0, 0, 0, 0, x, y, width, height);
 
     /// <summary>
     /// Creates a new FluentArea with relative values only.
     /// </summary>
-    /// <param name="anchor">The anchor point.</param>
     /// <param name="x">The X position as a proportion (0.0-1.0).</param>
     /// <param name="y">The Y position as a proportion (0.0-1.0).</param>
     /// <param name="width">The width as a proportion (0.0-1.0).</param>
     /// <param name="height">The height as a proportion (0.0-1.0).</param>
-    public FluentArea(FluentAnchor anchor, float x, float y, float width, float height)
-        : this(anchor, 0, 0, 0, 0, x, y, width, height)
-    {
-    }
+    /// <param name="anchor">The anchor pofloat.</param>
+    public static FluentArea Relative(float x, float y, float width, float height, FluentAnchor anchor = FluentAnchor.TopLeft) =>
+        new(x, y, width, height, 0, 0, 0, 0, FluentAnchor.TopLeft);
 }
