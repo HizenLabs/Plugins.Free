@@ -5,7 +5,7 @@ using HizenLabs.FluentUI.Primitives;
 
 namespace Carbon.Plugins;
 
-[Info("TestMenu", "hizenxyz", "0.0.4")]
+[Info("TestMenu", "hizenxyz", "0.0.5")]
 public class TestMenu : CarbonPlugin
 {
     [ChatCommand("menu")]

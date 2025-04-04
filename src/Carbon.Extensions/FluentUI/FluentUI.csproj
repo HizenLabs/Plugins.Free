@@ -73,7 +73,6 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
     <Reference Include="0Harmony, Version=2.3.1.1, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -107,17 +106,17 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\managed\Azure.Storage.Common.dll</HintPath>
     </Reference>
-    <Reference Include="Carbon.Common, Version=2.0.181.0, Culture=neutral, processorArchitecture=AMD64">
-      <HintPath>..\..\packages\Carbon.Community.2.0.181\lib\net48\Carbon.Common.dll</HintPath>
+    <Reference Include="Carbon.Common, Version=2.0.182.0, Culture=neutral, processorArchitecture=AMD64">
+      <HintPath>..\..\packages\Carbon.Community.2.0.182\lib\net48\Carbon.Common.dll</HintPath>
     </Reference>
-    <Reference Include="Carbon.Profiler, Version=2.0.181.0, Culture=neutral, processorArchitecture=AMD64">
-      <HintPath>..\..\packages\Carbon.Community.2.0.181\lib\net48\Carbon.Profiler.dll</HintPath>
+    <Reference Include="Carbon.Profiler, Version=2.0.182.0, Culture=neutral, processorArchitecture=AMD64">
+      <HintPath>..\..\packages\Carbon.Community.2.0.182\lib\net48\Carbon.Profiler.dll</HintPath>
     </Reference>
-    <Reference Include="Carbon.SDK, Version=2.0.181.0, Culture=neutral, processorArchitecture=AMD64">
-      <HintPath>..\..\packages\Carbon.Community.2.0.181\lib\net48\Carbon.SDK.dll</HintPath>
+    <Reference Include="Carbon.SDK, Version=2.0.182.0, Culture=neutral, processorArchitecture=AMD64">
+      <HintPath>..\..\packages\Carbon.Community.2.0.182\lib\net48\Carbon.SDK.dll</HintPath>
     </Reference>
-    <Reference Include="Carbon.Test, Version=2.0.181.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Carbon.Community.2.0.181\lib\net48\Carbon.Test.dll</HintPath>
+    <Reference Include="Carbon.Test, Version=2.0.182.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Carbon.Community.2.0.182\lib\net48\Carbon.Test.dll</HintPath>
     </Reference>
     <Reference Include="Cinemachine, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -230,10 +229,6 @@
     <Reference Include="Fleck, Version=0.0.0.1, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\managed\Fleck.dll</HintPath>
-    </Reference>
-    <Reference Include="GA, Version=1.1.7168.19305, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\managed\GA.dll</HintPath>
     </Reference>
     <Reference Include="I18N, Version=2.0.5.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
