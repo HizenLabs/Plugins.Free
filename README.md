@@ -11,7 +11,7 @@ Note: Many extensions plugins can work between Carbon and Oxide, however these a
 Browse the folders below to get started:
 
 - [`/Extensions`](./src/Carbon.Extensions) – Core extension libraries for enhanced plugin behavior.
-- [`/Plugins`](./src/Carbon.Plugins) – Plugins specifically compatible with Carbon.
+- [`/Plugins`](./src/Carbon.Plugins/Active) – Plugins specifically compatible with Carbon.
 
 Each project includes separate documentation on usage and integration.
 
