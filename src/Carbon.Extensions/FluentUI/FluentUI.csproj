@@ -50,12 +50,14 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Elements\FluentElement.cs" />
+    <Compile Include="Enums\FluentAnchor.cs" />
     <Compile Include="Extensions\DictionaryExtensions.cs" />
     <Compile Include="Extensions\EventArgsExtensions.cs" />
     <Compile Include="FluentUIEx.cs" />
     <Compile Include="FluentBuilder.cs" />
     <Compile Include="Managers\ContainerManager.cs" />
     <Compile Include="Primitives\FluentColor.cs" />
+    <Compile Include="Primitives\FluentArea.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

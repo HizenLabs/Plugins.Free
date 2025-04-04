@@ -16,17 +16,21 @@ internal class FluentElement : Pool.IPooled
     {
         var element = Pool.Get<FluentElement>();
         element._name = name;
+
         return element;
     }
 
     public void EnterPool()
     {
-        _elements = Pool.Get<List<FluentElement>>();
+        _name = null;
+        if (_elements != null)
+        {
+            Pool.Free(ref _elements, true);
+        }
     }
 
     public void LeavePool()
     {
-        _name = null;
-        Pool.Free(ref _elements, true);
+        _elements = Pool.Get<List<FluentElement>>();
     }
 }

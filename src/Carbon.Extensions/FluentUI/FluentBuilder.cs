@@ -25,18 +25,14 @@ public class FluentBuilder : IDisposable
     public static FluentBuilder Create(CarbonPlugin plugin, string id)
     {
         ContainerManager.AddContainer(plugin, id);
-
         return new(id);
-    }
-
-    public void AddElement(string name)
-    {
-        var element = FluentElement.Create(name);
-        _elements.Add(element);
     }
 
     public void Dispose()
     {
-        Pool.Free(ref _elements, true);
+        if (_elements != null)
+        {
+            Pool.Free(ref _elements, true);
+        }
     }
 }

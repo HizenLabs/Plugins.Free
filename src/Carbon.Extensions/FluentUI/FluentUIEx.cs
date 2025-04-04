@@ -10,7 +10,7 @@ namespace HizenLabs.FluentUI;
 /// <summary>
 /// A helper plugin to simplify and extend Carbon's CUI with fluent syntax.
 /// </summary>
-[Info("FluentUI", "hizenxyz", "0.0.1")]
+[Info("FluentUI", "hizenxyz", "0.0.3")]
 [Description("Helper library to extend CUI with fluent syntax.")]
 [Hotloadable]
 public class FluentUIEx : ICarbonExtension
@@ -30,6 +30,8 @@ public class FluentUIEx : ICarbonExtension
 
     public void OnUnloaded(EventArgs args)
     {
+        Community.Runtime.Events.Unsubscribe(CarbonEvent.PluginUnloaded, OnPluginUnloaded);
+
         ContainerManager.ShutDown(_instance);
     }
 

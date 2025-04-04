@@ -707,6 +707,12 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Carbon.Extensions\FluentUI\FluentUI.csproj">
+      <Project>{B65009C9-50BF-4784-A38D-040A055795FE}</Project>
+      <Name>FluentUI</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>
