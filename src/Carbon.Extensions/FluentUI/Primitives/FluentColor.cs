@@ -55,12 +55,19 @@ public readonly struct FluentColor
         Alpha = alpha;
     }
 
+    /// <summary>
+    /// Creates a new <see cref="FluentColor"/> with the same RGB values but a different alpha value.
+    /// </summary>
+    /// <param name="alpha">The new alpha value (0.0-1.0).</param>
+    /// <returns>A new <see cref="FluentColor"/> with the specified alpha.</returns>
     public readonly FluentColor SetAlpha(float alpha) =>
         new(R, G, B, alpha);
 
     /// <summary>
     /// Converts a <see cref="FluentColor"/> to a string in the format "R G B A".
     /// </summary>
+    /// <param name="color">The color to convert.</param>
+    /// <returns>A string representation of the color in the format "R G B A".</returns>
     public static implicit operator string(FluentColor color) =>
         $"{color.R} {color.G} {color.B} {color.Alpha:0.#}";
 
@@ -68,7 +75,7 @@ public readonly struct FluentColor
     /// Parses a string in the format "R G B [A]" into a <see cref="FluentColor"/>.
     /// Alpha is optional and defaults to 1.0.
     /// </summary>
-    /// <param name="color">String to parse.</param>
+    /// <param name="color">String to parse in the format "R G B [A]".</param>
     /// <returns>The parsed <see cref="FluentColor"/>.</returns>
     /// <exception cref="FormatException">Thrown if the format is invalid.</exception>
     public static implicit operator FluentColor(string color)

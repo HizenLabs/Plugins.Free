@@ -7,6 +7,10 @@ using System.Collections.Generic;
 
 namespace HizenLabs.FluentUI.Managers;
 
+/// <summary>
+/// Manages UI containers for plugins that use the FluentUI system.
+/// Provides functionality for adding, tracking, and removing UI containers.
+/// </summary>
 internal class ContainerManager
 {
     /// <summary>
@@ -113,7 +117,14 @@ internal class ContainerManager
         Pool.FreeUnmanaged(ref containers);
     }
 
-    /// <inheritdoc cref="Dispose"/>
+    /// <summary>
+    /// Initiates the shutdown process for the ContainerManager.
+    /// </summary>
+    /// <param name="instance">The FluentUIEx instance requesting shutdown.</param>
+    /// <remarks>
+    /// Validates that the current extension calling shutdown is the active handle
+    /// before disposing resources.
+    /// </remarks>
     internal static void ShutDown(FluentUIEx instance)
     {
         // Validate that the current extension calling shutdown is the active handle.
