@@ -18,5 +18,15 @@ public interface IFluentPanelBuilder : IFluentElementBuilder<IFluentElement, IFl
 
     IFluentPanelBuilder Anchor(FluentAnchor anchor);
 
+    IFluentPanelBuilder Delay(float delay);
+
+    IFluentPanelBuilder Fade(float duration);
+
+    IFluentPanelBuilder Fade(float fadeInDuration, float fadeOutDuration);
+
+    IFluentPanelBuilder FadeIn(float duration);
+
+    IFluentPanelBuilder FadeOut(float duration);
+
     IFluentPanelBuilder Panel(Action<IFluentPanelBuilder> setupAction);
 }

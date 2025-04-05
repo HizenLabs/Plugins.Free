@@ -1,7 +1,10 @@
 ﻿using Carbon;
 using Carbon.Components;
 using HizenLabs.FluentUI.Abstractions;
+using HizenLabs.FluentUI.Internals;
 using Oxide.Game.Rust.Cui;
+using System;
+using System.Collections.Generic;
 
 namespace HizenLabs.FluentUI.Elements;
 
@@ -10,10 +13,13 @@ namespace HizenLabs.FluentUI.Elements;
 /// </summary>
 internal class FluentContainer : FluentElement<FluentContainer>
 {
-    public CuiElementContainer Render(CUI cui)
+    public CuiElementContainer Render(
+        CUI cui,
+        List<DelayedAction<CUI>> delayedRenders,
+        List<DelayedAction<CUI, BasePlayer>> destroyActions
+    )
     {
         var area = Options.Area;
-
         var container = cui.CreateContainer(
             Options.Id,
             color: Options.BackgroundColor,
@@ -32,17 +38,8 @@ internal class FluentContainer : FluentElement<FluentContainer>
             destroyUi: Options.Id
         );
 
-        Logger.Log($"Container created with parameters:");
-        Logger.Log($"  ID: {Options.Id}");
-        Logger.Log($"  BackgroundColor: {Options.BackgroundColor}");
-        Logger.Log($"  Area: xMin={area.xMin}, xMax={area.xMax}, yMin={area.yMin}, yMax={area.yMax}");
-        Logger.Log($"  Absolute: OxMin={area.OxMin}, OxMax={area.OxMax}, OyMin={area.OyMin}, OyMax={area.OyMax}");
-        Logger.Log($"  FadeIn: {Options.FadeIn}, FadeOut: {Options.FadeOut}");
-        Logger.Log($"  NeedsCursor: {Options.NeedsCursor}, NeedsKeyboard: {Options.NeedsKeyboard}");
-        Logger.Log($"  DestroyUi: {Options.Id}");
-
         // Render child elements directly since the id is already defined for the container.
-        RenderChildren(cui, container, Options.Id);
+        RenderChildren(cui, container, Options.Id, delayedRenders, 0f, destroyActions);
         return container;
     }
 

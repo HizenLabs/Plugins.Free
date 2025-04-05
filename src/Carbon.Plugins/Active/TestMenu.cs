@@ -6,13 +6,117 @@ using HizenLabs.FluentUI.Primitives;
 
 namespace Carbon.Plugins;
 
-[Info("TestMenu", "hizenxyz", "0.0.5")]
+[Info("TestMenu", "hizenxyz", "0.0.8")]
 public class TestMenu : CarbonPlugin
 {
-    [ChatCommand("menu")]
+    [ChatCommand("sequence")]
+    private void CommandSequence(BasePlayer player, string command, string[] args)
+    {
+        using var builder = FluentBuilder.Create(this, "sequence")
+            .Panel(main => main
+                .BackgroundColor(FluentColor.White)
+                .RelativeSize(0.7f, 0.7f)
+                .Anchor(FluentAnchor.Center)
+                .Panel(inner => inner
+                    .BackgroundColor(FluentColor.Black)
+                    .AbsoluteSize(50, 50)
+                    .AbsolutePosition(10, 10)
+                    .Fade(0.5f)
+                    .Delay(1)
+                )
+                .Panel(inner => inner
+                    .BackgroundColor(FluentColor.Black)
+                    .AbsoluteSize(50, 50)
+                    .AbsolutePosition(60, 10)
+                    .Fade(0.5f)
+                    .Delay(1)
+                )
+                .Panel(inner => inner
+                    .BackgroundColor(FluentColor.Black)
+                    .AbsoluteSize(50, 50)
+                    .AbsolutePosition(110, 10)
+                    .Fade(0.5f)
+                    .Delay(1)
+                )
+                .Panel(inner => inner
+                    .BackgroundColor(FluentColor.Black)
+                    .AbsoluteSize(50, 50)
+                    .AbsolutePosition(160, 10)
+                    .Fade(0.5f)
+                    .Delay(1)
+                )
+                .Panel(inner => inner
+                    .BackgroundColor(FluentColor.Black)
+                    .AbsoluteSize(50, 50)
+                    .AbsolutePosition(210, 10)
+                    .Fade(0.5f)
+                    .Delay(1)
+                )
+                .Panel(inner => inner
+                    .BackgroundColor(FluentColor.Black)
+                    .AbsoluteSize(50, 50)
+                    .AbsolutePosition(10, 60)
+                    .Fade(0.5f)
+                    .Delay(1)
+                )
+                .Panel(inner => inner
+                    .BackgroundColor(FluentColor.Black)
+                    .AbsoluteSize(50, 50)
+                    .AbsolutePosition(60, 60)
+                    .Fade(0.5f)
+                    .Delay(1)
+                )
+                .Panel(inner => inner
+                    .BackgroundColor(FluentColor.Black)
+                    .AbsoluteSize(50, 50)
+                    .AbsolutePosition(110, 60)
+                    .Fade(0.5f)
+                    .Delay(1)
+                )
+                .Panel(inner => inner
+                    .BackgroundColor(FluentColor.Black)
+                    .AbsoluteSize(50, 50)
+                    .AbsolutePosition(160, 60)
+                    .Fade(0.5f)
+                    .Delay(1)
+                )
+                .Panel(inner => inner
+                    .BackgroundColor(FluentColor.Black)
+                    .AbsoluteSize(50, 50)
+                    .AbsolutePosition(210, 60)
+                    .Fade(0.5f)
+                    .Delay(1)
+                )
+            )
+            .Duration(15)
+            .Fade(1)
+            .Show(player);
+    }
+
+    [ChatCommand("popup")]
+    private void CommandPopup(BasePlayer player, string command, string[] args)
+    {
+        using var builder = FluentBuilder.Create(this, "popup")
+            .Panel(main => main
+                .Anchor(FluentAnchor.BottomCenter)
+                .BackgroundColor(FluentColor.Black.SetAlpha(0.7f))
+                .AbsoluteSize(200, 100)
+                .RelativePosition(0, 0.1f)
+                .Panel(green => green
+                    .BackgroundColor(FluentColor.Green)
+                    .Anchor(FluentAnchor.Center)
+                    .AbsolutePosition(10, 10)
+                    .RelativeSize(0.6f, 0.3f)
+                )
+            )
+            .AsPopup(5, 1.5f, 1.5f)
+            .Show(player);
+    }
+
+    [ChatCommand("relative")]
     private void CommandMenu(BasePlayer player, string command, string[] args)
     {
-        var builder = FluentBuilder.Create(this, "Test")
+        using var builder = FluentBuilder.Create(this, "relative")
             .Panel(main => main
                 .BackgroundColor(FluentColor.Black)
                 .RelativePosition(0.1f, 0.1f)

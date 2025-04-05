@@ -1,9 +1,9 @@
-﻿using Carbon;
-using Carbon.Components;
+﻿using Carbon.Components;
 using Facepunch;
 using HizenLabs.FluentUI.Elements;
 using HizenLabs.FluentUI.Internals;
 using Oxide.Game.Rust.Cui;
+using System;
 using System.Collections.Generic;
 
 namespace HizenLabs.FluentUI.Abstractions;
@@ -34,23 +34,79 @@ internal abstract class FluentElement<T> : IFluentElement
     /// <param name="container">The base container.</param>
     /// <param name="parent">The parent element name.</param>
     /// <param name="index">The index of the element in the parent render tree.</param>
-    public void Render(CUI cui, CuiElementContainer container, string parent, int index)
+    /// <param name="delayedRenders">The list of delayed renders. Appends to this if there is a delay.</param>
+    public void Render(
+        CUI cui, 
+        CuiElementContainer container, 
+        string parent, 
+        int index, 
+        List<DelayedAction<CUI>> delayedRenders, 
+        float delayOffset,
+        List<DelayedAction<CUI, BasePlayer>> destroyActions
+    )
     {
+        // Force parent elements to render first to make delays relative.
+        Options.Delay += delayOffset;
+
         var elementId = $"{parent}.{Options.Id ?? typeof(T).Name}[{index}]";
 
-        Logger.Log($"Render: {elementId} | Color: [{Options.BackgroundColor}] | Anchor: [{Options.Anchor}] | FluentArea: {Options.Area}");
-        RenderElement(cui, container, parent, elementId);
+        if (_options.Delay > 0)
+        {
+            var delayedRender = Pool.Get<DelayedAction<CUI>>();
+            delayedRender.Delay = _options.Delay;
+            delayedRender.Action = actionCui =>
+            {
+                RenderElement(actionCui, container, parent, elementId);
+                Pool.Free(ref delayedRender);
+            };
 
-        RenderChildren(cui, container, elementId);
+            delayedRenders.Add(delayedRender);
+        }
+        else
+        {
+            RenderElement(cui, container, parent, elementId);
+        }
+
+        if (_options.Duration > 0)
+        {
+            var destroyAction = Pool.Get<DelayedAction<CUI, BasePlayer>>();
+            destroyAction.Delay = _options.Duration;
+            destroyAction.Action = (actionCui, player) =>
+            {
+                cui.Destroy(elementId, player);
+                Pool.Free(ref destroyAction);
+            };
+        }
+
+        RenderChildren(cui, container, elementId, delayedRenders, Options.Delay, destroyActions);
     }
 
-    protected void RenderChildren(CUI cui, CuiElementContainer container, string parent)
+    private void DestroyAfter(float seconds, CUI cui)
+    {
+
+    }
+
+    /// <summary>
+    /// Renders the children of this element to the input container with the specified parent.
+    /// </summary>
+    /// <param name="cui">The CUI instance to use for rendering.</param>
+    /// <param name="container">The base container.</param>
+    /// <param name="parent">The parent element name.</param>
+    /// <param name="delayedRenders">The list of delayed renders.</param>
+    protected void RenderChildren(
+        CUI cui, 
+        CuiElementContainer container, 
+        string parent, 
+        List<DelayedAction<CUI>> delayedRenders, 
+        float delayOffset,
+        List<DelayedAction<CUI, BasePlayer>> destroyActions
+    )
     {
         if (_children != null)
         {
             for (int i = 0; i < _children.Count; i++)
             {
-                _children[i].Render(cui, container, parent, i);
+                _children[i].Render(cui, container, parent, i, delayedRenders, delayOffset, destroyActions);
             }
         }
     }
