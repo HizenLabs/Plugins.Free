@@ -1,5 +1,6 @@
 ﻿using HizenLabs.FluentUI.Abstractions;
 using HizenLabs.FluentUI.Elements;
+using HizenLabs.FluentUI.Enums;
 using HizenLabs.FluentUI.Primitives;
 using System;
 
@@ -21,6 +22,9 @@ internal class FluentPanelBuilder : FluentElementBuilder<FluentPanel, FluentPane
 
     IFluentPanelBuilder IFluentPanelBuilder.RelativeSize(float width, float height) =>
         RelativeSize(width, height);
+
+    IFluentPanelBuilder IFluentPanelBuilder.Anchor(FluentAnchor anchor) =>
+        Anchor(anchor);
 
     IFluentPanelBuilder IFluentPanelBuilder.Panel(Action<IFluentPanelBuilder> setupAction) =>
         Panel(setupAction);

@@ -1,4 +1,5 @@
-﻿using Carbon.Components;
+﻿using Carbon;
+using Carbon.Components;
 using HizenLabs.FluentUI.Abstractions;
 using Oxide.Game.Rust.Cui;
 
@@ -25,5 +26,15 @@ internal class FluentPanel : FluentElement<FluentPanel>
             needsCursor: Options.NeedsCursor,
             needsKeyboard: Options.NeedsKeyboard
         );
+
+        Logger.Log($"Panel created with parameters:");
+        Logger.Log($"  Container: {(container?.Name ?? "null")}");
+        Logger.Log($"  Parent: {parent}");
+        Logger.Log($"  ElementId: {elementId}");
+        Logger.Log($"  BackgroundColor: {Options.BackgroundColor}");
+        Logger.Log($"  Area values: xMin={area.xMin}, xMax={area.xMax}, yMin={area.yMin}, yMax={area.yMax}");
+        Logger.Log($"  Absolute values: OxMin={area.OxMin}, OxMax={area.OxMax}, OyMin={area.OyMin}, OyMax={area.OyMax}");
+        Logger.Log($"  FadeIn: {Options.FadeIn}, FadeOut: {Options.FadeOut}");
+        Logger.Log($"  NeedsCursor: {Options.NeedsCursor}, NeedsKeyboard: {Options.NeedsKeyboard}");
     }
 }

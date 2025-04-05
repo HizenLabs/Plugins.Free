@@ -50,7 +50,7 @@ internal class FluentElementOptions<T> : Pool.IPooled
         AbsolutePosition = Vector2.zero;
         AbsoluteSize = Vector2.zero;
         RelativePosition = Vector2.zero;
-        RelativeSize = Vector2.one;
+        RelativeSize = Vector2.zero;
         BackgroundColor = FluentColor.Transparent;
         FontColor = FluentColor.Black;
         FadeIn = 0f;

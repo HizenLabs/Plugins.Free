@@ -1,6 +1,7 @@
 ﻿using Facepunch;
 using HizenLabs.FluentUI.Abstractions;
 using HizenLabs.FluentUI.Elements;
+using HizenLabs.FluentUI.Enums;
 using HizenLabs.FluentUI.Primitives;
 using System;
 
@@ -50,6 +51,12 @@ internal class FluentElementBuilder<TElement, TBuilder> : IFluentElementBuilder<
         return This;
     }
 
+    public TBuilder Anchor(FluentAnchor anchor)
+    {
+        _element.Options.Anchor = anchor;
+        return This;
+    }
+
     public TBuilder Panel(Action<IFluentPanelBuilder> setupAction) =>
         AddElement<FluentPanel, FluentPanelBuilder>(setupAction);
 
@@ -82,5 +89,6 @@ internal class FluentElementBuilder<TElement, TBuilder> : IFluentElementBuilder<
     /// </summary>
     public void LeavePool()
     {
+        _element = Pool.Get<TElement>();
     }
 }

@@ -236,4 +236,6 @@ public readonly struct FluentArea
     /// <param name="anchor">The anchor pofloat.</param>
     public static FluentArea Relative(float x, float y, float width, float height, FluentAnchor anchor = FluentAnchor.TopLeft) =>
         new(x, y, width, height, 0, 0, 0, 0, FluentAnchor.TopLeft);
+
+    public override string ToString() => $"[{xMin} {xMax} {yMin} {yMax} {OxMin} {OxMax} {OyMin} {OyMax}]";
 }

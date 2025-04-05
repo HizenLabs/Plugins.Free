@@ -1,4 +1,5 @@
-﻿using Carbon.Components;
+﻿using Carbon;
+using Carbon.Components;
 using Facepunch;
 using HizenLabs.FluentUI.Elements;
 using HizenLabs.FluentUI.Internals;
@@ -32,16 +33,24 @@ internal abstract class FluentElement<T> : IFluentElement
     /// <param name="cui">The CUI instance to use for rendering.</param>
     /// <param name="container">The base container.</param>
     /// <param name="parent">The parent element name.</param>
-    public void Render(CUI cui, CuiElementContainer container, string parent)
+    /// <param name="index">The index of the element in the parent render tree.</param>
+    public void Render(CUI cui, CuiElementContainer container, string parent, int index)
     {
-        var elementId = $"{parent}.{Options.Id}";
+        var elementId = $"{parent}.{Options.Id ?? typeof(T).Name}[{index}]";
+
+        Logger.Log($"Render: {elementId} | Color: [{Options.BackgroundColor}] | Anchor: [{Options.Anchor}] | FluentArea: {Options.Area}");
         RenderElement(cui, container, parent, elementId);
 
+        RenderChildren(cui, container, elementId);
+    }
+
+    protected void RenderChildren(CUI cui, CuiElementContainer container, string parent)
+    {
         if (_children != null)
         {
-            foreach (var child in _children)
+            for (int i = 0; i < _children.Count; i++)
             {
-                child.Render(cui, container, elementId);
+                _children[i].Render(cui, container, parent, i);
             }
         }
     }
