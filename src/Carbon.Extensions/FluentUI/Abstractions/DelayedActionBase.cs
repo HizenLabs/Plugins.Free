@@ -5,6 +5,7 @@ using System;
 
 namespace HizenLabs.FluentUI.Abstractions;
 
+/// <inheritdoc cref="IDelayedAction"/>
 internal abstract class DelayedActionBase : IDelayedAction
 {
     /// <inheritdoc/>
@@ -43,14 +44,7 @@ internal abstract class DelayedActionBase : IDelayedAction
         }
     }
 
-    /// <summary>
-    /// The time that the action is allowed before being considered expired.
-    /// This is used in disposal calculations.
-    /// </summary>
-    /// <remarks>
-    /// Used for <see cref="BuilderPool.Shutdown"/> to determine if the action is still valid
-    /// before force terminating the process and cleaning up its resources.
-    /// </remarks>
+    /// <inheritdoc/>
     public float ProcessTimeoutSeconds { get; private set; }
 
     /// <summary>

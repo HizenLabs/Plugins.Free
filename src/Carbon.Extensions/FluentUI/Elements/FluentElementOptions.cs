@@ -6,112 +6,54 @@ using UnityEngine;
 
 namespace HizenLabs.FluentUI.Elements;
 
-/// <summary>
-/// Options for <see cref="IFluentPanelBuilder"/> implementations.
-/// </summary>
-/// <remarks>
-/// Not all options are used in every implementation!
-/// </remarks>
-/// <typeparam name="T"></typeparam>
-internal class FluentElementOptions<T> : Pool.IPooled
+/// <inheritdoc cref="IFluentElementOptions"/>
+/// <typeparam name="T">The type of the element.</typeparam>
+internal class FluentElementOptions<T> : IFluentElementOptions
     where T : IFluentElement
 {
-    /// <summary>
-    /// The unique identifier for this element.
-    /// The CUI system uses this to attach elements to their parents as well as in disposal
-    /// </summary>
+    /// <inheritdoc/>
     public string Id { get; set; }
 
-    /// <summary>
-    /// The background color of the element.
-    /// </summary>
-    /// <remarks>
-    /// At time of documenting, this does not inherit.
-    /// </remarks>
+    /// <inheritdoc/>
     public FluentColor BackgroundColor { get; set; }
 
-    /// <summary>
-    /// The color to use for any text in the element.
-    /// </summary>
-    /// <remarks>
-    /// At time of documenting, this does not inherit.
-    /// </remarks>
+    /// <inheritdoc/>
     public FluentColor FontColor { get; set; }
 
-    /// <summary>
-    /// Contains all of the calculated xy values for the element.
-    /// </summary>
+    /// <inheritdoc/>
     public FluentArea Area => new(RelativePosition, RelativeSize, AbsolutePosition, AbsoluteSize, Anchor);
 
-    /// <summary>
-    /// The absolute offset, in pixels, from the parent container.
-    /// </summary>
+    /// <inheritdoc/>
     public Vector2 AbsolutePosition { get; set; }
 
-    /// <summary>
-    /// The absolute size, in pixels, of the element.
-    /// </summary>
+    /// <inheritdoc/>
     public Vector2 AbsoluteSize { get; set; }
 
-    /// <summary>
-    /// The position of the element relative to its parent container.
-    /// </summary>
-    /// <remarks>
-    /// Must be a floating point value between 0 and 1 (percentage).
-    /// </remarks>
+    /// <inheritdoc/>
     public Vector2 RelativePosition { get; set; }
 
-    /// <summary>
-    /// The size of the element relative to its parent container.
-    /// </summary>
-    /// <remarks>
-    /// Must be a floating point value between 0 and 1 (percentage).
-    /// </remarks>
+    /// <inheritdoc/>
     public Vector2 RelativeSize { get; set; }
 
-    /// <summary>
-    /// The point to anchor the element. See documentation for each of the values.
-    /// </summary>
-    /// <remarks>
-    /// Changing this point updates the behavior of all other position and size values.
-    /// </remarks>
+    /// <inheritdoc/>
     public FluentAnchor Anchor { get; set; }
 
-    /// <summary>
-    /// The duration, in seconds, that the element should take to fade in on creation.
-    /// </summary>
+    /// <inheritdoc/>
     public float FadeIn { get; set; }
 
-    /// <summary>
-    /// The duration, in seconds, that the element should take to fade out on disposal.
-    /// </summary>
+    /// <inheritdoc/>
     public float FadeOut { get; set; }
 
-    /// <summary>
-    /// If set to true, cursor input will be captured on the UI until it is closed.
-    /// </summary>
+    /// <inheritdoc/>
     public bool NeedsCursor { get; set; }
 
-    /// <summary>
-    /// If set to true, keyboard input will be captured on the UI until it is closed.
-    /// </summary>
+    /// <inheritdoc/>
     public bool NeedsKeyboard { get; set; }
 
-    /// <summary>
-    /// The duration, in seconds, that the element will be displayed before being automatically disposed.
-    /// </summary>
-    /// <remarks>
-    /// This can be used for displaying temporary windows, alerts, etc.
-    /// If this is not specified, UI must be destroyed manually.
-    /// </remarks>
+    /// <inheritdoc/>
     public float Duration { get; set; }
 
-    /// <summary>
-    /// The delay, in seconds, before the element is displayed.
-    /// </summary>
-    /// <remarks>
-    /// If the parent menu is destroyed before this delay is over, the element will not be displayed.
-    /// </remarks>
+    /// <inheritdoc/>
     public float Delay { get; set; }
 
     /// <summary>

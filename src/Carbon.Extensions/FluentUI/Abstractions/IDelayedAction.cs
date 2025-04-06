@@ -5,6 +5,10 @@ using System;
 
 namespace HizenLabs.FluentUI.Abstractions;
 
+/// <summary>
+/// Basically a wrapper for <see cref="Oxide.Plugins.Timer"/> so that we can 
+/// track the state of the delayed action and timing metrics.
+/// </summary>
 internal interface IDelayedAction : Pool.IPooled
 {
     /// <summary>

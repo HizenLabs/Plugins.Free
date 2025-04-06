@@ -17,6 +17,7 @@ internal class BuilderPool
 {
     private readonly CarbonPlugin _plugin;
     private List<IDelayedAction> _pendingActions;
+    private List<IFluentElement> _trackingElements;
 
     public BuilderPool(CarbonPlugin plugin)
     {
@@ -30,11 +31,26 @@ internal class BuilderPool
     /// <param name="action">The delayed action to track.</param>
     public void BeginTracking(IDelayedAction action)
     {
-        Logger.Debug("test");
-
         if (!_pendingActions.Contains(action))
         {
             _pendingActions.Add(action);
+        }
+    }
+
+    /// <summary>
+    /// Begins tracking the specified element.
+    /// </summary>
+    /// <param name="element">The element to track.</param>
+    public void BeginTracking(IFluentElement element)
+    {
+        if (_trackingElements == null)
+        {
+            _trackingElements = Pool.Get<List<IFluentElement>>();
+        }
+
+        if (!_trackingElements.Contains(element))
+        {
+            _trackingElements.Add(element);
         }
     }
 
@@ -86,5 +102,11 @@ internal class BuilderPool
 
         // no valid actions remaining, return them to the pool
         PoolHelper.FreeActions(ref _pendingActions);
+
+        // now that all actions are free and complete, we can free any remaining elements
+        if (_trackingElements != null)
+        {
+            PoolHelper.FreeElements(ref _trackingElements);
+        }
     }
 }

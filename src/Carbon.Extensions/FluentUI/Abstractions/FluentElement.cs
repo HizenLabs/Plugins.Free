@@ -18,7 +18,10 @@ internal abstract class FluentElement<T> : IFluentElement
     private FluentElementOptions<T> _options;
     private List<IFluentElement> _children;
 
-    internal FluentElementOptions<T> Options => _options;
+    /// <summary>
+    /// The current rendering options for the element.
+    /// </summary>
+    public IFluentElementOptions Options => _options;
 
     /// <summary>
     /// Adds a child element to this element.

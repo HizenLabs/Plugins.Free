@@ -72,8 +72,9 @@ public class FluentBuilder : IDisposable
     public FluentBuilder Show(params BasePlayer[] players)
     {
         var containerElement = _containerBuilder.Build(_containerId);
-        var options = containerElement.Options;
+        _pool.BeginTracking(containerElement);
 
+        var options = containerElement.Options;
         if (options.Delay > 0)
         {
             var delayed = _pool.CreateDelayedAction(options.Delay, () =>

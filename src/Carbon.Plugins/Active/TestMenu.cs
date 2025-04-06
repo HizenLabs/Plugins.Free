@@ -15,7 +15,7 @@ public class TestMenu : CarbonPlugin
         float currentDelay = 0.5f;
         float nextDelay() => currentDelay += 0.5f;
 
-        using var builder = FluentBuilder.Create(this, "sequence3")
+        using var builder = FluentBuilder.Create(this, "sequence")
             .Panel(inner => inner
                 .BackgroundColor(FluentColor.Black)
                 .AbsoluteSize(50, 50)

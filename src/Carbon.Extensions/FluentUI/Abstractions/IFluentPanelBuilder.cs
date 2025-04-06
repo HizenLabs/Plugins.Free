@@ -1,32 +1,21 @@
-﻿using HizenLabs.FluentUI.Enums;
+﻿using HizenLabs.FluentUI.Abstractions.IFluentBuilderSupports;
+using HizenLabs.FluentUI.Builders;
+using HizenLabs.FluentUI.Enums;
 using HizenLabs.FluentUI.Primitives;
 using System;
+using UnityEngine;
 
 namespace HizenLabs.FluentUI.Abstractions;
 
-public interface IFluentPanelBuilder : IFluentElementBuilder<IFluentElement, IFluentPanelBuilder>
+/// <summary>
+/// Represents a builder for creating and configuring Fluent UI panels.
+/// </summary>
+public interface IFluentPanelBuilder : IFluentElementBuilder<IFluentElement, IFluentPanelBuilder>,
+    IFluentBuildBackgroundColor<IFluentPanelBuilder>,
+    IFluentBuildPosition<IFluentPanelBuilder>,
+    IFluentBuildSize<IFluentPanelBuilder>,
+    IFluentBuildFade<IFluentPanelBuilder>,
+    IFluentBuildDelay<IFluentPanelBuilder>,
+    IFluentBuildSubComponents<IFluentPanelBuilder>
 {
-    IFluentPanelBuilder BackgroundColor(FluentColor color);
-
-    IFluentPanelBuilder AbsolutePosition(float x, float y);
-
-    IFluentPanelBuilder AbsoluteSize(float width, float height);
-
-    IFluentPanelBuilder RelativePosition(float x, float y);
-
-    IFluentPanelBuilder RelativeSize(float width, float height);
-
-    IFluentPanelBuilder Anchor(FluentAnchor anchor);
-
-    IFluentPanelBuilder Delay(float delay);
-
-    IFluentPanelBuilder Fade(float duration);
-
-    IFluentPanelBuilder Fade(float fadeInDuration, float fadeOutDuration);
-
-    IFluentPanelBuilder FadeIn(float duration);
-
-    IFluentPanelBuilder FadeOut(float duration);
-
-    IFluentPanelBuilder Panel(Action<IFluentPanelBuilder> setupAction);
 }

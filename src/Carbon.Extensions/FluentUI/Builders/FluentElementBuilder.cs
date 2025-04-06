@@ -2,6 +2,7 @@
 using HizenLabs.FluentUI.Abstractions;
 using HizenLabs.FluentUI.Elements;
 using HizenLabs.FluentUI.Enums;
+using HizenLabs.FluentUI.Internals;
 using HizenLabs.FluentUI.Primitives;
 using System;
 using UnityEngine;
@@ -18,7 +19,7 @@ internal class FluentElementBuilder<TElement, TBuilder> : IFluentElementBuilder<
     where TElement : FluentElement<TElement>, new()
     where TBuilder : FluentElementBuilder<TElement, TBuilder>, new()
 {
-    private FluentElement<TElement> _element;
+    private TElement _element;
 
     /// <summary>
     /// Gets a reference to this instance cast to the concrete builder type.
@@ -34,7 +35,7 @@ internal class FluentElementBuilder<TElement, TBuilder> : IFluentElementBuilder<
     internal TElement Build(string id)
     {
         _element.Options.Id = id;
-        return (TElement)_element;
+        return _element;
     }
 
     /// <summary>
@@ -45,7 +46,7 @@ internal class FluentElementBuilder<TElement, TBuilder> : IFluentElementBuilder<
     /// <param name="b">Blue component (0-255).</param>
     /// <param name="alpha">Alpha (opacity) component (0.0-1.0).</param>
     /// <returns>This builder instance for method chaining.</returns>
-    public TBuilder BackgroundColor(byte r, byte g, byte b, float alpha = 1f)
+    public TBuilder BackgroundColor(byte r, byte g, byte b, float alpha = 1)
         => BackgroundColor(new(r, g, b, alpha));
 
     /// <summary>
@@ -67,7 +68,7 @@ internal class FluentElementBuilder<TElement, TBuilder> : IFluentElementBuilder<
     /// <param name="b">Blue component (0-255).</param>
     /// <param name="alpha">Alpha (opacity) component (0.0-1.0).</param>
     /// <returns>This builder instance for method chaining.</returns>
-    public TBuilder FontColor(byte r, byte g, byte b, float alpha = 1f) =>
+    public TBuilder FontColor(byte r, byte g, byte b, float alpha = 1) =>
         FontColor(new(r, g, b, alpha));
 
     /// <summary>
@@ -90,7 +91,8 @@ internal class FluentElementBuilder<TElement, TBuilder> : IFluentElementBuilder<
     /// <param name="height">The height in pixels.</param>
     /// <returns>This builder instance for method chaining.</returns>
     public TBuilder AbsoluteArea(float x, float y, float width, float height) =>
-        AbsolutePosition(x, y).AbsoluteSize(width, height);
+        AbsolutePosition(x, y)
+        .AbsoluteSize(width, height);
 
     /// <summary>
     /// Sets the absolute position of the element in pixels.
@@ -141,7 +143,8 @@ internal class FluentElementBuilder<TElement, TBuilder> : IFluentElementBuilder<
     /// <param name="height">The height as a proportion (0.0-1.0).</param>
     /// <returns>This builder instance for method chaining.</returns>
     public TBuilder RelativeArea(float x, float y, float width, float height) =>
-        RelativePosition(x, y).RelativeSize(width, height);
+        RelativePosition(x, y)
+        .RelativeSize(width, height);
 
     /// <summary>
     /// Sets the relative position of the element as a proportion (0.0-1.0) of its parent container.
@@ -199,21 +202,27 @@ internal class FluentElementBuilder<TElement, TBuilder> : IFluentElementBuilder<
     /// </summary>
     /// <param name="padding">Optional padding as a proportion (0.0-1.0).</param>
     /// <returns>This builder instance for method chaining.</returns>
-    public TBuilder FillParent(float padding = 0f)
-    {
-        _element.Options.RelativePosition = new(padding, padding);
-        _element.Options.RelativeSize = new(1f - (padding * 2), 1f - (padding * 2));
-        return This;
-    }
+    public TBuilder FillParent(float padding = 0) =>
+        RelativePosition(padding, padding)
+        .RelativeSize(1f - (padding * 2), 1f - (padding * 2));
 
     /// <summary>
-    /// Sets both fade-in and fade-out durations in a single call.
+    /// Sets the fade-in and fade-out durations for the element to the same value.
+    /// </summary>
+    /// <param name="duration">The fade duration in seconds.</param>
+    /// <returns>This builder instance for method chaining.</returns>
+    public TBuilder Fade(float duration) =>
+        Fade(duration, duration);
+
+    /// <summary>
+    /// Sets the fade-in and fade-out durations for the element.
     /// </summary>
     /// <param name="fadeInDuration">The fade-in duration in seconds.</param>
     /// <param name="fadeOutDuration">The fade-out duration in seconds.</param>
     /// <returns>This builder instance for method chaining.</returns>
     public TBuilder Fade(float fadeInDuration, float fadeOutDuration) =>
-        FadeIn(fadeInDuration).FadeOut(fadeOutDuration);
+        FadeIn(fadeInDuration)
+        .FadeOut(fadeOutDuration);
 
     /// <summary>
     /// Sets the fade-in duration for the element, creating a smooth appearance animation.
@@ -268,7 +277,8 @@ internal class FluentElementBuilder<TElement, TBuilder> : IFluentElementBuilder<
     /// <param name="needsKeyboard">Whether keyboard input is required.</param>
     /// <returns>This builder instance for method chaining.</returns>
     public TBuilder NeedsInput(bool needsCursor, bool needsKeyboard) =>
-        NeedsCursor(needsCursor).NeedsKeyboard(needsKeyboard);
+        NeedsCursor(needsCursor)
+        .NeedsKeyboard(needsKeyboard);
 
     /// <summary>
     /// Sets the duration after which the element will be automatically disposed.
@@ -355,6 +365,8 @@ internal class FluentElementBuilder<TElement, TBuilder> : IFluentElementBuilder<
     /// </summary>
     public void EnterPool()
     {
+        FluentDebug.Log("Free element: {test}");
+
         _element = null;
     }
 
