@@ -1,9 +1,7 @@
-﻿using Carbon;
-using Carbon.Components;
+﻿using Carbon.Components;
 using HizenLabs.FluentUI.Abstractions;
 using HizenLabs.FluentUI.Internals;
 using Oxide.Game.Rust.Cui;
-using System;
 using System.Collections.Generic;
 
 namespace HizenLabs.FluentUI.Elements;
@@ -16,7 +14,7 @@ internal class FluentContainer : FluentElement<FluentContainer>
     public CuiElementContainer Render(
         CUI cui,
         List<DelayedAction<CUI>> delayedRenders,
-        List<DelayedAction<CUI, BasePlayer>> destroyActions
+        List<DelayedAction<CUI, BasePlayer[]>> destroyActions
     )
     {
         var area = Options.Area;

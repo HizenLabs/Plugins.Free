@@ -1,4 +1,5 @@
-﻿using Facepunch;
+﻿using Carbon.Components;
+using Facepunch;
 using HizenLabs.FluentUI.Abstractions;
 using HizenLabs.FluentUI.Elements;
 using System;
@@ -57,5 +58,39 @@ internal static class PoolHelper
         }
 
         Pool.FreeUnmanaged(ref elements);
+    }
+
+    public static void FreeActions(ref List<IDelayedAction> actions)
+    {
+        if (actions == null)
+        {
+            return;
+        }
+
+        for (int i = actions.Count - 1; i >= 0; i--)
+        {
+            var action = actions[i];
+            switch (action)
+            {
+                case DelayedAction delayedAction:
+                    Pool.Free(ref delayedAction);
+                    break;
+
+                case DelayedAction<CUI> delayedAction_CUI:
+                    Pool.Free(ref delayedAction_CUI);
+                    break;
+
+                case DelayedAction<CUI, BasePlayer> delayedAction_CUI_BasePlayer:
+                    Pool.Free(ref delayedAction_CUI_BasePlayer);
+                    break;
+
+                default:
+                    throw new NotImplementedException($"{nameof(PoolHelper)}.{nameof(FreeActions)} has not yet implemented element type '{action.GetType()}'");
+            }
+        }
+
+        Pool.FreeUnmanaged(ref actions);
+
+
     }
 }

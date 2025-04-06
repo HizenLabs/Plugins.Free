@@ -6,90 +6,87 @@ using HizenLabs.FluentUI.Primitives;
 
 namespace Carbon.Plugins;
 
-[Info("TestMenu", "hizenxyz", "0.0.8")]
+[Info("TestMenu", "hizenxyz", "0.0.9")]
 public class TestMenu : CarbonPlugin
 {
     [ChatCommand("sequence")]
     private void CommandSequence(BasePlayer player, string command, string[] args)
     {
-        using var builder = FluentBuilder.Create(this, "sequence")
-            .Panel(main => main
-                .BackgroundColor(FluentColor.White)
-                .RelativeSize(0.7f, 0.7f)
-                .Anchor(FluentAnchor.Center)
-                .Panel(inner => inner
-                    .BackgroundColor(FluentColor.Black)
-                    .AbsoluteSize(50, 50)
-                    .AbsolutePosition(10, 10)
-                    .Fade(0.5f)
-                    .Delay(1)
-                )
-                .Panel(inner => inner
-                    .BackgroundColor(FluentColor.Black)
-                    .AbsoluteSize(50, 50)
-                    .AbsolutePosition(60, 10)
-                    .Fade(0.5f)
-                    .Delay(1)
-                )
-                .Panel(inner => inner
-                    .BackgroundColor(FluentColor.Black)
-                    .AbsoluteSize(50, 50)
-                    .AbsolutePosition(110, 10)
-                    .Fade(0.5f)
-                    .Delay(1)
-                )
-                .Panel(inner => inner
-                    .BackgroundColor(FluentColor.Black)
-                    .AbsoluteSize(50, 50)
-                    .AbsolutePosition(160, 10)
-                    .Fade(0.5f)
-                    .Delay(1)
-                )
-                .Panel(inner => inner
-                    .BackgroundColor(FluentColor.Black)
-                    .AbsoluteSize(50, 50)
-                    .AbsolutePosition(210, 10)
-                    .Fade(0.5f)
-                    .Delay(1)
-                )
-                .Panel(inner => inner
-                    .BackgroundColor(FluentColor.Black)
-                    .AbsoluteSize(50, 50)
-                    .AbsolutePosition(10, 60)
-                    .Fade(0.5f)
-                    .Delay(1)
-                )
-                .Panel(inner => inner
-                    .BackgroundColor(FluentColor.Black)
-                    .AbsoluteSize(50, 50)
-                    .AbsolutePosition(60, 60)
-                    .Fade(0.5f)
-                    .Delay(1)
-                )
-                .Panel(inner => inner
-                    .BackgroundColor(FluentColor.Black)
-                    .AbsoluteSize(50, 50)
-                    .AbsolutePosition(110, 60)
-                    .Fade(0.5f)
-                    .Delay(1)
-                )
-                .Panel(inner => inner
-                    .BackgroundColor(FluentColor.Black)
-                    .AbsoluteSize(50, 50)
-                    .AbsolutePosition(160, 60)
-                    .Fade(0.5f)
-                    .Delay(1)
-                )
-                .Panel(inner => inner
-                    .BackgroundColor(FluentColor.Black)
-                    .AbsoluteSize(50, 50)
-                    .AbsolutePosition(210, 60)
-                    .Fade(0.5f)
-                    .Delay(1)
-                )
+        float currentDelay = 0.5f;
+        float nextDelay() => currentDelay += 0.5f;
+
+        using var builder = FluentBuilder.Create(this, "sequence3")
+            .Panel(inner => inner
+                .BackgroundColor(FluentColor.Black)
+                .AbsoluteSize(50, 50)
+                .AbsolutePosition(10, 10)
+                .Fade(0.5f)
+                .Delay(nextDelay())
             )
-            .Duration(15)
-            .Fade(1)
+            .Panel(inner => inner
+                .BackgroundColor(FluentColor.Black)
+                .AbsoluteSize(50, 50)
+                .AbsolutePosition(70, 10)
+                .Fade(0.5f)
+                .Delay(nextDelay())
+            )
+            .Panel(inner => inner
+                .BackgroundColor(FluentColor.Black)
+                .AbsoluteSize(50, 50)
+                .AbsolutePosition(130, 10)
+                .Fade(0.5f)
+                .Delay(nextDelay())
+            )
+            .Panel(inner => inner
+                .BackgroundColor(FluentColor.Black)
+                .AbsoluteSize(50, 50)
+                .AbsolutePosition(190, 10)
+                .Fade(0.5f)
+                .Delay(nextDelay())
+            )
+            .Panel(inner => inner
+                .BackgroundColor(FluentColor.Black)
+                .AbsoluteSize(50, 50)
+                .AbsolutePosition(250, 10)
+                .Fade(0.5f)
+                .Delay(nextDelay())
+            )
+            .Panel(inner => inner
+                .BackgroundColor(FluentColor.Black)
+                .AbsoluteSize(50, 50)
+                .AbsolutePosition(10, 70)
+                .Fade(0.5f)
+                .Delay(nextDelay())
+            )
+            .Panel(inner => inner
+                .BackgroundColor(FluentColor.Black)
+                .AbsoluteSize(50, 50)
+                .AbsolutePosition(70, 70)
+                .Fade(0.5f)
+                .Delay(nextDelay())
+            )
+            .Panel(inner => inner
+                .BackgroundColor(FluentColor.Black)
+                .AbsoluteSize(50, 50)
+                .AbsolutePosition(130, 70)
+                .Fade(0.5f)
+                .Delay(nextDelay())
+            )
+            .Panel(inner => inner
+                .BackgroundColor(FluentColor.Black)
+                .AbsoluteSize(50, 50)
+                .AbsolutePosition(190, 70)
+                .Fade(0.5f)
+                .Delay(nextDelay())
+            )
+            .Panel(inner => inner
+                .BackgroundColor(FluentColor.Black)
+                .AbsoluteSize(50, 50)
+                .AbsolutePosition(250, 70)
+                .Fade(0.5f)
+                .Delay(nextDelay())
+            )
+            .Duration(8)
             .Show(player);
     }
 

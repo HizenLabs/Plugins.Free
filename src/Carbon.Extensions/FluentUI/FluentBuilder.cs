@@ -1,15 +1,13 @@
 ﻿using Carbon.Components;
 using Carbon.Plugins;
-using Epic.OnlineServices.IntegratedPlatform;
 using Facepunch;
 using HizenLabs.FluentUI.Abstractions;
 using HizenLabs.FluentUI.Builders;
 using HizenLabs.FluentUI.Elements;
+using HizenLabs.FluentUI.Extensions;
 using HizenLabs.FluentUI.Internals;
-using Oxide.Game.Rust.Cui;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace HizenLabs.FluentUI;
 
@@ -20,6 +18,7 @@ namespace HizenLabs.FluentUI;
 public class FluentBuilder : IDisposable
 {
     private readonly CarbonPlugin _plugin;
+    private BuilderPool _pool;
     private readonly string _containerId;
     private FluentContainerBuilder _containerBuilder;
 
@@ -35,6 +34,7 @@ public class FluentBuilder : IDisposable
     private FluentBuilder(CarbonPlugin plugin, string containerId)
     {
         _plugin = plugin;
+        _pool = new(plugin);
         _containerBuilder = Pool.Get<FluentContainerBuilder>();
         _containerId = containerId;
     }
@@ -72,28 +72,31 @@ public class FluentBuilder : IDisposable
     public FluentBuilder Show(params BasePlayer[] players)
     {
         var containerElement = _containerBuilder.Build(_containerId);
-        if (containerElement.Options.Delay > 0)
+        var options = containerElement.Options;
+
+        if (options.Delay > 0)
         {
-            _plugin.timer.In(containerElement.Options.Delay, () =>
+            var delayed = _pool.CreateDelayedAction(options.Delay, () =>
             {
-                if (containerElement.Options.Duration > 0)
+                if (options.Duration > 0)
                 {
-                    DestroyAfter(containerElement.Options.Duration, containerElement.Options.Id, players);
+                    DestroyAfter(options.Duration, options.Id, players);
                 }
 
                 SendContainer(containerElement, players);
             });
+            delayed.ExecuteTimer(_plugin);
 
             return this;
         }
         else
         {
-            SendContainer(containerElement, players);
-
             if (containerElement.Options.Duration > 0)
             {
                 DestroyAfter(containerElement.Options.Duration, containerElement.Options.Id, players);
             }
+
+            SendContainer(containerElement, players);
 
             return this;
         }
@@ -101,7 +104,7 @@ public class FluentBuilder : IDisposable
 
     private void DestroyAfter(float seconds, string id, params BasePlayer[] players)
     {
-        _plugin.timer.In(seconds, () =>
+        var delayed = _pool.CreateDelayedAction(seconds, () =>
         {
             using var cui = _plugin.CreateCUI();
             foreach (var player in players)
@@ -109,6 +112,7 @@ public class FluentBuilder : IDisposable
                 cui.Destroy(id, player);
             }
         });
+        delayed.ExecuteTimer(_plugin);
     }
 
     /// <summary>
@@ -121,54 +125,38 @@ public class FluentBuilder : IDisposable
     {
         using var cui = _plugin.CreateCUI();
         var delayedRenders = Pool.Get<List<DelayedAction<CUI>>>();
-        var destroyActions = Pool.Get<List<DelayedAction<CUI, BasePlayer>>>();
+        var destroyActions = Pool.Get<List<DelayedAction<CUI, BasePlayer[]>>>();
 
         // Render the container
         var container = containerElement.Render(cui, delayedRenders, destroyActions);
 
         // Send to all players
-        foreach (var player in players)
+        cui.SendAll(container, players);
+
+        // Setup delayed renders
+        for (int i = 0; i < delayedRenders.Count; i++)
         {
-            cui.Send(container, player);
+            var render = delayedRenders[i];
+            var delayed = _pool.CreateDelayedAction(render.Delay, () =>
+            {
+                using var cui = _plugin.CreateCUI();
+                render.Delay = 0;
+                render.ExecuteTimer(_plugin, cui);
+            });
+            delayed.ExecuteTimer(_plugin);
         }
 
-        // Sort the delayed renders by delay time
-        delayedRenders.Sort((a, b) => a.Delay.CompareTo(b.Delay));
-
-        // Process grouped actions with the same delay
-        int index = 0;
-        while (index < delayedRenders.Count)
+        // Setup pending destroys (menus with durations)
+        for (int i = 0; i < destroyActions.Count; i++)
         {
-            float currentDelay = delayedRenders[index].Delay;
-            int startIndex = index;
-
-            // Find all actions with the same delay
-            while (index < delayedRenders.Count && delayedRenders[index].Delay == currentDelay)
+            var destroy = destroyActions[i];
+            var delayed = _pool.CreateDelayedAction(destroy.Delay, () =>
             {
-                index++;
-            }
-
-            // Number of actions with this delay
-            int count = index - startIndex;
-
-            _plugin.Puts($"Delaying {count} for {currentDelay} seconds.");
-
-            // Capture the range values to ensure they're not modified in the closure
-            int capturedStart = startIndex;
-            int capturedCount = count;
-
-            // Schedule these actions
-            _plugin.timer.In(currentDelay, () =>
-            {
-                using var delayCui = _plugin.CreateCUI();
-
-                // Execute all actions with the same delay
-                for (int i = capturedStart; i < capturedStart + capturedCount; i++)
-                {
-                    _plugin.Puts($"Executing action (delay was {currentDelay}s)");
-                    delayedRenders[i].Action(delayCui);
-                }
+                using var cui = _plugin.CreateCUI();
+                destroy.Delay = 0;
+                destroy.ExecuteTimer(_plugin, cui, players);
             });
+            delayed.ExecuteTimer(_plugin);
         }
 
         // Do not free internals (must be unmanaged)
@@ -238,6 +226,9 @@ public class FluentBuilder : IDisposable
     /// </summary>
     public void Dispose()
     {
+        _pool?.Shutdown();
+        _pool = null;
+
         Pool.Free(ref _containerBuilder);
     }
 }

@@ -1,9 +1,9 @@
 ﻿using Carbon.Components;
 using Facepunch;
 using HizenLabs.FluentUI.Elements;
+using HizenLabs.FluentUI.Extensions;
 using HizenLabs.FluentUI.Internals;
 using Oxide.Game.Rust.Cui;
-using System;
 using System.Collections.Generic;
 
 namespace HizenLabs.FluentUI.Abstractions;
@@ -42,7 +42,7 @@ internal abstract class FluentElement<T> : IFluentElement
         int index, 
         List<DelayedAction<CUI>> delayedRenders, 
         float delayOffset,
-        List<DelayedAction<CUI, BasePlayer>> destroyActions
+        List<DelayedAction<CUI, BasePlayer[]>> destroyActions
     )
     {
         // Force parent elements to render first to make delays relative.
@@ -54,12 +54,7 @@ internal abstract class FluentElement<T> : IFluentElement
         {
             var delayedRender = Pool.Get<DelayedAction<CUI>>();
             delayedRender.Delay = _options.Delay;
-            delayedRender.Action = actionCui =>
-            {
-                RenderElement(actionCui, container, parent, elementId);
-                Pool.Free(ref delayedRender);
-            };
-
+            delayedRender.Action = actionCui => RenderElement(actionCui, container, parent, elementId);
             delayedRenders.Add(delayedRender);
         }
         else
@@ -69,21 +64,12 @@ internal abstract class FluentElement<T> : IFluentElement
 
         if (_options.Duration > 0)
         {
-            var destroyAction = Pool.Get<DelayedAction<CUI, BasePlayer>>();
+            var destroyAction = Pool.Get<DelayedAction<CUI, BasePlayer[]>>();
             destroyAction.Delay = _options.Duration;
-            destroyAction.Action = (actionCui, player) =>
-            {
-                cui.Destroy(elementId, player);
-                Pool.Free(ref destroyAction);
-            };
+            destroyAction.Action = (actionCui, players) => cui.DestroyAll(elementId, players);
         }
 
         RenderChildren(cui, container, elementId, delayedRenders, Options.Delay, destroyActions);
-    }
-
-    private void DestroyAfter(float seconds, CUI cui)
-    {
-
     }
 
     /// <summary>
@@ -99,7 +85,7 @@ internal abstract class FluentElement<T> : IFluentElement
         string parent, 
         List<DelayedAction<CUI>> delayedRenders, 
         float delayOffset,
-        List<DelayedAction<CUI, BasePlayer>> destroyActions
+        List<DelayedAction<CUI, BasePlayer[]>> destroyActions
     )
     {
         if (_children != null)

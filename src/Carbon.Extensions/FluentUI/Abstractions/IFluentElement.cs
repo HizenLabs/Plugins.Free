@@ -15,6 +15,6 @@ public interface IFluentElement : Pool.IPooled
         int index,
         List<DelayedAction<CUI>> delayedRenders,
         float delayOffset,
-        List<DelayedAction<CUI, BasePlayer>> destroyActions
+        List<DelayedAction<CUI, BasePlayer[]>> destroyActions
     );
 }
