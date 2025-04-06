@@ -733,7 +733,6 @@
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>
-    </PostBuildEvent>
+    <PostBuildEvent>powershell -ExecutionPolicy Bypass -File "$(SolutionDir)../scripts/deploy-extension.ps1" -Name "$(ProjectName)" -TargetFile "$(TargetPath)"</PostBuildEvent>
   </PropertyGroup>
 </Project>

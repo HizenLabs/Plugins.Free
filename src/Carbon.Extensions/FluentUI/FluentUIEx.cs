@@ -10,7 +10,7 @@ namespace HizenLabs.FluentUI;
 /// <summary>
 /// A helper plugin to simplify and extend Carbon's CUI with fluent syntax.
 /// </summary>
-[Info("FluentUI", "hizenxyz", "0.0.5")]
+[Info("FluentUI", "hizenxyz", "0.0.6")]
 [Description("Helper library to extend CUI with fluent syntax.")]
 [Hotloadable]
 public class FluentUIEx : ICarbonExtension

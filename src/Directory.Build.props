@@ -1,0 +1,24 @@
+<Project>
+  <!-- Default values -->
+  <PropertyGroup>
+    <!-- Set true to enable extension deployment on build -->
+    <AutoDeployEnabled>false</AutoDeployEnabled>
+    
+    <!-- Comma-separated list of extension projects and plugins to deploy (just the names) -->
+    <Extensions></Extensions>
+    <Plugins></Plugins>
+    
+    <!-- Path to the output directory for extensions and plugins -->
+    <ExtensionsOutput>C:\temp</ExtensionsOutput>
+    <PluginsOutput>C:\temp</PluginsOutput>
+    
+    <!-- Source directory for plugins (defaults to src/Carbon.Plugins/Active if not set) -->
+    <PluginsSourceDir></PluginsSourceDir>
+    
+    <!-- Whether to include the .pdb files when deploying extensions-->
+    <IncludePdb>true</IncludePdb>
+  </PropertyGroup>
+  
+  <!-- Import user settings if they exist -->
+  <Import Project="$(MSBuildThisFileDirectory)Directory.Build.User.props" Condition="Exists('$(MSBuildThisFileDirectory)Directory.Build.User.props')" />
+</Project>
