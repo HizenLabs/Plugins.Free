@@ -2,10 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
-using System.Reflection;
+
 namespace HizenLabs.FluentUI.Internals;
+
 /// <summary>
 /// Simplify debug logging. All methods should be empty in release mode.
 /// </summary>
@@ -14,7 +14,7 @@ internal class FluentDebug : IDisposable
     // Static configuration and state
 #if DEBUG
     private static int callDepth = 0;
-    private static readonly string indentChar = "  "; // Four spaces for each level of indentation
+    private static readonly string indentChar = "  "; // Two spaces for each level of indentation
     private static readonly Stack<string> methodCallStack = new();
     private static readonly Stack<string> classNameStack = new();
 
@@ -63,7 +63,7 @@ internal class FluentDebug : IDisposable
 
         string indent = GetIndentation();
         string fileInfo = showFileInfo ? $" [{System.IO.Path.GetFileName(sourceFile)}:{sourceLine}]" : "";
-        Logger.Log($"{indent}[{methodContext}]{fileInfo}");
+        Logger.Log($"{indent}[BEGIN][{methodContext}]{fileInfo}");
 
         callDepth++;
 #endif
@@ -133,12 +133,15 @@ internal class FluentDebug : IDisposable
 #if DEBUG
         if (methodCallStack.Count > 0)
         {
+            callDepth = Math.Max(0, callDepth - 1);
+
             string stackMethod = methodCallStack.Pop();
             classNameStack.Pop();
 
-            callDepth = Math.Max(0, callDepth - 1);
-
-            // Note: We don't log method exit in this style as per requirements
+            // Log the end of the scope
+            string indent = GetIndentation();
+            string fileInfo = showFileInfo ? $" [{System.IO.Path.GetFileName(sourceFile)}:{sourceLine}]" : "";
+            Logger.Log($"{indent}[END][{stackMethod}]{fileInfo}");
         }
 
         lastLogTime = DateTime.Now;
@@ -182,12 +185,31 @@ internal class FluentDebug : IDisposable
     }
 
     /// <summary>
-    /// Gets the class name of the caller.
+    /// Gets the class name of the actual caller.
     /// </summary>
     private static string GetCallerClassName()
     {
-        StackFrame frame = new(2, false); // Skip method and its immediate caller
-        return frame.GetMethod()?.DeclaringType?.Name ?? "Unknown";
+        // Create a stack trace to examine the call stack
+        var stackTrace = new StackTrace(3, false); // Skip 3 frames to get beyond FluentDebug's methods
+
+        // Look for the first non-FluentDebug class in the stack
+        for (int i = 0; i < stackTrace.FrameCount; i++)
+        {
+            var frame = stackTrace.GetFrame(i);
+            var method = frame?.GetMethod();
+            var declaringType = method?.DeclaringType;
+
+            if (declaringType != null &&
+                declaringType != typeof(FluentDebug) &&
+                !declaringType.FullName.StartsWith("System.Runtime"))
+            {
+                return declaringType.Name;
+            }
+        }
+
+        // If we couldn't find a non-FluentDebug class, return the first available class
+        var firstFrame = stackTrace.GetFrame(0);
+        return firstFrame?.GetMethod()?.DeclaringType?.Name ?? "Unknown";
     }
 #endif
 }

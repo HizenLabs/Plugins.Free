@@ -26,7 +26,7 @@ internal class ContainerManager : IDisposable
     /// <summary>
     /// Contains all UI containers for each plugin that uses FluentUI.
     /// </summary>
-    private Dictionary<long, List<string>> _pluginContainers;
+    private Dictionary<string, List<string>> _pluginContainers;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ContainerManager"/> class.
@@ -35,7 +35,7 @@ internal class ContainerManager : IDisposable
     private ContainerManager(FluentUIEx extension)
     {
         _extension = extension;
-        _pluginContainers = Pool.Get<Dictionary<long, List<string>>>();
+        _pluginContainers = Pool.Get<Dictionary<string, List<string>>>();
     }
 
     /// <summary>
@@ -67,14 +67,14 @@ internal class ContainerManager : IDisposable
     /// <param name="plugin">The plugin instance.</param>
     /// <param name="name">The name of the container.</param>
     internal static void AddContainer(CarbonPlugin plugin, string name) =>
-        _instance.AddContainer(plugin.ResourceId, name);
+        _instance.AddContainer(plugin.Name, name);
 
     /// <summary>
     /// Adds a UI container to the list of containers for a specific plugin.
     /// </summary>
     /// <param name="resourceId">The plugin id.</param>
     /// <param name="name">The name of the container.</param>
-    private void AddContainer(long resourceId, string name)
+    private void AddContainer(string resourceId, string name)
     {
         using var debug = FluentDebug.BeginScope();
         debug.Log($"Adding container");
@@ -94,7 +94,7 @@ internal class ContainerManager : IDisposable
     /// </summary>
     /// <param name="resourceId">The plugin id.</param>
     /// <returns>A list of container names.</returns>
-    private List<string> GetContainers(long resourceId) =>
+    private List<string> GetContainers(string resourceId) =>
         _pluginContainers.GetOrAdd(resourceId, () => Pool.Get<List<string>>());
 
     /// <summary>
@@ -102,19 +102,19 @@ internal class ContainerManager : IDisposable
     /// </summary>
     /// <param name="plugin">The plugin instance.</param>
     internal static void RemovePlugin(CarbonPlugin plugin) =>
-        _instance.RemovePlugin(plugin.ResourceId);
+        _instance.RemovePlugin(plugin.Name);
 
     /// <summary>
     /// Removes all UI containers associated with a specific plugin.
     /// </summary>
     /// <param name="resourceId">The id of the plugin resource.</param>
-    private void RemovePlugin(long resourceId)
+    private void RemovePlugin(string resourceId)
     {
         using var debug = FluentDebug.BeginScope();
 
         if (!_pluginContainers.TryRemove(resourceId, out var containers))
         {
-            debug.Log($"[{nameof(ContainerManager)}] Remove plugin failed. Resource not found: {resourceId}");
+            debug.Log($"Remove plugin failed. Resource not found: {resourceId}");
             return;
         }
 
@@ -141,7 +141,7 @@ internal class ContainerManager : IDisposable
     /// Validates that the current extension calling shutdown is the active handle
     /// before disposing resources.
     /// </remarks>
-    internal static void ShutDown(FluentUIEx instance)
+    internal static void Shutdown(FluentUIEx instance)
     {
         using var debug = FluentDebug.BeginScope();
 

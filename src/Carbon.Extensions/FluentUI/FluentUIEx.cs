@@ -18,6 +18,12 @@ public class FluentUIEx : ICarbonExtension
     private static FluentUIEx _instance;
 
     /// <summary>
+    /// Called when the extension is awakened (not used).
+    /// </summary>
+    /// <param name="args">Awake event arguments.</param>
+    public void Awake(EventArgs args) { }
+
+    /// <summary>
     /// Called when the extension is loaded. Initializes managers and subscribes to events.
     /// </summary>
     /// <param name="args">OnLoaded event arguments.</param>
@@ -26,22 +32,23 @@ public class FluentUIEx : ICarbonExtension
         using var _ = FluentDebug.BeginScope();
 
         _instance = this;
+
         ContainerManager.Initialize(_instance);
+
         Community.Runtime.Events.Subscribe(CarbonEvent.PluginUnloaded, OnPluginUnloaded);
     }
 
     /// <summary>
-    /// Called when the extension is awakened (not used).
+    /// Called when the extension is unloaded. Cleans up resources and unsubscribes from events.
     /// </summary>
-    /// <param name="args">Awake event arguments.</param>
-    public void Awake(EventArgs args) { }
-
+    /// <param name="args">OnUnloaded event arguments.</param>
     public void OnUnloaded(EventArgs args)
     {
         using var _ = FluentDebug.BeginScope();
 
         Community.Runtime.Events.Unsubscribe(CarbonEvent.PluginUnloaded, OnPluginUnloaded);
-        ContainerManager.ShutDown(_instance);
+
+        ContainerManager.Shutdown(_instance);
     }
 
     /// <summary>

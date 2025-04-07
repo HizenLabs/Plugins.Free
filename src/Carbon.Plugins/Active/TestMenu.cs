@@ -6,9 +6,45 @@ using HizenLabs.FluentUI.Primitives;
 
 namespace Carbon.Plugins;
 
-[Info("TestMenu", "hizenxyz", "0.0.11")]
+[Info("TestMenu", "hizenxyz", "0.0.13")]
 public class TestMenu : CarbonPlugin
 {
+    /// <summary>
+    /// Create an extremely basic panel with the specified color
+    /// </summary>
+    [ChatCommand("basic")]
+    private void CommandBasic(BasePlayer player, string command, string[] args)
+    {
+        FluentColor color;
+        float duration = 3;
+        if (args.Length == 0)
+        {
+            Puts("No color specified, using default 'black'");
+            color = FluentColor.Black;
+        }
+        else
+        {
+            if (args.Length > 1 && float.TryParse(args[1], out duration))
+            {
+                if (duration > 10)
+                {
+                    Puts("Duration too long, bringing down to 10 seconds");
+                    duration = 10;
+                }
+            }
+            color = FluentColor.ParseName(args[0]);
+        }
+
+        using var builder = FluentBuilder.Create(this, "basic")
+            .Panel(p => p
+                .BackgroundColor(color)
+                .Anchor(FluentAnchor.Center)
+                .AbsoluteSize(200, 200)
+            )
+            .Duration(duration)
+            .Show(player);
+    }
+
     [ChatCommand("sequence")]
     private void CommandSequence(BasePlayer player, string command, string[] args)
     {

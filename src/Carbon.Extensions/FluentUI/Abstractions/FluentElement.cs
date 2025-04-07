@@ -114,6 +114,9 @@ internal abstract class FluentElement<T> : IFluentElement
     /// </summary>
     public void EnterPool()
     {
+        using var debug = FluentDebug.BeginScope();
+        debug.Log($"Returning options for {typeof(T).Name} to pool");
+
         Pool.Free(ref _options);
         PoolHelper.FreeElements(ref _children);
     }
@@ -123,6 +126,8 @@ internal abstract class FluentElement<T> : IFluentElement
     /// </summary>
     public void LeavePool()
     {
+        using var debug = FluentDebug.BeginScope();
+
         _options = Pool.Get<FluentElementOptions<T>>();
         _children = Pool.Get<List<IFluentElement>>();
     }

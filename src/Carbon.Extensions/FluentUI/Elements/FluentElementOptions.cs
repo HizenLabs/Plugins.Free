@@ -24,19 +24,19 @@ internal class FluentElementOptions<T> : IFluentElementOptions
     public FluentArea Area => new(RelativePosition, RelativeSize, AbsolutePosition, AbsoluteSize, Anchor);
 
     /// <inheritdoc/>
-    public Vector2 AbsolutePosition { get; set; }
+    public FluentAnchor Anchor { get; set; }
 
     /// <inheritdoc/>
-    public Vector2 AbsoluteSize { get; set; }
+    public Vector2 AbsolutePosition { get; set; }
 
     /// <inheritdoc/>
     public Vector2 RelativePosition { get; set; }
 
     /// <inheritdoc/>
-    public Vector2 RelativeSize { get; set; }
+    public Vector2 AbsoluteSize { get; set; }
 
     /// <inheritdoc/>
-    public FluentAnchor Anchor { get; set; }
+    public Vector2 RelativeSize { get; set; }
 
     /// <inheritdoc/>
     public float FadeIn { get; set; }
@@ -69,22 +69,23 @@ internal class FluentElementOptions<T> : IFluentElementOptions
     /// </summary>
     public void LeavePool()
     {
-        Anchor = FluentAnchor.TopLeft;
-
-        AbsolutePosition = Vector2.zero;
-        AbsoluteSize = Vector2.zero;
-
-        RelativePosition = Vector2.zero;
-        RelativeSize = Vector2.zero;
-
         BackgroundColor = FluentColor.Transparent;
         FontColor = FluentColor.Black;
+
+        Anchor = FluentAnchor.TopLeft;
+        AbsolutePosition = Vector2.zero;
+        RelativePosition = Vector2.zero;
+        AbsoluteSize = Vector2.zero;
+        RelativeSize = Vector2.zero;
 
         FadeIn = 0f;
         FadeOut = 0f;
 
         NeedsCursor = false;
         NeedsKeyboard = false;
+
+        Duration = 0;
+        Delay = 0;
 
         // base container is set to fullscreen
         if (typeof(T) == typeof(FluentContainer))

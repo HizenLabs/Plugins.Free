@@ -91,4 +91,14 @@ public readonly struct FluentColor
             parts.Length == 4 ? float.Parse(parts[3]) : 1f
         );
     }
+
+    public static FluentColor ParseName(string color) => color.ToLower() switch
+    {
+        "black" => Black,
+        "white" => White,
+        "red" => Red,
+        "green" => Green,
+        "blue" => Blue,
+        _ => throw new FormatException($"Unrecognized color: '{color}'")
+    };
 }

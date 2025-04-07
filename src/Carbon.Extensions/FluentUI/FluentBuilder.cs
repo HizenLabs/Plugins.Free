@@ -18,8 +18,8 @@ namespace HizenLabs.FluentUI;
 public class FluentBuilder : IDisposable
 {
     private readonly CarbonPlugin _plugin;
-    private BuilderPool _pool;
     private readonly string _containerId;
+    private BuilderPool _pool;
     private FluentContainerBuilder _containerBuilder;
 
     /// <summary>
@@ -143,6 +143,9 @@ public class FluentBuilder : IDisposable
                 using var cui = _plugin.CreateCUI();
                 render.Delay = 0;
                 render.ExecuteTimer(_plugin, cui);
+
+                // send all after render to ensure they are dispalyed
+                cui.SendAll(container, players);
             });
             delayed.ExecuteTimer(_plugin);
         }
