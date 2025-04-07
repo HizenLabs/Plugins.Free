@@ -1,4 +1,4 @@
-﻿using HizenLabs.FluentUI.Enums;
+﻿using HizenLabs.FluentUI.Primitives.Enums;
 using System;
 using UnityEngine;
 

@@ -1,8 +1,8 @@
 ﻿// Reference: HizenLabs.Carbon.Extensions.FluentUI
 
-using HizenLabs.FluentUI;
-using HizenLabs.FluentUI.Enums;
+using HizenLabs.FluentUI.API;
 using HizenLabs.FluentUI.Primitives;
+using HizenLabs.FluentUI.Primitives.Enums;
 
 namespace Carbon.Plugins;
 
