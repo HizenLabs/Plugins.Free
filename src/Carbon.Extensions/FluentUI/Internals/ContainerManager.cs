@@ -11,7 +11,7 @@ namespace HizenLabs.FluentUI.Internals;
 /// Manages UI containers for plugins that use the FluentUI system.
 /// Provides functionality for adding, tracking, and removing UI containers.
 /// </summary>
-internal class ContainerManager
+internal class ContainerManager : IDisposable
 {
     /// <summary>
     /// Singleton instance of the <see cref="ContainerManager"/> class.
@@ -48,6 +48,8 @@ internal class ContainerManager
     /// <param name="extension">The instance of the <see cref="FluentUIEx"/> extension.</param>
     internal static void Initialize(FluentUIEx extension)
     {
+        using var _ = FluentDebug.BeginScope();
+
         if (_instance != null)
         {
             if (_instance._extension == extension)
@@ -74,6 +76,11 @@ internal class ContainerManager
     /// <param name="name">The name of the container.</param>
     private void AddContainer(long resourceId, string name)
     {
+        using var debug = FluentDebug.BeginScope();
+        debug.Log($"Adding container");
+        debug.Log($"  Resource: {resourceId}");
+        debug.Log($"  Container: {name}");
+
         var list = GetContainers(resourceId);
 
         if (!list.Contains(name))
@@ -103,13 +110,22 @@ internal class ContainerManager
     /// <param name="resourceId">The id of the plugin resource.</param>
     private void RemovePlugin(long resourceId)
     {
+        using var debug = FluentDebug.BeginScope();
+
         if (!_pluginContainers.TryRemove(resourceId, out var containers))
+        {
+            debug.Log($"[{nameof(ContainerManager)}] Remove plugin failed. Resource not found: {resourceId}");
             return;
+        }
+
+        debug.Log($"Resource: {resourceId}");
+        debug.Log($"Found {containers.Count} container(s)");
 
         foreach (var name in containers)
         {
             foreach (var player in BasePlayer.activePlayerList)
             {
+                debug.Log($"  Destroying container {name} for player {player.UserIDString}");
                 CuiHelper.DestroyUi(player, name);
             }
         }
@@ -127,9 +143,14 @@ internal class ContainerManager
     /// </remarks>
     internal static void ShutDown(FluentUIEx instance)
     {
+        using var debug = FluentDebug.BeginScope();
+
         // Validate that the current extension calling shutdown is the active handle.
         if (_instance == null || _instance._extension != instance)
+        {
+            debug.Log($"!! Shutdown failed. Instance not found or mismatched.");
             return;
+        }
 
         _instance.Dispose();
     }
@@ -139,8 +160,11 @@ internal class ContainerManager
     /// </summary>
     public void Dispose()
     {
+        using var debug = FluentDebug.BeginScope();
+
         if (_pluginContainers != null)
         {
+            debug.Log($"Disposing {_pluginContainers.Count} container(s)");
             foreach (var resourceId in _pluginContainers.Keys)
             {
                 RemovePlugin(resourceId);
@@ -148,10 +172,19 @@ internal class ContainerManager
 
             Pool.FreeUnmanaged(ref _pluginContainers);
         }
+        else
+        {
+            debug.Log($"{nameof(_pluginContainers)} is already null? Was dispose called too many times?");
+        }
 
         if (_instance != null)
         {
+            debug.Log($"Disposing instance");
             _instance = null;
+        }
+        else
+        {
+            debug.Log($"{nameof(_instance)} is already null? Was dispose called too many times?");
         }
     }
 }

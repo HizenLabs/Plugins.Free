@@ -5,6 +5,7 @@ using HizenLabs.FluentUI.Enums;
 using HizenLabs.FluentUI.Internals;
 using HizenLabs.FluentUI.Primitives;
 using System;
+using System.Diagnostics;
 using UnityEngine;
 
 namespace HizenLabs.FluentUI.Builders;
@@ -365,7 +366,8 @@ internal class FluentElementBuilder<TElement, TBuilder> : IFluentElementBuilder<
     /// </summary>
     public void EnterPool()
     {
-        FluentDebug.Log("Free element: {test}");
+        using var debug = FluentDebug.BeginScope();
+        debug.Log($"{typeof(TBuilder).Name} is returning to pool");
 
         _element = null;
     }
@@ -376,6 +378,9 @@ internal class FluentElementBuilder<TElement, TBuilder> : IFluentElementBuilder<
     /// </summary>
     public void LeavePool()
     {
+        using var debug = FluentDebug.BeginScope();
+        debug.Log($"Getting {typeof(TBuilder).Name} from pool");
+
         _element = Pool.Get<TElement>();
     }
 }

@@ -52,6 +52,10 @@ internal static class PoolHelper
                     Pool.Free(ref panel);
                     break;
 
+                case FluentContainer container:
+                    Pool.Free(ref container);
+                    break;
+
                 default:
                     throw new NotImplementedException($"{nameof(PoolHelper)}.{nameof(FreeElements)} has not yet implemented element type '{element.GetType()}'");
             }

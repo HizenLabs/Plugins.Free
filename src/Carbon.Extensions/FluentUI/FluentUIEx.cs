@@ -23,10 +23,10 @@ public class FluentUIEx : ICarbonExtension
     /// <param name="args">OnLoaded event arguments.</param>
     public void OnLoaded(EventArgs args)
     {
+        using var _ = FluentDebug.BeginScope();
+
         _instance = this;
-
         ContainerManager.Initialize(_instance);
-
         Community.Runtime.Events.Subscribe(CarbonEvent.PluginUnloaded, OnPluginUnloaded);
     }
 
@@ -38,8 +38,9 @@ public class FluentUIEx : ICarbonExtension
 
     public void OnUnloaded(EventArgs args)
     {
-        Community.Runtime.Events.Unsubscribe(CarbonEvent.PluginUnloaded, OnPluginUnloaded);
+        using var _ = FluentDebug.BeginScope();
 
+        Community.Runtime.Events.Unsubscribe(CarbonEvent.PluginUnloaded, OnPluginUnloaded);
         ContainerManager.ShutDown(_instance);
     }
 
@@ -49,6 +50,8 @@ public class FluentUIEx : ICarbonExtension
     /// <param name="args">An instance of <see cref="CarbonEventArgs"/> with a <see cref="CarbonPlugin"/> payload.</param>
     private void OnPluginUnloaded(EventArgs args)
     {
+        using var _ = FluentDebug.BeginScope();
+
         if (args.TryGetPayload<CarbonPlugin>(out var plugin))
         {
             ContainerManager.RemovePlugin(plugin);
