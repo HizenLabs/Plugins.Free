@@ -1,5 +1,4 @@
 ﻿using Carbon.Components;
-using Facepunch;
 using HizenLabs.FluentUI.API.Interfaces;
 using HizenLabs.FluentUI.Core.Services.Pooling;
 using HizenLabs.FluentUI.Utils.Debug;

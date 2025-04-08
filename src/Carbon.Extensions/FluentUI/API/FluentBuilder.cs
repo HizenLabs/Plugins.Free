@@ -1,6 +1,5 @@
 ﻿using Carbon.Components;
 using Carbon.Plugins;
-using Facepunch;
 using HizenLabs.FluentUI.API.Interfaces;
 using HizenLabs.FluentUI.Core.Builders;
 using HizenLabs.FluentUI.Core.Elements;
@@ -139,8 +138,7 @@ public class FluentBuilder : IDisposable
         // Setup delayed renders
         for (int i = 0; i < delayedRenders.Count; i++)
         {
-            var render = delayedRenders[i];
-            var delayed = _pool.CreateDelayedAction(render.Delay, () =>
+            var delayed = _pool.CreateDelayedAction(delayedRenders[i], render =>
             {
                 using var cui = _plugin.CreateCUI();
                 render.Delay = 0;
@@ -155,8 +153,7 @@ public class FluentBuilder : IDisposable
         // Setup pending destroys (menus with durations)
         for (int i = 0; i < destroyActions.Count; i++)
         {
-            var destroy = destroyActions[i];
-            var delayed = _pool.CreateDelayedAction(destroy.Delay, () =>
+            var delayed = _pool.CreateDelayedAction(destroyActions[i], destroy =>
             {
                 using var cui = _plugin.CreateCUI();
                 destroy.Delay = 0;

@@ -4,7 +4,6 @@ using HizenLabs.FluentUI.API.Interfaces;
 using HizenLabs.FluentUI.Core.Elements;
 using HizenLabs.FluentUI.Utils.Debug;
 using HizenLabs.FluentUI.Utils.Delays;
-using HizenLabs.FluentUI.Utils.Delays.Base;
 using HizenLabs.FluentUI.Utils.Extensions;
 using System;
 using System.Collections.Generic;
@@ -110,7 +109,7 @@ internal static class FluentPool
         foreach (var obj in elements)
         {
             var obj2 = obj;
-            FreeCustom<T>(ref obj2);
+            FreeCustom(ref obj2);
         }
 
         FreeUnmanaged(ref elements);

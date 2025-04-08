@@ -1,5 +1,4 @@
 ﻿using Carbon.Plugins;
-using Facepunch;
 using HizenLabs.FluentUI.API;
 using HizenLabs.FluentUI.API.Interfaces;
 using HizenLabs.FluentUI.Primitives.Enums;
@@ -81,6 +80,19 @@ internal class BuilderPool : IDisposable
         delayedAction.Delay = delaySeconds;
         delayedAction.Action = action;
 
+        BeginTracking(delayedAction);
+
+        return delayedAction;
+    }
+
+    public DelayedAction CreateDelayedAction<TBaseAction>(TBaseAction baseAction, Action<TBaseAction> extendedAction)
+        where TBaseAction : IDelayedAction
+    {
+        var delayedAction = FluentPool.Get<DelayedAction>();
+        delayedAction.Delay = baseAction.Delay;
+        delayedAction.Action = () => extendedAction(baseAction);
+
+        BeginTracking(baseAction);
         BeginTracking(delayedAction);
 
         return delayedAction;
