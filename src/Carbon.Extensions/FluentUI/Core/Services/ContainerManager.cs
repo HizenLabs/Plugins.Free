@@ -97,7 +97,7 @@ internal class ContainerManager : IDisposable
     /// <param name="resourceId">The plugin id.</param>
     /// <returns>A list of container names.</returns>
     private List<string> GetContainers(string resourceId) =>
-        _pluginContainers.GetOrAdd(resourceId, () => FluentPool.Get<List<string>>());
+        _pluginContainers.GetOrAdd(resourceId, FluentPool.Get<List<string>>);
 
     /// <summary>
     /// Removes a UI container from the list of containers for a specific plugin.
