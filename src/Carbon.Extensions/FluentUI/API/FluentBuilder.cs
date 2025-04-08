@@ -37,7 +37,7 @@ public class FluentBuilder : IDisposable
     {
         _plugin = plugin;
         _pool = new(plugin);
-        _containerBuilder = Pool.Get<FluentContainerBuilder>();
+        _containerBuilder = FluentPool.Get<FluentContainerBuilder>();
         _containerId = containerId;
     }
 
@@ -127,8 +127,8 @@ public class FluentBuilder : IDisposable
     private void SendContainer(FluentContainer containerElement, params BasePlayer[] players)
     {
         using var cui = _plugin.CreateCUI();
-        var delayedRenders = Pool.Get<List<DelayedAction<CUI>>>();
-        var destroyActions = Pool.Get<List<DelayedAction<CUI, BasePlayer[]>>>();
+        var delayedRenders = FluentPool.Get<List<DelayedAction<CUI>>>();
+        var destroyActions = FluentPool.Get<List<DelayedAction<CUI, BasePlayer[]>>>();
 
         // Render the container
         var container = containerElement.Render(cui, delayedRenders, destroyActions);
@@ -168,8 +168,8 @@ public class FluentBuilder : IDisposable
         // Do not free internals (must be unmanaged)
         // internal resources are manually freed in the timer callback
         // otherwise, they will be disposed of before they can be called
-        Pool.FreeUnmanaged(ref delayedRenders);
-        Pool.FreeUnmanaged(ref destroyActions);
+        FluentPool.FreeUnmanaged(ref delayedRenders);
+        FluentPool.FreeUnmanaged(ref destroyActions);
     }
 
     /// <summary>
@@ -235,6 +235,6 @@ public class FluentBuilder : IDisposable
         _pool?.Shutdown();
         _pool = null;
 
-        Pool.Free(ref _containerBuilder);
+        FluentPool.Free(ref _containerBuilder);
     }
 }

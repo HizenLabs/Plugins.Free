@@ -27,8 +27,8 @@ internal class BuilderPool : IDisposable
         using var _ = FluentDebug.BeginScope();
 
         _plugin = plugin;
-        _pendingActions = Pool.Get<List<IDelayedAction>>();
-        _trackingElements = Pool.Get<List<IFluentElement>>();
+        _pendingActions = FluentPool.Get<List<IDelayedAction>>();
+        _trackingElements = FluentPool.Get<List<IFluentElement>>();
     }
 
     /// <summary>
@@ -77,7 +77,7 @@ internal class BuilderPool : IDisposable
     /// <returns>The newly created delayed action.</returns>
     public DelayedAction CreateDelayedAction(float delaySeconds, Action action)
     {
-        var delayedAction = Pool.Get<DelayedAction>();
+        var delayedAction = FluentPool.Get<DelayedAction>();
         delayedAction.Delay = delaySeconds;
         delayedAction.Action = action;
 
@@ -118,14 +118,14 @@ internal class BuilderPool : IDisposable
 
             // no valid actions remaining, return them to the pool
             debug.Log($"Freeing {_pendingActions.Count} action(s).");
-            FluentPool.FreeActions(ref _pendingActions);
+            FluentPool.FreeCustom(ref _pendingActions);
         }
 
         // now that all actions are free and complete, we can free any remaining elements
         if (_trackingElements != null)
         {
             debug.Log($"Freeing {_trackingElements.Count} element(s).");
-            FluentPool.FreeElements(ref _trackingElements);
+            FluentPool.FreeCustom(ref _trackingElements);
         }
     }
 

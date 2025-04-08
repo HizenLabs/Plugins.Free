@@ -1,6 +1,7 @@
 ﻿using Carbon.Plugins;
 using Facepunch;
 using HizenLabs.FluentUI.API;
+using HizenLabs.FluentUI.Core.Services.Pooling;
 using HizenLabs.FluentUI.Utils.Debug;
 using HizenLabs.FluentUI.Utils.Extensions;
 using Oxide.Game.Rust.Cui;
@@ -37,7 +38,7 @@ internal class ContainerManager : IDisposable
     private ContainerManager(FluentUIEx extension)
     {
         _extension = extension;
-        _pluginContainers = Pool.Get<Dictionary<string, List<string>>>();
+        _pluginContainers = FluentPool.Get<Dictionary<string, List<string>>>();
     }
 
     /// <summary>
@@ -97,7 +98,7 @@ internal class ContainerManager : IDisposable
     /// <param name="resourceId">The plugin id.</param>
     /// <returns>A list of container names.</returns>
     private List<string> GetContainers(string resourceId) =>
-        _pluginContainers.GetOrAdd(resourceId, () => Pool.Get<List<string>>());
+        _pluginContainers.GetOrAdd(resourceId, () => FluentPool.Get<List<string>>());
 
     /// <summary>
     /// Removes a UI container from the list of containers for a specific plugin.
@@ -132,7 +133,7 @@ internal class ContainerManager : IDisposable
             }
         }
 
-        Pool.FreeUnmanaged(ref containers);
+        FluentPool.FreeUnmanaged(ref containers);
     }
 
     /// <summary>
@@ -172,7 +173,7 @@ internal class ContainerManager : IDisposable
                 RemovePlugin(resourceId);
             }
 
-            Pool.FreeUnmanaged(ref _pluginContainers);
+            FluentPool.FreeUnmanaged(ref _pluginContainers);
         }
         else
         {

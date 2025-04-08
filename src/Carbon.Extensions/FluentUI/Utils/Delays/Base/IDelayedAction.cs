@@ -41,7 +41,7 @@ internal interface IDelayedAction : Pool.IPooled
     /// This is used in disposal calculations.
     /// </summary>
     /// <remarks>
-    /// Used for <see cref="BuilderPool.Shutdown"/> to determine if the action is still valid
+    /// Used for <see cref="BuilderFluentPoolManager.Shutdown"/> to determine if the action is still valid
     /// before force terminating the process and cleaning up its resources.
     /// </remarks>
     float ProcessTimeoutSeconds { get; }

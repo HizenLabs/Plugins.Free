@@ -2,6 +2,7 @@
 using HizenLabs.FluentUI.API.Interfaces;
 using HizenLabs.FluentUI.Core.Elements;
 using HizenLabs.FluentUI.Core.Elements.Base;
+using HizenLabs.FluentUI.Core.Services.Pooling;
 using HizenLabs.FluentUI.Primitives;
 using HizenLabs.FluentUI.Primitives.Enums;
 using HizenLabs.FluentUI.Utils.Debug;
@@ -348,15 +349,15 @@ internal class FluentElementBuilder<TElement, TBuilder> : IFluentElementBuilder<
         where TInnerElement : FluentElement<TInnerElement>, new()
         where TInnerBuilder : FluentElementBuilder<TInnerElement, TInnerBuilder>, new()
     {
-        _element ??= Pool.Get<TElement>();
+        _element ??= FluentPool.Get<TElement>();
 
-        var builder = Pool.Get<TInnerBuilder>();
+        var builder = FluentPool.Get<TInnerBuilder>();
         setupAction(builder);
 
         var child = builder.Build(_element.Options.Id);
         _element.AddElement(child);
 
-        Pool.Free(ref builder);
+        FluentPool.Free(ref builder);
         return This;
     }
 
@@ -381,6 +382,6 @@ internal class FluentElementBuilder<TElement, TBuilder> : IFluentElementBuilder<
         using var debug = FluentDebug.BeginScope();
         debug.Log($"Getting {typeof(TBuilder).Name} from pool");
 
-        _element = Pool.Get<TElement>();
+        _element = FluentPool.Get<TElement>();
     }
 }

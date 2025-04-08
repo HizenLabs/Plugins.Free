@@ -57,7 +57,7 @@ internal abstract class FluentElement<T> : IFluentElement
 
         if (_options.Delay > 0)
         {
-            var delayedRender = Pool.Get<DelayedAction<CUI>>();
+            var delayedRender = FluentPool.Get<DelayedAction<CUI>>();
             delayedRender.Delay = _options.Delay;
             delayedRender.Action = actionCui => RenderElement(actionCui, container, parent, elementId);
             delayedRenders.Add(delayedRender);
@@ -69,7 +69,7 @@ internal abstract class FluentElement<T> : IFluentElement
 
         if (_options.Duration > 0)
         {
-            var destroyAction = Pool.Get<DelayedAction<CUI, BasePlayer[]>>();
+            var destroyAction = FluentPool.Get<DelayedAction<CUI, BasePlayer[]>>();
             destroyAction.Delay = _options.Duration;
             destroyAction.Action = (actionCui, players) => cui.DestroyAll(elementId, players);
         }
@@ -119,8 +119,8 @@ internal abstract class FluentElement<T> : IFluentElement
         using var debug = FluentDebug.BeginScope();
         debug.Log($"Returning options for {typeof(T).Name} to pool");
 
-        Pool.Free(ref _options);
-        FluentPool.FreeElements(ref _children);
+        FluentPool.Free(ref _options);
+        FluentPool.FreeCustom(ref _children);
     }
 
     /// <summary>
@@ -130,7 +130,7 @@ internal abstract class FluentElement<T> : IFluentElement
     {
         using var debug = FluentDebug.BeginScope();
 
-        _options = Pool.Get<FluentElementOptions<T>>();
-        _children = Pool.Get<List<IFluentElement>>();
+        _options = FluentPool.Get<FluentElementOptions<T>>();
+        _children = FluentPool.Get<List<IFluentElement>>();
     }
 }

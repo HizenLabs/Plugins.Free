@@ -5,10 +5,10 @@ using HizenLabs.FluentUI.Core.Elements;
 using HizenLabs.FluentUI.Utils.Debug;
 using HizenLabs.FluentUI.Utils.Delays;
 using HizenLabs.FluentUI.Utils.Delays.Base;
+using HizenLabs.FluentUI.Utils.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using static Facepunch.Pool;
 
 namespace HizenLabs.FluentUI.Core.Services.Pooling;
 
@@ -19,47 +19,49 @@ namespace HizenLabs.FluentUI.Core.Services.Pooling;
 internal static class FluentPool
 {
 #if DEBUG
-    private static Dictionary<Type, int> _pooledItemCount;
+    private static Dictionary<Type, int> _pooledTypeCounts;
+
+    internal static IReadOnlyDictionary<Type, int> PooledTypeCounts => _pooledTypeCounts;
 #endif
 
-    public static int PooledItemCount => _pooledItemCount.Sum(x => x.Value);
+    public static int PooledTypeTotal => _pooledTypeCounts.Sum(x => x.Value);
 
-    public static void Init()
+    public static void Initialize()
     {
-        if (_pooledItemCount != null)
+        if (_pooledTypeCounts != null)
         {
             using var debug = FluentDebug.BeginScope();
-            debug.Log($"!! Warning: Trying to initialize the pool when there are still {PooledItemCount} pooled items? Was init called twice?");
+            debug.Log($"!! Warning: Trying to initialize the pool when there are still {PooledTypeTotal} pooled items? Was init called twice?");
             return;
         }
 
-        _pooledItemCount = Pool.Get<Dictionary<Type, int>>();
+        _pooledTypeCounts = Pool.Get<Dictionary<Type, int>>();
     }
 
     public static void Shutdown()
     {
-        if (_pooledItemCount == null)
+        if (_pooledTypeCounts == null)
         {
             using var debug = FluentDebug.BeginScope();
             debug.Log($"!! Warning: Trying to shutdown the pool when it was never initialized?");
             return;
         }
 
-        if (PooledItemCount > 0)
+        if (PooledTypeTotal > 0)
         {
             using var debug = FluentDebug.BeginScope();
-            debug.Log($"!! Warning: There are still {PooledItemCount} pooled items that have not been freed!");
+            debug.Log($"!! Warning: There are still {PooledTypeTotal} pooled items that have not been freed!");
             debug.Log($"            These need to be freed properly before extension unload is finalized.");
-            foreach (var kvp in _pooledItemCount)
+            foreach (var kvp in _pooledTypeCounts)
             {
                 if (kvp.Value > 0)
                 {
-                    debug.Log($"  - {kvp.Key} still holding {kvp.Value} item(s)");
+                    debug.Log($"  - {kvp.Key.GetFriendlyTypeName()} still holding {kvp.Value} item(s)");
                 }
             }
         }
 
-        Pool.FreeUnmanaged(ref _pooledItemCount);
+        Pool.FreeUnmanaged(ref _pooledTypeCounts);
     }
 
     #region Pool.IPooled Wrappers
@@ -70,13 +72,15 @@ internal static class FluentPool
         return Pool.Get<T>();
     }
 
-    public static void Free<T>(ref T obj) where T : class, IPooled, new()
+    public static void Free<T>(ref T obj) 
+        where T : class, Pool.IPooled, new()
     {
         Pop<T>();
         Pool.Free(ref obj);
     }
 
-    public static void Free<T>(ref List<T> obj, bool freeElements = false) where T : class, IPooled, new()
+    public static void Free<T>(ref List<T> obj, bool freeElements = false) 
+        where T : class, Pool.IPooled, new()
     {
         Pop<List<T>>();
         Pool.Free(ref obj, freeElements);
@@ -88,73 +92,87 @@ internal static class FluentPool
         Pool.FreeUnmanaged(ref obj);
     }
 
+    public static void FreeUnmanaged<TKey, TVal>(ref Dictionary<TKey, TVal> dict)
+    {
+        Pop<Dictionary<TKey, TVal>>();
+        Pool.FreeUnmanaged(ref dict);
+    }
+
     #endregion
-
-    /// <summary>
-    /// Helper method to free unknown types into the pool.
-    /// This only works with types that we support as we switch through the list.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="obj"></param>
-    public static void FreeUnknown<T>(ref T obj) where T : IPooled
-    {
-        throw new NotImplementedException();
-    }
-
-    public static void FreeUnknown<T>(ref List<T> obj) where T : IPooled
-    {
-        throw new NotImplementedException();
-    }
-
-    private static void Push<T>()
-    {
-#if DEBUG
-        if (!_pooledItemCount.ContainsKey(typeof(T)))
-        {
-            _pooledItemCount.Add(typeof(T), 0);
-        }
-
-        _pooledItemCount[typeof(T)]++;
-#endif
-    }
-
-    private static void Pop<T>()
-    {
-#if DEBUG
-        if (!_pooledItemCount.ContainsKey(typeof(T)))
-        {
-            using var debug = FluentDebug.BeginScope();
-            debug.Log($"!! Error: Trying to free an item of type {typeof(T)} when tracked pool list was never initialized?");
-        }
-        else if (_pooledItemCount[typeof(T)] == 0)
-        {
-            using var debug = FluentDebug.BeginScope();
-            debug.Log($"!! Error: Trying to free an item of type {typeof(T)} when tracked pool list is empty?");
-        }
-        else
-        {
-            _pooledItemCount[typeof(T)]--;
-        }
-#endif
-    }
 
     /// <summary>
     /// Creates a new instance of the specified <see cref="IFluentElement"/> type.
     /// </summary>
     /// <param name="elements">The list of elements to free from the pool.</param
     /// <exception cref="NotImplementedException">Thrown if any of the element types are not handled.</exception>
-    public static void FreeElements(ref List<IFluentElement> elements)
+    public static void FreeCustom<T>(ref List<T> elements)
     {
-        throw new NotImplementedException();
+        foreach (var obj in elements)
+        {
+            var obj2 = obj;
+            FreeCustom<T>(ref obj2);
+        }
+
+        FreeUnmanaged(ref elements);
     }
 
-    /// <summary>
-    /// Frees the specified list of delayed actions from the pool.
-    /// </summary>
-    /// <param name="actions"></param>
-    /// <exception cref="NotImplementedException"></exception>
-    public static void FreeActions(ref List<IDelayedAction> actions)
+    public static void FreeCustom<T>(ref T element)
     {
-        throw new NotImplementedException();
+        if (element is FluentContainer container)
+        {
+            Free(ref container);
+        }
+        else if (element is FluentPanel panel)
+        {
+            Free(ref panel);
+        }
+        else if (element is DelayedAction action)
+        {
+            Free(ref action);
+        }
+        else if (element is DelayedAction<CUI> actionCui)
+        {
+            Free(ref actionCui);
+        }
+        else if (element is DelayedAction<CUI, BasePlayer[]> actionPlayer)
+        {
+            Free(ref actionPlayer);
+        }
+        else
+        {
+            throw new InvalidOperationException($"Trying to free an element of type {typeof(T).GetFriendlyTypeName()} that is not handled by the pool.");
+        }
+    }
+
+    private static void Push<T>()
+    {
+#if DEBUG
+        if (!_pooledTypeCounts.ContainsKey(typeof(T)))
+        {
+            _pooledTypeCounts.Add(typeof(T), 0);
+        }
+
+        _pooledTypeCounts[typeof(T)]++;
+#endif
+    }
+
+    private static void Pop<T>()
+    {
+#if DEBUG
+        if (!_pooledTypeCounts.ContainsKey(typeof(T)))
+        {
+            using var debug = FluentDebug.BeginScope();
+            debug.Log($"!! Error: Trying to free an item of type {typeof(T).GetFriendlyTypeName()} when tracked pool list was never initialized?");
+        }
+        else if (_pooledTypeCounts[typeof(T)] == 0)
+        {
+            using var debug = FluentDebug.BeginScope();
+            debug.Log($"!! Error: Trying to free an item of type {typeof(T).GetFriendlyTypeName()} when tracked pool list is empty?");
+        }
+        else
+        {
+            _pooledTypeCounts[typeof(T)]--;
+        }
+#endif
     }
 }
