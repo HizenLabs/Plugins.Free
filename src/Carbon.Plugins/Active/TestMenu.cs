@@ -3,12 +3,40 @@
 using HizenLabs.FluentUI.API;
 using HizenLabs.FluentUI.Primitives;
 using HizenLabs.FluentUI.Primitives.Enums;
+using Oxide.Game.Rust.Cui;
 
 namespace Carbon.Plugins;
 
 [Info("TestMenu", "hizenxyz", "0.0.13")]
 public class TestMenu : CarbonPlugin
 {
+    [ChatCommand("test")]
+    private void CommandTest(BasePlayer player, string command, string[] args)
+    {
+        var panels = CuiHelper.GetActivePanelList(player);
+        Puts($"Found {panels.Count} active panels for {player.displayName}");
+        if (panels.Count > 0)
+        {
+            foreach (var panel in panels)
+            {
+                Puts($"  Panel: {panel}");
+            }
+        }
+    }
+
+    [ChatCommand("destroy")]
+    private void CommandDestroy(BasePlayer player, string command, string[] args)
+    {
+        if (args.Length == 0)
+        {
+            player.ChatMessage("No panel specified");
+            return;
+        }
+
+        var panel = args[0];
+        CuiHelper.DestroyUi(player, panel);
+    }
+
     /// <summary>
     /// Create an extremely basic panel with the specified color
     /// </summary>

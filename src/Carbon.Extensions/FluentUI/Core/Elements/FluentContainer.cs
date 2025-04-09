@@ -1,7 +1,11 @@
-﻿using Carbon.Components;
+﻿using Carbon;
+using Carbon.Components;
+using HizenLabs.FluentUI.API.Interfaces;
 using HizenLabs.FluentUI.Core.Elements.Base;
+using HizenLabs.FluentUI.Utils.Debug;
 using HizenLabs.FluentUI.Utils.Delays;
 using Oxide.Game.Rust.Cui;
+using System;
 using System.Collections.Generic;
 
 namespace HizenLabs.FluentUI.Core.Elements;
@@ -17,7 +21,17 @@ internal class FluentContainer : FluentElement<FluentContainer>
         List<DelayedAction<CUI, BasePlayer[]>> destroyActions
     )
     {
+        Options.ContainerId = Options.Id = $"{Options.Id}[{Guid.NewGuid()}]";
+
         var area = Options.Area;
+        Logger.Log($"Render FluentContainer: {Options.Id}");
+        Logger.Log($"  Area: {area}");
+        Logger.Log($"  FadeIn: {Options.FadeIn}");
+        Logger.Log($"  FadeOut: {Options.FadeOut}");
+        Logger.Log($"  NeedsCursor: {Options.NeedsCursor}");
+        Logger.Log($"  NeedsKeyboard: {Options.NeedsKeyboard}");
+        Logger.Log($"  BackgroundColor: {Options.BackgroundColor}");
+
         var container = cui.CreateContainer(
             Options.Id,
             color: Options.BackgroundColor,
@@ -37,12 +51,12 @@ internal class FluentContainer : FluentElement<FluentContainer>
         );
 
         // Render child elements directly since the id is already defined for the container.
-        RenderChildren(cui, container, Options.Id, delayedRenders, 0f, destroyActions);
+        RenderChildren(cui, container, this, delayedRenders, 0f, destroyActions);
         return container;
     }
 
     /// <inheritdoc/>   
-    protected override void RenderElement(CUI cui, CuiElementContainer container, string parent, string elementId)
+    protected override void RenderElement(CUI cui, CuiElementContainer container, IFluentElement parent, string elementId, string destroyUi = null)
     {
         // Skip since we are rendering elsewhere for the base container.
     }

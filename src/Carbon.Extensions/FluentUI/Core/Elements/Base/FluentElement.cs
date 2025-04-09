@@ -5,6 +5,7 @@ using HizenLabs.FluentUI.Utils.Debug;
 using HizenLabs.FluentUI.Utils.Delays;
 using HizenLabs.FluentUI.Utils.Extensions;
 using Oxide.Game.Rust.Cui;
+using System;
 using System.Collections.Generic;
 
 namespace HizenLabs.FluentUI.Core.Elements.Base;
@@ -42,7 +43,7 @@ internal abstract class FluentElement<T> : IFluentElement
     public void Render(
         CUI cui,
         CuiElementContainer container,
-        string parent,
+        IFluentElement parent,
         int index,
         List<DelayedAction<CUI>> delayedRenders,
         float delayOffset,
@@ -52,13 +53,16 @@ internal abstract class FluentElement<T> : IFluentElement
         // Force parent elements to render first to make delays relative.
         Options.Delay += delayOffset;
 
-        var elementId = $"{parent}.{Options.Id ?? typeof(T).Name}[{index}]";
+        Options.Id ??= Guid.NewGuid().ToString();
+        var elementId = $"{parent.Options.Id}[{index}]:{Options.Id}";
+
+        Options.ContainerId ??= parent.Options.ContainerId;
 
         if (_options.Delay > 0)
         {
             var delayedRender = FluentPool.Get<DelayedAction<CUI>>();
             delayedRender.Delay = _options.Delay;
-            delayedRender.Action = actionCui => RenderElement(actionCui, container, parent, elementId);
+            delayedRender.Action = actionCui => RenderElement(actionCui, container, parent, elementId, Options.ContainerId);
             delayedRenders.Add(delayedRender);
         }
         else
@@ -70,10 +74,10 @@ internal abstract class FluentElement<T> : IFluentElement
         {
             var destroyAction = FluentPool.Get<DelayedAction<CUI, BasePlayer[]>>();
             destroyAction.Delay = _options.Duration;
-            destroyAction.Action = (actionCui, players) => cui.DestroyAll(elementId, players);
+            destroyAction.Action = (actionCui, players) => cui.DestroyAll(Options.ContainerId, players);
         }
 
-        RenderChildren(cui, container, elementId, delayedRenders, Options.Delay, destroyActions);
+        RenderChildren(cui, container, this, delayedRenders, Options.Delay, destroyActions);
     }
 
     /// <summary>
@@ -86,7 +90,7 @@ internal abstract class FluentElement<T> : IFluentElement
     protected void RenderChildren(
         CUI cui,
         CuiElementContainer container,
-        string parent,
+        IFluentElement parent,
         List<DelayedAction<CUI>> delayedRenders,
         float delayOffset,
         List<DelayedAction<CUI, BasePlayer[]>> destroyActions
@@ -108,16 +112,14 @@ internal abstract class FluentElement<T> : IFluentElement
     /// <param name="container">The container to render to.</param>
     /// <param name="parent">The parent element name.</param>
     /// <param name="elementId">The id of the element.</param>
-    protected abstract void RenderElement(CUI cui, CuiElementContainer container, string parent, string elementId);
+    /// <param name="destroyUi">The optional id of the ui to destroy on rendering this element.</param>
+    protected abstract void RenderElement(CUI cui, CuiElementContainer container, IFluentElement parent, string elementId, string destroyUi = null);
 
     /// <summary>
     /// Prepares the element for return to the object pool.
     /// </summary>
     public void EnterPool()
     {
-        using var debug = FluentDebug.BeginScope();
-        debug.Log($"Returning options for {typeof(T).Name} to pool");
-
         FluentPool.Free(ref _options);
         FluentPool.FreeCustom(ref _children);
     }
@@ -127,7 +129,12 @@ internal abstract class FluentElement<T> : IFluentElement
     /// </summary>
     public void LeavePool()
     {
-        using var debug = FluentDebug.BeginScope();
+        if (_options?.Id != null)
+        {
+            using var debug = FluentDebug.BeginScope();
+            debug.Log($"!! Warning: Trying to leave the pool when the element is already initialized? {Options.Id}");
+            return;
+        }
 
         _options = FluentPool.Get<FluentElementOptions<T>>();
         _children = FluentPool.Get<List<IFluentElement>>();

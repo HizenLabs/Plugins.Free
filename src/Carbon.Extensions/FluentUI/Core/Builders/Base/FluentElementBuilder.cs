@@ -5,6 +5,7 @@ using HizenLabs.FluentUI.Core.Services.Pooling;
 using HizenLabs.FluentUI.Primitives;
 using HizenLabs.FluentUI.Primitives.Enums;
 using HizenLabs.FluentUI.Utils.Debug;
+using HizenLabs.FluentUI.Utils.Extensions;
 using System;
 using UnityEngine;
 
@@ -366,9 +367,6 @@ internal class FluentElementBuilder<TElement, TBuilder> : IFluentElementBuilder<
     /// </summary>
     public void EnterPool()
     {
-        using var debug = FluentDebug.BeginScope();
-        debug.Log($"{typeof(TBuilder).Name} is returning to pool");
-
         _element = null;
     }
 
@@ -378,9 +376,12 @@ internal class FluentElementBuilder<TElement, TBuilder> : IFluentElementBuilder<
     /// </summary>
     public void LeavePool()
     {
-        using var debug = FluentDebug.BeginScope();
-        debug.Log($"Getting {typeof(TBuilder).Name} from pool");
-
         _element = FluentPool.Get<TElement>();
+
+        if (_element?.Options?.Id != null)
+        {
+            using var debug = FluentDebug.BeginScope();
+            debug.Log($"!! Warning: {typeof(TBuilder).GetFriendlyTypeName()} is being reused without being freed first. This may cause issues.");
+        }
     }
 }

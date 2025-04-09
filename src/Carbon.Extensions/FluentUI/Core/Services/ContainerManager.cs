@@ -50,8 +50,6 @@ internal class ContainerManager : IDisposable
     /// <param name="extension">The instance of the <see cref="FluentUIEx"/> extension.</param>
     internal static void Initialize(FluentUIEx extension)
     {
-        using var _ = FluentDebug.BeginScope();
-
         if (_instance != null)
         {
             if (_instance._extension == extension)
@@ -78,11 +76,6 @@ internal class ContainerManager : IDisposable
     /// <param name="name">The name of the container.</param>
     private void AddContainer(string resourceId, string name)
     {
-        using var debug = FluentDebug.BeginScope();
-        debug.Log($"Adding container");
-        debug.Log($"  Resource: {resourceId}");
-        debug.Log($"  Container: {name}");
-
         var list = GetContainers(resourceId);
 
         if (!list.Contains(name))
@@ -112,22 +105,17 @@ internal class ContainerManager : IDisposable
     /// <param name="resourceId">The id of the plugin resource.</param>
     private void RemovePlugin(string resourceId)
     {
-        using var debug = FluentDebug.BeginScope();
-
         if (!_pluginContainers.TryRemove(resourceId, out var containers))
         {
-            debug.Log($"Remove plugin failed. Resource not found: {resourceId}");
+            using var debug = FluentDebug.BeginScope();
+            debug.Log($"!! Warning: Remove plugin failed. Resource not found: {resourceId}");
             return;
         }
-
-        debug.Log($"Resource: {resourceId}");
-        debug.Log($"Found {containers.Count} container(s)");
 
         foreach (var name in containers)
         {
             foreach (var player in BasePlayer.activePlayerList)
             {
-                debug.Log($"  Destroying container {name} for player {player.UserIDString}");
                 CuiHelper.DestroyUi(player, name);
             }
         }
@@ -145,12 +133,11 @@ internal class ContainerManager : IDisposable
     /// </remarks>
     internal static void Shutdown(FluentUIEx instance)
     {
-        using var debug = FluentDebug.BeginScope();
-
         // Validate that the current extension calling shutdown is the active handle.
         if (_instance == null || _instance._extension != instance)
         {
-            debug.Log($"!! Shutdown failed. Instance not found or mismatched.");
+            using var debug = FluentDebug.BeginScope();
+            debug.Log($"!! Error: Shutdown failed. Instance not found or mismatched.");
             return;
         }
 
@@ -162,11 +149,8 @@ internal class ContainerManager : IDisposable
     /// </summary>
     public void Dispose()
     {
-        using var debug = FluentDebug.BeginScope();
-
         if (_pluginContainers != null)
         {
-            debug.Log($"Disposing {_pluginContainers.Count} container(s)");
             foreach (var resourceId in _pluginContainers.Keys)
             {
                 RemovePlugin(resourceId);
@@ -176,17 +160,18 @@ internal class ContainerManager : IDisposable
         }
         else
         {
-            debug.Log($"{nameof(_pluginContainers)} is already null? Was dispose called too many times?");
+            using var debug = FluentDebug.BeginScope();
+            debug.Log($"!! Warning: {nameof(_pluginContainers)} is already null? Was dispose called too many times?");
         }
 
         if (_instance != null)
         {
-            debug.Log($"Disposing instance");
             _instance = null;
         }
         else
         {
-            debug.Log($"{nameof(_instance)} is already null? Was dispose called too many times?");
+            using var debug = FluentDebug.BeginScope();
+            debug.Log($"!! Warning: {nameof(_instance)} is already null? Was dispose called too many times?");
         }
     }
 }

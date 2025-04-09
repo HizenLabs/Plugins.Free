@@ -15,6 +15,9 @@ internal class FluentElementOptions<T> : IFluentElementOptions
     public string Id { get; set; }
 
     /// <inheritdoc/>
+    public string ContainerId { get; set; }
+
+    /// <inheritdoc/>
     public FluentColor BackgroundColor { get; set; }
 
     /// <inheritdoc/>

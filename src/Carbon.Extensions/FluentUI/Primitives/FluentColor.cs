@@ -101,4 +101,6 @@ public readonly struct FluentColor
         "blue" => Blue,
         _ => throw new FormatException($"Unrecognized color: '{color}'")
     };
+
+    public override string ToString() => $"{nameof(FluentColor)}[R={R}, G={G}, B={B}, A={Alpha}]";
 }

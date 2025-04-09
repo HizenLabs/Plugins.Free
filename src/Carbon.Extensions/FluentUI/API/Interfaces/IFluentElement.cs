@@ -30,7 +30,7 @@ public interface IFluentElement : Pool.IPooled
     internal void Render(
         CUI cui,
         CuiElementContainer container,
-        string parent,
+        IFluentElement parent,
         int index,
         List<DelayedAction<CUI>> delayedRenders,
         float delayOffset,

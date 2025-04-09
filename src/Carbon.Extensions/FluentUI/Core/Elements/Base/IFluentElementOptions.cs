@@ -15,6 +15,11 @@ namespace HizenLabs.FluentUI.Core.Elements.Base;
 internal interface IFluentElementOptions : Pool.IPooled
 {
     /// <summary>
+    /// The id of the container.
+    /// </summary>
+    string ContainerId { get; set; }
+
+    /// <summary>
     /// The unique identifier for this element.
     /// The CUI system uses this to attach elements to their parents as well as in disposal
     /// </summary>
