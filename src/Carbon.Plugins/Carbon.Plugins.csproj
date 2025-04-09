@@ -49,7 +49,6 @@
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Active\AutoBaseBackup.cs" />
     <Compile Include="Active\TestMenu.cs" />
   </ItemGroup>
   <ItemGroup>
