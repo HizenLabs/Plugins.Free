@@ -15,7 +15,7 @@ namespace Carbon.Plugins;
 
 #pragma warning disable IDE1006 // Naming Styles
 
-[Info("AutoBuildSnapshot", "hizenxyz", "0.0.16")]
+[Info("AutoBuildSnapshot", "hizenxyz", "0.0.17")]
 [Description("Automatically backs up a player's base when they build to it, allowing it to be restored later.")]
 public partial class AutoBuildSnapshot : CarbonPlugin
 {
