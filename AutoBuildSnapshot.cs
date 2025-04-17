@@ -105,7 +105,7 @@ public partial class AutoBuildSnapshot : CarbonPlugin
     /// <summary>
     /// The list of temporary entities that are created for visual feedback (e.g. spheres).
     /// </summary>
-    private Dictionary<ulong, List<ClientEntity>> _tempEntities;
+    private Dictionary<ulong, List<Components.ClientEntity>> _tempEntities;
 
     /// <summary>
     /// The set of log messages.
@@ -127,7 +127,7 @@ public partial class AutoBuildSnapshot : CarbonPlugin
     /// <summary>
     /// Index of snapshot ids by persistant building IDs for faster lookup.
     /// </summary>
-    private Dictionary<string, List<Guid>> _idxSnapshotBuildingID;
+    private Dictionary<string, List<System.Guid>> _idxSnapshotBuildingID;
 
     #endregion
 
@@ -779,7 +779,7 @@ public partial class AutoBuildSnapshot : CarbonPlugin
         _buildRecords = Pool.Get<Dictionary<ulong, BuildRecord>>();
         _snapshotMetaData = Pool.Get<Dictionary<Guid, BuildSnapshotMetaData>>();
         _idxSnapshotBuildingID = Pool.Get<Dictionary<string, List<Guid>>>();
-        _tempEntities = Pool.Get<Dictionary<ulong, List<ClientEntity>>>();
+        _tempEntities = Pool.Get<Dictionary<ulong, List<Components.ClientEntity>>>();
         _logMessages = Pool.Get<List<string>>();
         _connectedPlayers = Pool.Get<Dictionary<ulong, BasePlayer>>();
 
@@ -1016,7 +1016,7 @@ public partial class AutoBuildSnapshot : CarbonPlugin
     /// Kills the specified entities.
     /// </summary>
     /// <param name="entities">The entities to kill.</param>
-    private void KillEntities(List<ClientEntity> entities)
+    private void KillEntities(List<Components.ClientEntity> entities)
     {
         foreach (var entity in entities)
         {

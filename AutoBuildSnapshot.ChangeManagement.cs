@@ -6,6 +6,8 @@ using UnityEngine;
 
 namespace Carbon.Plugins;
 
+#pragma warning disable IDE0001 // fully qualifying method params due to issues with codegen
+
 public partial class AutoBuildSnapshot
 {
     /// <summary>
@@ -67,7 +69,7 @@ public partial class AutoBuildSnapshot
     /// <param name="record">The record to process. If null, will find the next queued record.</param>
     /// <param name="callback">The callback to invoke when the save is complete.</param>
     /// <param name="recursive">Whether to continue to process queued saves (only meant to be called from the build monitor process).</param>
-    private void ProcessNextSave(BuildRecord record = null, Action<bool, BuildSnapshot> callback = null, bool recursive = false)
+    private void ProcessNextSave(BuildRecord record = null, System.Action<bool, BuildSnapshot> callback = null, bool recursive = false)
     {
         if (record == null)
         {

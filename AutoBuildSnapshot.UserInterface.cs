@@ -8,6 +8,8 @@ using UnityEngine;
 
 namespace Carbon.Plugins;
 
+#pragma warning disable IDE0001 // fully qualifying method params due to issues with codegen
+
 public partial class AutoBuildSnapshot
 {
     #region Drawing
@@ -18,7 +20,7 @@ public partial class AutoBuildSnapshot
     /// Sends the main UI to the player.
     /// </summary>
     /// <param name="player">The player to show the menu to.</param>
-    private void RenderMainMenu(CUI cui, BasePlayer player)
+    private void RenderMainMenu(Components.CUI cui, BasePlayer player)
     {
         // Create the base container with cursor
         var container = cui.v2
@@ -160,7 +162,7 @@ public partial class AutoBuildSnapshot
     /// <param name="player">The player viewing the UI.</param>
     /// <param name="cui">The CUI instance.</param>
     /// <param name="contentPanel">The content panel to fill.</param>
-    private void RenderRecordsPanel(BasePlayer player, CUI cui, LUI.LuiContainer contentPanel)
+    private void RenderRecordsPanel(BasePlayer player, Components.CUI cui, Components.LUI.LuiContainer contentPanel)
     {
         // Title
         cui.v2.CreateText(
@@ -338,7 +340,7 @@ public partial class AutoBuildSnapshot
     /// <param name="player">The player viewing the UI.</param>
     /// <param name="cui">The CUI instance.</param>
     /// <param name="contentPanel">The content panel to fill.</param>
-    private void RenderLogsPanel(BasePlayer player, CUI cui, LUI.LuiContainer contentPanel)
+    private void RenderLogsPanel(BasePlayer player, Components.CUI cui, Components.LUI.LuiContainer contentPanel)
     {
         // Title
         cui.v2.CreateText(
@@ -420,7 +422,6 @@ public partial class AutoBuildSnapshot
         );
     }
 
-
     #endregion
 
     #region Snapshots Menu
@@ -431,7 +432,7 @@ public partial class AutoBuildSnapshot
     /// <param name="player">The player to show the menu to.</param>
     /// <param name="record">The building record being viewed.</param>
     /// <param name="snapshots">The list of snapshots for the record.</param>
-    private void RenderSnapshotsMenu(CUI cui, BasePlayer player, BuildRecord record, List<Guid> snapshots)
+    private void RenderSnapshotsMenu(Components.CUI cui, BasePlayer player, BuildRecord record, List<System.Guid> snapshots)
     {
         // Create the base container with cursor
         var container = cui.v2
@@ -1006,7 +1007,7 @@ public partial class AutoBuildSnapshot
     /// <param name="title">The title of the dialog.</param>
     /// <param name="message">The message to display in the dialog.</param>
     /// <param name="confirmCommand">The command to execute if the player confirms.</param>
-    private void RenderConfirmationDialog(CUI cui, BasePlayer player, string title, string message, string confirmCommand)
+    private void RenderConfirmationDialog(Components.CUI cui, BasePlayer player, string title, string message, string confirmCommand)
     {
         // Create the base container with cursor
         var container = cui.v2
@@ -1569,7 +1570,7 @@ public partial class AutoBuildSnapshot
     /// </summary>
     /// <param name="player">The player who initiated the rollback.</param>
     /// <param name="snapshotId">The ID of the snapshot to rollback to.</param>
-    private void ExecuteRollback(BasePlayer player, Guid snapshotId)
+    private void ExecuteRollback(BasePlayer player, System.Guid snapshotId)
     {
         // This method would contain your implementation of the rollback process
         // For now, it just logs the action and notifies the player
@@ -1711,7 +1712,7 @@ public partial class AutoBuildSnapshot
             }
 
             _debugEntity.Position = targetPosition;
-            _debugEntity.SendNetworkUpdate();
+            _debugEntity.SendNetworkUpdate_Position();
         });
     }
 
