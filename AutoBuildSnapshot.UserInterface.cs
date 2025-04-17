@@ -1,10 +1,9 @@
 ﻿using Carbon.Components;
 using Oxide.Game.Rust.Cui;
+using Oxide.Plugins;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace Carbon.Plugins;
@@ -1654,6 +1653,78 @@ public partial class AutoBuildSnapshot
     {
         Records,
         Logs
+    }
+
+    #endregion
+
+    #region Debugging
+
+    private Timer _debugTimer;
+    private ClientEntity _debugEntity;
+
+    [ChatCommand($"abs.ui.debug")]
+    private void CommandUIDebug(BasePlayer player, string command, string[] args)
+    {
+        if (_debugTimer != null || _debugEntity != null)
+        {
+            _debugTimer?.Destroy();
+            _debugTimer = null;
+
+            _debugEntity?.KillAll();
+            _debugEntity?.Dispose();
+            _debugEntity = null;
+
+            player.ChatMessage("Debug mode disabled.");
+            return;
+        }
+
+        var startPosition = GetPlayerTargetCoordinates(player);
+        if (startPosition == Vector3.zero)
+        {
+            player.ChatMessage("Player not looking at anything.");
+            return;
+        }
+
+        var prefab = spherePrefab;
+        if (args.Length > 0)
+        {
+            prefab = args[0];
+        }
+
+        _debugEntity = ClientEntity.Create(prefab, startPosition, new());
+        _debugEntity.SpawnFor(player.net.connection);
+        _debugEntity.SendNetworkUpdate();
+
+        _debugTimer = timer.Repeat(1f, 0, () =>
+        {
+            if (_debugEntity == null)
+            {
+                _debugTimer?.Destroy();
+                _debugTimer = null;
+                return;
+            }
+
+            var targetPosition = GetPlayerTargetCoordinates(player);
+            if (targetPosition == Vector3.zero)
+            {
+                return;
+            }
+
+            _debugEntity.Position = targetPosition;
+            _debugEntity.SendNetworkUpdate();
+        });
+    }
+
+    private Vector3 GetPlayerTargetCoordinates(BasePlayer player)
+    {
+        var ray = new Ray(player.eyes.position, player.eyes.HeadForward());
+
+        if (Physics.Raycast(ray, out var hit, 50f))
+        {
+            return hit.point;
+        }
+
+        return Vector3.zero;
     }
 
     #endregion

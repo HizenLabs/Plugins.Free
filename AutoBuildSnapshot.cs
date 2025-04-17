@@ -2,11 +2,9 @@
 using Facepunch;
 using Newtonsoft.Json;
 using Oxide.Core;
-using Oxide.Game.Rust.Cui;
 using Oxide.Plugins;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using UnityEngine;
@@ -958,6 +956,39 @@ public partial class AutoBuildSnapshot : CarbonPlugin
     /// <param name="entity">The entity to validate.</param>
     private static bool ValidEntity(BaseNetworkable entity) =>
         entity != null && entity.net != null && entity.net.ID.IsValid && !entity.IsDestroyed;
+
+    /// <summary>
+    /// Creates a temporary, client-side entity for the player.
+    /// </summary>
+    /// <param name="player">The player to create the entity for.</param>
+    /// <param name="prefabName">The prefab name of the entity.</param>
+    /// <param name="position">The position of the entity.</param>
+    /// <param name="rotation">The rotation of the entity.</param>
+    /// <param name="timeoutSeconds">The timeout in seconds before the entity is destroyed.</param>
+    private void CreateTempEntity(BasePlayer player, string prefabName, Vector3 position, Quaternion rotation = default, int timeoutSeconds = 30)
+    {
+        var entity = ClientEntity.Create(prefabName, position, rotation);
+
+
+
+        entity.SpawnFor(player.net.connection);
+
+        if (!_tempEntities.TryGetValue(player.userID, out var playerEntities))
+        {
+            playerEntities = Pool.Get<List<ClientEntity>>();
+            _tempEntities[player.userID] = playerEntities;
+        }
+
+        playerEntities.Add(entity);
+
+        timer.In(timeoutSeconds, () =>
+        {
+            entity.KillFor(player.net.connection);
+            entity.Dispose();
+
+            playerEntities.Remove(entity);
+        });
+    }
 
     /// <summary>
     /// Kills all temporary client entities.
