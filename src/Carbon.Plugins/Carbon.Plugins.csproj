@@ -49,9 +49,6 @@
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Active\TestMenu.cs" />
-  </ItemGroup>
-  <ItemGroup>
     <Reference Include="0Harmony, Version=2.3.1.1, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\managed\0Harmony.dll</HintPath>
@@ -84,17 +81,17 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\managed\Azure.Storage.Common.dll</HintPath>
     </Reference>
-    <Reference Include="Carbon.Common, Version=2.0.182.0, Culture=neutral, processorArchitecture=AMD64">
-      <HintPath>..\packages\Carbon.Community.2.0.182\lib\net48\Carbon.Common.dll</HintPath>
+    <Reference Include="Carbon.Common, Version=2.0.184.0, Culture=neutral, processorArchitecture=AMD64">
+      <HintPath>..\packages\Carbon.Community.2.0.184\lib\net48\Carbon.Common.dll</HintPath>
     </Reference>
-    <Reference Include="Carbon.Profiler, Version=2.0.182.0, Culture=neutral, processorArchitecture=AMD64">
-      <HintPath>..\packages\Carbon.Community.2.0.182\lib\net48\Carbon.Profiler.dll</HintPath>
+    <Reference Include="Carbon.Profiler, Version=2.0.184.0, Culture=neutral, processorArchitecture=AMD64">
+      <HintPath>..\packages\Carbon.Community.2.0.184\lib\net48\Carbon.Profiler.dll</HintPath>
     </Reference>
-    <Reference Include="Carbon.SDK, Version=2.0.182.0, Culture=neutral, processorArchitecture=AMD64">
-      <HintPath>..\packages\Carbon.Community.2.0.182\lib\net48\Carbon.SDK.dll</HintPath>
+    <Reference Include="Carbon.SDK, Version=2.0.184.0, Culture=neutral, processorArchitecture=AMD64">
+      <HintPath>..\packages\Carbon.Community.2.0.184\lib\net48\Carbon.SDK.dll</HintPath>
     </Reference>
-    <Reference Include="Carbon.Test, Version=2.0.182.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Carbon.Community.2.0.182\lib\net48\Carbon.Test.dll</HintPath>
+    <Reference Include="Carbon.Test, Version=2.0.184.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Carbon.Community.2.0.184\lib\net48\Carbon.Test.dll</HintPath>
     </Reference>
     <Reference Include="Cinemachine, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -252,10 +249,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\managed\MidiJack.dll</HintPath>
     </Reference>
-    <Reference Include="Mono.Cecil, Version=0.11.5.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\managed\Mono.Cecil.dll</HintPath>
-    </Reference>
     <Reference Include="Mono.Cecil.Mdb, Version=0.11.5.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\managed\Mono.Cecil.Mdb.dll</HintPath>
@@ -275,6 +268,10 @@
     <Reference Include="MP3Sharp, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\managed\MP3Sharp.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=13.0.1.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\managed\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="RTLTMPro, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -697,13 +694,16 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Carbon.Extensions\FluentUI\FluentUI.csproj">
-      <Project>{B65009C9-50BF-4784-A38D-040A055795FE}</Project>
-      <Name>FluentUI</Name>
-    </ProjectReference>
+    <None Include="app.config" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.BuildingScanner.cs" />
+    <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.BuildSnapshot.cs" />
+    <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.ChangeManagement.cs" />
+    <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.cs" />
+    <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.Persistance.cs" />
+    <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.UserInterface.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
