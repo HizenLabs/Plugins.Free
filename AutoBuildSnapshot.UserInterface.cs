@@ -1663,7 +1663,7 @@ public partial class AutoBuildSnapshot
     private Timer _debugTimer;
     private ClientEntity _debugEntity;
 
-    [ChatCommand($"abs.ui.debug")]
+    [ChatCommand($"debug")]
     private void CommandUIDebug(BasePlayer player, string command, string[] args)
     {
         if (_debugTimer != null || _debugEntity != null)
@@ -1687,16 +1687,15 @@ public partial class AutoBuildSnapshot
         }
 
         var prefab = spherePrefab;
-        if (args.Length > 0)
-        {
-            prefab = args[0];
-        }
+
+        prefab = "assets/prefabs/deployable/tool cupboard/cupboard.tool.deployed.prefab";
 
         _debugEntity = ClientEntity.Create(prefab, startPosition, new());
+
         _debugEntity.SpawnFor(player.net.connection);
         _debugEntity.SendNetworkUpdate();
 
-        _debugTimer = timer.Repeat(1f, 0, () =>
+        _debugTimer = timer.Repeat(.1f, 0, () =>
         {
             if (_debugEntity == null)
             {
@@ -1711,21 +1710,33 @@ public partial class AutoBuildSnapshot
                 return;
             }
 
-            _debugEntity.Position = targetPosition;
+            _debugEntity.Position = targetPosition + new Vector3(0, 1, 0);
             _debugEntity.SendNetworkUpdate_Position();
         });
     }
 
     private Vector3 GetPlayerTargetCoordinates(BasePlayer player)
     {
-        var ray = new Ray(player.eyes.position, player.eyes.HeadForward());
+        const float maxDistance = 10f;
 
-        if (Physics.Raycast(ray, out var hit, 50f))
+        // Start from the player's eye position
+        Vector3 eyePosition = player.eyes.position;
+        Vector3 eyeDirection = player.eyes.HeadForward();
+
+        // Create a ray pointing forward and slightly downward
+        Vector3 direction = new Vector3(eyeDirection.x, -0.3f, eyeDirection.z).normalized;
+        Ray ray = new(eyePosition, direction);
+
+        int groundMask = LayerMask.GetMask("Terrain", "World", "Construction", "Default");
+
+        // Cast the ray and get the hit point
+        if (Physics.Raycast(ray, out RaycastHit hit, maxDistance, groundMask))
         {
             return hit.point;
         }
 
-        return Vector3.zero;
+        // If no ground was hit, return a position maxDistance units in front of the player
+        return eyePosition + (eyeDirection * maxDistance);
     }
 
     #endregion
