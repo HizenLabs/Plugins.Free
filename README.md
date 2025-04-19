@@ -1,6 +1,6 @@
-# 🧩 ZenLabs: Free Plugins & Extensions for Rust
+# 🧩 HizenLabs: Free Plugins & Extensions for Rust
 
-Welcome to ZenLabs’ collection of free plugins and extensions for the game **Rust**, powered by **Carbon** and **Oxide**.
+Welcome to HizenLabs’ collection of free plugins and extensions for the game **Rust**, powered by **Carbon** and **Oxide**.
 
 Note: Many extensions plugins can work between Carbon and Oxide, however these are specifically tested in and written for Carbon.
 
@@ -45,3 +45,7 @@ This project is provided **as is** with **no guarantees of support or stability*
 ## 🤝 Contributing
 
 Pull requests are welcome — especially if you’re fixing bugs or improving compatibility. Forks are appreciated too!
+
+If you'd like to support me directly, donations via Ko-Fi are appreciated :)
+
+https://ko-fi.com/hizenxyz
