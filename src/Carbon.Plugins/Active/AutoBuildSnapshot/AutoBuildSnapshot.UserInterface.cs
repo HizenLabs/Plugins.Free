@@ -1,4 +1,5 @@
 ﻿using Carbon.Components;
+using Facepunch;
 using Oxide.Game.Rust.Cui;
 using Oxide.Plugins;
 using System;
@@ -977,7 +978,7 @@ public partial class AutoBuildSnapshot
         List<Guid> result = new();
 
         // Try to find snapshots by the persistent ID
-        if (_idxSnapshotBuildingID.TryGetValue(record.PersistentID, out var snapshots))
+        if (_buildingIDToSnapshotIndex.TryGetValue(record.PersistentID, out var snapshots))
         {
             result.AddRange(snapshots);
         }
@@ -1195,7 +1196,7 @@ public partial class AutoBuildSnapshot
             // Check admin permission
             if (!permission.UserHasPermission(player.UserIDString, _config.Commands.AdminPermission))
             {
-                player.ChatMessage(_lang.GetMessage(LangKeys.command_no_permission, player));
+                player.ChatMessage(_lang.GetMessage(LangKeys.error_no_permission, player));
                 return;
             }
 
@@ -1229,7 +1230,7 @@ public partial class AutoBuildSnapshot
         // Check admin permission
         if (!permission.UserHasPermission(player.UserIDString, _config.Commands.AdminPermission))
         {
-            player.ChatMessage(_lang.GetMessage(LangKeys.command_no_permission, player));
+            player.ChatMessage(_lang.GetMessage(LangKeys.error_no_permission, player));
             return;
         }
 
@@ -1304,7 +1305,7 @@ public partial class AutoBuildSnapshot
         // Check admin permission
         if (!permission.UserHasPermission(player.UserIDString, _config.Commands.AdminPermission))
         {
-            player.ChatMessage(_lang.GetMessage(LangKeys.command_no_permission, player));
+            player.ChatMessage(_lang.GetMessage(LangKeys.error_no_permission, player));
             return;
         }
 
@@ -1327,7 +1328,7 @@ public partial class AutoBuildSnapshot
         // Check admin permission
         if (!permission.UserHasPermission(player.UserIDString, _config.Commands.AdminPermission))
         {
-            player.ChatMessage(_lang.GetMessage(LangKeys.command_no_permission, player));
+            player.ChatMessage(_lang.GetMessage(LangKeys.error_no_permission, player));
             return;
         }
 
@@ -1346,7 +1347,7 @@ public partial class AutoBuildSnapshot
         // Check admin permission
         if (!_config.Commands.UserHasPermission(player, _config.Commands.Rollback, this))
         {
-            player.ChatMessage(_lang.GetMessage(LangKeys.command_no_permission, player));
+            player.ChatMessage(_lang.GetMessage(LangKeys.error_no_permission, player));
             return;
         }
 
@@ -1366,7 +1367,7 @@ public partial class AutoBuildSnapshot
         // Check admin permission
         if (!_config.Commands.UserHasPermission(player, _config.Commands.Rollback, this))
         {
-            player.ChatMessage(_lang.GetMessage(LangKeys.command_no_permission, player));
+            player.ChatMessage(_lang.GetMessage(LangKeys.error_no_permission, player));
             return;
         }
 
@@ -1397,7 +1398,7 @@ public partial class AutoBuildSnapshot
         // Check admin permission
         if (!_config.Commands.UserHasPermission(player, _config.Commands.Rollback, this))
         {
-            player.ChatMessage(_lang.GetMessage(LangKeys.command_no_permission, player));
+            player.ChatMessage(_lang.GetMessage(LangKeys.error_no_permission, player));
             CloseConfirmationDialog(player);
             return;
         }
@@ -1417,7 +1418,7 @@ public partial class AutoBuildSnapshot
         // Check admin permission
         if (!_config.Commands.UserHasPermission(player, _config.Commands.Rollback, this))
         {
-            player.ChatMessage(_lang.GetMessage(LangKeys.command_no_permission, player));
+            player.ChatMessage(_lang.GetMessage(LangKeys.error_no_permission, player));
             CloseConfirmationDialog(player);
             return;
         }
@@ -1660,83 +1661,22 @@ public partial class AutoBuildSnapshot
 
     #region Debugging
 
-    private Timer _debugTimer;
-    private ClientEntity _debugEntity;
-
     [ChatCommand($"debug")]
     private void CommandUIDebug(BasePlayer player, string command, string[] args)
     {
-        if (_debugTimer != null || _debugEntity != null)
+        Vector3 targetCoords;
+        if (TryGetPlayerTargetEntity(player, out var target))
         {
-            _debugTimer?.Destroy();
-            _debugTimer = null;
-
-            _debugEntity?.KillAll();
-            _debugEntity?.Dispose();
-            _debugEntity = null;
-
-            player.ChatMessage("Debug mode disabled.");
+            // Found target, get zones from target coords
+            targetCoords = target.ServerPosition;
+        }
+        else if (!TryGetPlayerTargetCoordinates(player, out targetCoords))
+        {
+            // No target found, get coords from target
+            player.ChatMessage(_lang.GetMessage(LangKeys.error_target_missing, player));
             return;
         }
 
-        var startPosition = GetPlayerTargetCoordinates(player);
-        if (startPosition == Vector3.zero)
-        {
-            player.ChatMessage("Player not looking at anything.");
-            return;
-        }
-
-        var prefab = spherePrefab;
-
-        prefab = "assets/prefabs/deployable/tool cupboard/cupboard.tool.deployed.prefab";
-
-        _debugEntity = ClientEntity.Create(prefab, startPosition, new());
-
-        _debugEntity.SpawnFor(player.net.connection);
-        _debugEntity.SendNetworkUpdate();
-
-        _debugTimer = timer.Repeat(.1f, 0, () =>
-        {
-            if (_debugEntity == null)
-            {
-                _debugTimer?.Destroy();
-                _debugTimer = null;
-                return;
-            }
-
-            var targetPosition = GetPlayerTargetCoordinates(player);
-            if (targetPosition == Vector3.zero)
-            {
-                return;
-            }
-
-            _debugEntity.Position = targetPosition + new Vector3(0, 1, 0);
-            _debugEntity.SendNetworkUpdate_Position();
-        });
-    }
-
-    private Vector3 GetPlayerTargetCoordinates(BasePlayer player)
-    {
-        const float maxDistance = 10f;
-
-        // Start from the player's eye position
-        Vector3 eyePosition = player.eyes.position;
-        Vector3 eyeDirection = player.eyes.HeadForward();
-
-        // Create a ray pointing forward and slightly downward
-        Vector3 direction = new Vector3(eyeDirection.x, -0.3f, eyeDirection.z).normalized;
-        Ray ray = new(eyePosition, direction);
-
-        int groundMask = LayerMask.GetMask("Terrain", "World", "Construction", "Default");
-
-        // Cast the ray and get the hit point
-        if (Physics.Raycast(ray, out RaycastHit hit, maxDistance, groundMask))
-        {
-            return hit.point;
-        }
-
-        // If no ground was hit, return a position maxDistance units in front of the player
-        return eyePosition + (eyeDirection * maxDistance);
     }
 
     #endregion

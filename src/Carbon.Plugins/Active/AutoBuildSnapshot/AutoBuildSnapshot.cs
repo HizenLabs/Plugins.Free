@@ -11,6 +11,7 @@ using UnityEngine;
 
 namespace Carbon.Plugins;
 
+#pragma warning disable IDE0001 // Simplification warning ignore
 #pragma warning disable IDE1006 // Naming Styles
 
 [Info("AutoBuildSnapshot", "hizenxyz", "0.0.17")]
@@ -18,6 +19,11 @@ namespace Carbon.Plugins;
 public partial class AutoBuildSnapshot : CarbonPlugin
 {
     #region Fields
+
+    /// <summary>
+    /// The default distance to scan for targets when running player commands.
+    /// </summary>
+    private const float _defaultMaxTargetDistance = 60;
 
     #region Debug Constants
 
@@ -32,6 +38,7 @@ public partial class AutoBuildSnapshot : CarbonPlugin
 
     // Base entity masks -- established on Init
     private static int _maskDefault;
+    private static int _maskGround;
     private static int _maskDeployed;
     private static int _maskConstruction;
     private static int _maskVehicle;
@@ -127,7 +134,12 @@ public partial class AutoBuildSnapshot : CarbonPlugin
     /// <summary>
     /// Index of snapshot ids by persistant building IDs for faster lookup.
     /// </summary>
-    private Dictionary<string, List<System.Guid>> _idxSnapshotBuildingID;
+    private Dictionary<string, List<System.Guid>> _buildingIDToSnapshotIndex;
+
+    /// <summary>
+    /// Dictionary of zones and the snapshot ids recorded in them.
+    /// </summary>
+    private Dictionary<Vector4, List<System.Guid>> _zoneSnapshotIndex;
 
     #endregion
 
@@ -465,7 +477,8 @@ public partial class AutoBuildSnapshot : CarbonPlugin
             {
                 _abs.lang.RegisterMessages(new()
                 {
-                    [nameof(LangKeys.command_no_permission)] = set.command_no_permission,
+                    [nameof(LangKeys.error_no_permission)] = set.error_no_permission,
+                    [nameof(LangKeys.error_target_missing)] = set.error_target_missing,
 
                     [nameof(LangKeys.ui_main_title)] = set.ui_main_title,
                 },
@@ -481,8 +494,10 @@ public partial class AutoBuildSnapshot : CarbonPlugin
         {
             string LangCode { get; }
 
-            // Commands
-            string command_no_permission { get; }
+            // Errors
+            string error_no_permission { get; }
+            string error_target_missing { get; }
+            string error_target_no_record { get; }
 
             // User Interface
             string ui_main_title { get; }
@@ -495,7 +510,9 @@ public partial class AutoBuildSnapshot : CarbonPlugin
         {
             public string LangCode => "en";
 
-            public string command_no_permission => "You do not have permission to use this command.";
+            public string error_no_permission => "You do not have permission to use this command.";
+            public string error_target_missing => "You must be looking at a target object or ground.";
+            public string error_target_no_record => "Unable to find any backup records captured in the target zone.";
 
             public string ui_main_title => "Auto Build Snapshot";
 
@@ -507,12 +524,20 @@ public partial class AutoBuildSnapshot : CarbonPlugin
         /// <summary>
         /// You do not have permission to use this command.
         /// </summary>
-        command_no_permission,
+        error_no_permission,
+
+        /// <summary>
+        /// You must be looking at a target object or ground.
+        /// </summary>
+        error_target_missing,
+
+
+        error_target_no_record,
 
         /// <summary>
         /// Auto Build Snapshot
         /// </summary>
-        ui_main_title
+        ui_main_title,
     }
 
     #endregion
@@ -689,7 +714,7 @@ public partial class AutoBuildSnapshot : CarbonPlugin
 
         if (!_config.Commands.UserHasPermission(player, _config.Commands.ToggleMenu, this))
         {
-            player.ChatMessage(_lang.GetMessage(LangKeys.command_no_permission, player));
+            player.ChatMessage(_lang.GetMessage(LangKeys.error_no_permission, player));
             return;
         }
 
@@ -707,7 +732,7 @@ public partial class AutoBuildSnapshot : CarbonPlugin
     {
         if (!_config.Commands.UserHasPermission(player, _config.Commands.Backup, this))
         {
-            player.ChatMessage(_lang.GetMessage(LangKeys.command_no_permission, player));
+            player.ChatMessage(_lang.GetMessage(LangKeys.error_no_permission, player));
             return;
         }
     }
@@ -723,7 +748,7 @@ public partial class AutoBuildSnapshot : CarbonPlugin
     {
         if (!_config.Commands.UserHasPermission(player, _config.Commands.Rollback, this))
         {
-            player.ChatMessage(_lang.GetMessage(LangKeys.command_no_permission, player));
+            player.ChatMessage(_lang.GetMessage(LangKeys.error_no_permission, player));
             return;
         }
     }
@@ -756,6 +781,7 @@ public partial class AutoBuildSnapshot : CarbonPlugin
     private void InitMasks()
     {
         _maskDefault = LayerMask.GetMask("Default");
+        _maskGround = LayerMask.GetMask("Ground", "Terrain", "World");
         _maskDeployed = LayerMask.GetMask("Deployed");
         _maskConstruction = LayerMask.GetMask("Construction");
         _maskVehicle = LayerMask.GetMask("Vehicle Detailed", "Vehicle World", "Vehicle Large");
@@ -778,7 +804,8 @@ public partial class AutoBuildSnapshot : CarbonPlugin
     {
         _buildRecords = Pool.Get<Dictionary<ulong, BuildRecord>>();
         _snapshotMetaData = Pool.Get<Dictionary<Guid, BuildSnapshotMetaData>>();
-        _idxSnapshotBuildingID = Pool.Get<Dictionary<string, List<Guid>>>();
+        _buildingIDToSnapshotIndex = Pool.Get<Dictionary<string, List<Guid>>>();
+        _zoneSnapshotIndex = Pool.Get<Dictionary<Vector4, List<Guid>>>();
         _tempEntities = Pool.Get<Dictionary<ulong, List<Components.ClientEntity>>>();
         _logMessages = Pool.Get<List<string>>();
         _connectedPlayers = Pool.Get<Dictionary<ulong, BasePlayer>>();
@@ -824,7 +851,8 @@ public partial class AutoBuildSnapshot : CarbonPlugin
 
         Pool.Free(ref _buildRecords, true);
         Pool.FreeUnmanaged(ref _snapshotMetaData);
-        FreeDictionaryList(ref _idxSnapshotBuildingID);
+        FreeDictionaryList(ref _buildingIDToSnapshotIndex);
+        FreeDictionaryList(ref _zoneSnapshotIndex);
         FreeDictionaryList(ref _tempEntities);
         Pool.FreeUnmanaged(ref _logMessages);
         Pool.FreeUnmanaged(ref _connectedPlayers);
@@ -880,15 +908,34 @@ public partial class AutoBuildSnapshot : CarbonPlugin
                 continue;
             }
 
-            _snapshotMetaData[metaData.ID] = metaData;
-
-            IndexLinkedBuildings(metaData);
+            SyncSnapshotMetaData(metaData);
         }
 
         if (deletions > 0)
         {
             AddLogMessage($"Deleted {deletions} snapshot(s) older than {_config.General.SnapshotRetentionPeriodHours} hours");
         }
+    }
+
+    /// <summary>
+    /// Updates the snapshot metadata with the given metadata.
+    /// </summary>
+    /// <param name="metaData">The snapshot metadata to update.</param>
+    private void SyncSnapshotMetaData(BuildSnapshotMetaData metaData)
+    {
+        _snapshotMetaData[metaData.ID] = metaData;
+
+        IndexSnapshotMetaData(metaData);
+    }
+
+    /// <summary>
+    /// Indexes the snapshot metadata.
+    /// </summary>
+    /// <param name="metaData">The snapshot metadata to index.</param>
+    private void IndexSnapshotMetaData(BuildSnapshotMetaData metaData)
+    {
+        IndexLinkedBuildings(metaData);
+        IndexZoneSnapshot(metaData);
     }
 
     /// <summary>
@@ -899,12 +946,35 @@ public partial class AutoBuildSnapshot : CarbonPlugin
     {
         foreach (var linkedBuilding in metaData.LinkedBuildings)
         {
-            if (!_idxSnapshotBuildingID.ContainsKey(linkedBuilding.Key))
+            if (!_buildingIDToSnapshotIndex.ContainsKey(linkedBuilding.Key))
             {
-                _idxSnapshotBuildingID[linkedBuilding.Key] = Pool.Get<List<Guid>>();
+                _buildingIDToSnapshotIndex[linkedBuilding.Key] = Pool.Get<List<Guid>>();
             }
 
-            _idxSnapshotBuildingID[linkedBuilding.Key].Add(metaData.ID);
+            if (!_buildingIDToSnapshotIndex[linkedBuilding.Key].Contains(metaData.ID))
+            {
+                _buildingIDToSnapshotIndex[linkedBuilding.Key].Add(metaData.ID);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Indexes the zones in the snapshot metadata.
+    /// </summary>
+    /// <param name="metaData">The snapshot metadata to index.</param>
+    private void IndexZoneSnapshot(BuildSnapshotMetaData metaData)
+    {
+        foreach (var zone in metaData.LinkedBuildings.Values.SelectMany(b => b.Zones))
+        {
+            if (!_zoneSnapshotIndex.ContainsKey(zone))
+            {
+                _zoneSnapshotIndex[zone] = Pool.Get<List<Guid>>();
+            }
+
+            if (!_zoneSnapshotIndex[zone].Contains(metaData.ID))
+            {
+                _zoneSnapshotIndex[zone].Add(metaData.ID);
+            }
         }
     }
 
@@ -1059,6 +1129,54 @@ public partial class AutoBuildSnapshot : CarbonPlugin
 
         Pool.FreeUnmanaged(ref keys);
         Pool.FreeUnmanaged(ref dict);
+    }
+
+    /// <summary>
+    /// Tries to get the entity that the player is looking at.
+    /// </summary>
+    /// <param name="player">The player to check.</param>
+    /// <param name="target">The target entity.</param>
+    /// <returns>True if the player is looking at an entity, false otherwise.</returns>
+    private bool TryGetPlayerTargetEntity(BasePlayer player, out BaseEntity target, float maxDistance = _defaultMaxTargetDistance)
+    {
+        // Only scan within 10 blocks.
+
+        Ray ray = new(player.eyes.position, player.eyes.HeadForward());
+        if (Physics.Raycast(ray, out RaycastHit hit, maxDistance, _maskBaseEntities))
+        {
+            target = hit.GetEntity();
+            return target;
+        }
+
+        target = null;
+        return false;
+    }
+
+    /// <summary>
+    /// Tries to get the coordinates of the target the player is looking at.
+    /// </summary>
+    /// <param name="player">The player to check.</param>
+    /// <param name="position">The target coordinates.</param>
+    /// <returns>True if the target coordinates were found, false otherwise.</returns>
+    private bool TryGetPlayerTargetCoordinates(BasePlayer player, out Vector3 position, float maxDistance = _defaultMaxTargetDistance)
+    {
+        // Start from the player's eye position
+        Vector3 eyePosition = player.eyes.position;
+        Vector3 eyeDirection = player.eyes.HeadForward();
+
+        // Create a ray pointing forward and slightly downward
+        Vector3 direction = new Vector3(eyeDirection.x, -0.3f, eyeDirection.z).normalized;
+        Ray ray = new(eyePosition, direction);
+
+        // Cast the ray and get the hit point
+        if (Physics.Raycast(ray, out RaycastHit hit, maxDistance, _maskDefault | _maskGround))
+        {
+            position = hit.point;
+            return true;
+        }
+
+        position = Vector3.zero;
+        return false;
     }
 
     #endregion

@@ -294,7 +294,7 @@ public partial class AutoBuildSnapshot
                     {
                         Position = kvp.Key.BaseTC.ServerPosition,
                         Entities = kvp.Value.Count,
-                        Zones = kvp.Key.EntityZones.Count,
+                        Zones = kvp.Key.EntityZones,
                     });
                 }
 
@@ -309,6 +309,9 @@ public partial class AutoBuildSnapshot
                 };
 
                 Interface.Oxide.DataFileSystem.WriteObject(metaFile, metaData);
+
+                // add metadata to the resource collection and update indexes
+                _plugin.SyncSnapshotMetaData(metaData);
             }
             finally
             {
@@ -523,7 +526,7 @@ public partial class AutoBuildSnapshot
         /// <summary>
         /// The number of zones this building is comprised of.
         /// </summary>
-        public int Zones { get; init; }
+        public List<Vector4> Zones { get; init; }
     }
 
     /// <summary>
