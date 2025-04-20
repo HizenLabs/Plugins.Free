@@ -703,7 +703,11 @@
     <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.ChangeManagement.cs" />
     <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.cs" />
     <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.Persistance.cs" />
-    <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.UserInterface.cs" />
+    <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.UI.cs" />
+    <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.UI.Drawing.Confirmation.cs" />
+    <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.UI.Drawing.Main.cs" />
+    <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.UI.Drawing.Snapshots.cs" />
+    <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.UI.Handlers.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
