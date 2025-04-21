@@ -267,6 +267,8 @@ public partial class AutoBuildSnapshot
 
     private void CreateSnapshotsDetail(Components.CUI cui, Components.LUI.LuiContainer rightPanel, BasePlayer player, BuildSnapshotMetaData snapshotData)
     {
+        const int maxVisibleAuthUsers = 6;
+
         // Snapshot details section
         var detailsHeader = cui.v2
             .CreatePanel(
@@ -340,14 +342,14 @@ public partial class AutoBuildSnapshot
         );
 
         // Display authorized users
-        int authCount = Mathf.Min(snapshotData.AuthorizedPlayers.Count, 8); // Show up to 8 users
+        int authCount = Mathf.Min(snapshotData.AuthorizedPlayers.Count, maxVisibleAuthUsers);
         for (int i = 0; i < authCount; i++)
         {
             var user = snapshotData.AuthorizedPlayers[i];
             cui.v2.CreateText(
                 container: detailsContent,
-                position: new(0.1f, .55f - ((i + 1) * 0.08f), 1, .55f - (i * 0.08f)),
-                offset: new(5, 0, -5, 0),
+                position: new(0.03f, .55f - ((i + 1) * 0.08f), 1, .55f - (i * 0.08f)),
+                offset: new(0, 0, 0, 0),
                 color: "0.9 0.9 0.9 .8",
                 fontSize: 12,
                 text: $"• {user.UserName} ({user.UserID})",
@@ -361,8 +363,8 @@ public partial class AutoBuildSnapshot
             int remainingUsers = snapshotData.AuthorizedPlayers.Count - authCount;
             cui.v2.CreateText(
                 container: detailsContent,
-                position: new(0.1f, .55f - ((authCount + 1) * 0.08f), 1, .55f - (authCount * 0.08f)),
-                offset: new(5, 0, -5, 0),
+                position: new(0.03f, .55f - ((authCount + 1) * 0.08f), 1, .55f - (authCount * 0.08f)),
+                offset: new(0, 0, 0, 0),
                 color: "0.7 0.7 0.7 .7",
                 fontSize: 12,
                 text: $"• And {remainingUsers} more user{(remainingUsers > 1 ? "s" : "")}...",
