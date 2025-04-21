@@ -56,7 +56,7 @@ public partial class AutoBuildSnapshot
                 container: header,
                 position: new(.965f, .15f, .99f, .85f),
                 offset: new(4, 0, 4, 0),
-                command: $"{nameof(AutoBuildSnapshot)}.menu.close",
+                command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandGlobalMenuClose)}",
                 color: ".6 .2 .2 .9"
             );
 

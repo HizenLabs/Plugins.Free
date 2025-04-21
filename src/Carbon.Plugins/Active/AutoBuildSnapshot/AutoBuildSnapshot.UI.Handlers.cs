@@ -4,45 +4,32 @@ using UnityEngine;
 
 namespace Carbon.Plugins;
 
-#pragma warning disable IDE0001 // Simplify names
-
 public partial class AutoBuildSnapshot
 {
+    #region Global Menu Actions
+
+    [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.{nameof(CommandGlobalMenuClose)}")]
+    private void CommandGlobalMenuClose(BasePlayer player) =>
+        NavigateMenu(player, MenuLayer.Closed);
+
+    #endregion
+
     #region Main Menu Navigation
 
-    [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.menu.tab.records")]
-    private void CommandSwitchToRecordsTab(BasePlayer player) =>
+    [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.{nameof(CommandMainMenuTabRecords)}")]
+    private void CommandMainMenuTabRecords(BasePlayer player) =>
         RefreshMenuWithTab(player, MenuTab.Records);
 
-    [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.menu.tab.logs")]
-    private void CommandSwitchToLogsTab(BasePlayer player) =>
+    [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.{nameof(CommandMainMenuTabLogs)}")]
+    private void CommandMainMenuTabLogs(BasePlayer player) =>
         RefreshMenuWithTab(player, MenuTab.Logs);
 
     #endregion
 
-    #region Main Menu Record Actions
+    #region Main Menu Actions
 
-    [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.scroll.records")]
-    private void CommandScrollRecords(BasePlayer player, string command, string[] args)
-    {
-        if (args.Length == 0) return;
-
-        if (int.TryParse(args[0], out int delta))
-        {
-            if (!_playerRecordScrollIndex.TryGetValue(player.userID, out int currentIndex))
-            {
-                _playerRecordScrollIndex[player.userID] = 0;
-                currentIndex = 0;
-            }
-
-            _playerRecordScrollIndex[player.userID] = Mathf.Max(0, currentIndex + delta);
-
-            NavigateMenu(player, MenuLayer.MainMenu, false, MenuTab.Records);
-        }
-    }
-
-    [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.teleport")]
-    private void CommandTeleportToRecord(BasePlayer player, string command, string[] args)
+    [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.{nameof(CommandMainMenuTeleportToRecord)}")]
+    private void CommandMainMenuTeleportToRecord(BasePlayer player, string command, string[] args)
     {
         if (args.Length == 0) return;
 
@@ -63,8 +50,8 @@ public partial class AutoBuildSnapshot
         }
     }
 
-    [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.snapshots")]
-    private void CommandShowSnapshots(BasePlayer player, string command, string[] args)
+    [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.{nameof(CommandMainMenuOpenSnapshots)}")]
+    private void CommandMainMenuOpenSnapshots(BasePlayer player, string command, string[] args)
     {
         if (args.Length == 0) return;
 
@@ -75,12 +62,27 @@ public partial class AutoBuildSnapshot
         }
     }
 
-    #endregion
+    [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.{nameof(CommandMainMenuScrollRecords)}")]
+    private void CommandMainMenuScrollRecords(BasePlayer player, string command, string[] args)
+    {
+        if (args.Length == 0) return;
 
-    #region Main Menu Log Actions
+        if (int.TryParse(args[0], out int delta))
+        {
+            if (!_playerRecordScrollIndex.TryGetValue(player.userID, out int currentIndex))
+            {
+                _playerRecordScrollIndex[player.userID] = 0;
+                currentIndex = 0;
+            }
 
-    [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.logs.clear")]
-    private void CommandClearLogs(BasePlayer player)
+            _playerRecordScrollIndex[player.userID] = Mathf.Max(0, currentIndex + delta);
+
+            NavigateMenu(player, MenuLayer.MainMenu, false, MenuTab.Records);
+        }
+    }
+
+    [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.{nameof(CommandMainMenuClearLogs)}")]
+    private void CommandMainMenuClearLogs(BasePlayer player)
     {
         // Check admin permission
         if (!permission.UserHasPermission(player.UserIDString, _config.Commands.AdminPermission))
@@ -99,14 +101,14 @@ public partial class AutoBuildSnapshot
     #region Snapshot Navigation
 
     // Command handlers for the snapshots UI
-    [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.menu.snapshots.back")]
-    private void CommandSnapshotsBack(BasePlayer player)
+    [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsNavigateBack)}")]
+    private void CommandSnapshotsNavigateBack(BasePlayer player)
     {
         CuiHelper.DestroyUi(player, _snapshotMenuId);
     }
 
-    [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.snapshots.select")]
-    private void CommandSelectSnapshot(BasePlayer player, string command, string[] args)
+    [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsSelect)}")]
+    private void CommandSnapshotsSelect(BasePlayer player, string command, string[] args)
     {
         if (args.Length == 0)
             return;
@@ -123,8 +125,8 @@ public partial class AutoBuildSnapshot
         }
     }
 
-    [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.snapshots.scroll")]
-    private void CommandScrollSnapshots(BasePlayer player, string command, string[] args)
+    [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsScroll)}")]
+    private void CommandSnapshotsScroll(BasePlayer player, string command, string[] args)
     {
         if (args.Length == 0)
             return;
@@ -151,8 +153,64 @@ public partial class AutoBuildSnapshot
 
     #region Snapshot Actions
 
-    [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.snapshots.teleport")]
-    private void CommandSnapTeleportToBuilding(BasePlayer player, string command, string[] args)
+    [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsShowZones)}")]
+    private void CommandSnapshotsShowZones(BasePlayer player)
+    {
+        // Check admin permission
+        if (!permission.UserHasPermission(player.UserIDString, _config.Commands.AdminPermission))
+        {
+            player.ChatMessage(_lang.GetMessage(LangKeys.error_no_permission, player));
+            return;
+        }
+
+        /*
+        if (_currentSelectedSnapshot.TryGetValue(player.userID, out var snapshotId))
+        {
+            // TODO: Create visualization for the zones
+            // Create timer callback to remove the zones after a certain time
+        }
+        */
+    }
+
+    [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsRollback)}")]
+    private void CommandSnapshotsRollback(BasePlayer player)
+    {
+        // Check admin permission
+        if (!_config.Commands.UserHasPermission(player, _config.Commands.Rollback, this))
+        {
+            player.ChatMessage(_lang.GetMessage(LangKeys.error_no_permission, player));
+            return;
+        }
+
+        if (_currentSelectedSnapshot.TryGetValue(player.userID, out Guid snapshotId))
+        {
+            NavigateMenu(player, MenuLayer.ConfirmationDialog, false,
+                "Confirm Rollback",
+                $"Are you sure you want to rollback to the snapshot from {_snapshotMetaData[snapshotId].TimestampUTC:yyyy-MM-dd HH:mm:ss}?",
+                $"{nameof(AutoBuildSnapshot)}.{nameof(CommandConfirmationRollback)} {snapshotId}"
+            );
+        }
+    }
+
+    [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsUndoRollback)}")]
+    private void CommandSnapshotsUndoRollback(BasePlayer player)
+    {
+        // Check admin permission
+        if (!_config.Commands.UserHasPermission(player, _config.Commands.Rollback, this))
+        {
+            player.ChatMessage(_lang.GetMessage(LangKeys.error_no_permission, player));
+            return;
+        }
+
+        NavigateMenu(player, MenuLayer.ConfirmationDialog, false,
+            "Confirm Undo",
+            "Are you sure you want to undo the last rollback operation?",
+            $"{nameof(AutoBuildSnapshot)}.{nameof(CommandConfirmationUndo)}"
+        );
+    }
+
+    [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsTeleportToBuilding)}")]
+    private void CommandSnapshotsTeleportToBuilding(BasePlayer player, string command, string[] args)
     {
         if (args.Length == 0)
             return;
@@ -177,75 +235,19 @@ public partial class AutoBuildSnapshot
         }
     }
 
-    [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.snapshots.showzones")]
-    private void CommandShowSnapZones(BasePlayer player)
-    {
-        // Check admin permission
-        if (!permission.UserHasPermission(player.UserIDString, _config.Commands.AdminPermission))
-        {
-            player.ChatMessage(_lang.GetMessage(LangKeys.error_no_permission, player));
-            return;
-        }
-
-        /*
-        if (_currentSelectedSnapshot.TryGetValue(player.userID, out var snapshotId))
-        {
-            // TODO: Create visualization for the zones
-            // Create timer callback to remove the zones after a certain time
-        }
-        */
-    }
-
-    [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.snapshots.rollback")]
-    private void CommandRollbackSnapshot(BasePlayer player)
-    {
-        // Check admin permission
-        if (!_config.Commands.UserHasPermission(player, _config.Commands.Rollback, this))
-        {
-            player.ChatMessage(_lang.GetMessage(LangKeys.error_no_permission, player));
-            return;
-        }
-
-        if (_currentSelectedSnapshot.TryGetValue(player.userID, out Guid snapshotId))
-        {
-            NavigateMenu(player, MenuLayer.ConfirmationDialog, false,
-                "Confirm Rollback",
-                $"Are you sure you want to rollback to the snapshot from {_snapshotMetaData[snapshotId].TimestampUTC:yyyy-MM-dd HH:mm:ss}?",
-                $"{nameof(AutoBuildSnapshot)}.confirm.rollback {snapshotId}"
-            );
-        }
-    }
-
-    [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.snapshots.undo")]
-    private void CommandUndoRollback(BasePlayer player)
-    {
-        // Check admin permission
-        if (!_config.Commands.UserHasPermission(player, _config.Commands.Rollback, this))
-        {
-            player.ChatMessage(_lang.GetMessage(LangKeys.error_no_permission, player));
-            return;
-        }
-
-        NavigateMenu(player, MenuLayer.ConfirmationDialog, false,
-            "Confirm Undo",
-            "Are you sure you want to undo the last rollback operation?",
-            $"{nameof(AutoBuildSnapshot)}.confirm.undo"
-        );
-    }
-
     #endregion
 
     #region Confirmation Dialog Actions
 
     // Command handlers for confirmation dialog
-    [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.confirm.cancel")]
-    private void CommandCancelConfirmation(BasePlayer player)
+    [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.{nameof(CommandConfirmationCancel)}")]
+    private void CommandConfirmationCancel(BasePlayer player)
     {
         CloseConfirmationDialog(player);
     }
 
-    [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.confirm.rollback")]
-    private void CommandConfirmRollback(BasePlayer player, string command, string[] args)
+    [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.{nameof(CommandConfirmationRollback)}")]
+    private void CommandConfirmationRollback(BasePlayer player, string command, string[] args)
     {
         if (args.Length == 0)
             return;
@@ -267,8 +269,8 @@ public partial class AutoBuildSnapshot
         }
     }
 
-    [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.confirm.undo")]
-    private void CommandConfirmUndo(BasePlayer player)
+    [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.{nameof(CommandConfirmationUndo)}")]
+    private void CommandConfirmationUndo(BasePlayer player)
     {
         // Check admin permission
         if (!_config.Commands.UserHasPermission(player, _config.Commands.Rollback, this))

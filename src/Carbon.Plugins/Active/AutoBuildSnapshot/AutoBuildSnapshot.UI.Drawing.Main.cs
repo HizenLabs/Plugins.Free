@@ -33,7 +33,7 @@ public partial class AutoBuildSnapshot
                 container: tabsPanel,
                 position: new(0, 0, .5f, 1),
                 offset: LuiOffset.None,
-                command: $"{nameof(AutoBuildSnapshot)}.menu.tab.records",
+                command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandMainMenuTabRecords)}",
                 color: "0.3 0.3 0.3 1"
             );
 
@@ -53,7 +53,7 @@ public partial class AutoBuildSnapshot
                 container: tabsPanel,
                 position: new(.5f, 0, 1, 1),
                 offset: LuiOffset.None,
-                command: $"{nameof(AutoBuildSnapshot)}.menu.tab.logs",
+                command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandMainMenuTabLogs)}",
                 color: "0.2 0.2 0.2 1"
             );
 
@@ -190,7 +190,7 @@ public partial class AutoBuildSnapshot
                         container: recordItem,
                         position: new(.65f, .2f, .8f, .8f),
                         offset: LuiOffset.None,
-                        command: $"{nameof(AutoBuildSnapshot)}.teleport {record.NetworkID}",
+                        command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandMainMenuTeleportToRecord)} {record.NetworkID}",
                         color: "0.3 0.5 0.3 1"
                     );
 
@@ -210,7 +210,7 @@ public partial class AutoBuildSnapshot
                         container: recordItem,
                         position: new(.82f, .2f, .97f, .8f),
                         offset: LuiOffset.None,
-                        command: $"{nameof(AutoBuildSnapshot)}.snapshots {record.NetworkID}",
+                        command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandMainMenuOpenSnapshots)} {record.NetworkID}",
                         color: "0.3 0.3 0.5 1"
                     );
 
@@ -236,7 +236,7 @@ public partial class AutoBuildSnapshot
                             container: contentPanel,
                             position: new(.96f, .9f, .99f, .95f),
                             offset: LuiOffset.None,
-                            command: $"{nameof(AutoBuildSnapshot)}.scroll.records -1",
+                            command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandMainMenuScrollRecords)} -1",
                             color: "0.3 0.3 0.3 1"
                         );
 
@@ -259,7 +259,7 @@ public partial class AutoBuildSnapshot
                             container: contentPanel,
                             position: new(.96f, .05f, .99f, .1f),
                             offset: LuiOffset.None,
-                            command: $"{nameof(AutoBuildSnapshot)}.scroll.records 1",
+                            command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandMainMenuScrollRecords)} 1",
                             color: "0.3 0.3 0.3 1"
                         );
 
@@ -352,7 +352,7 @@ public partial class AutoBuildSnapshot
                 container: contentPanel,
                 position: new(.85f, .95f, .98f, .98f),
                 offset: LuiOffset.None,
-                command: $"{nameof(AutoBuildSnapshot)}.logs.clear",
+                command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandMainMenuClearLogs)}",
                 color: "0.5 0.3 0.3 1"
             );
 

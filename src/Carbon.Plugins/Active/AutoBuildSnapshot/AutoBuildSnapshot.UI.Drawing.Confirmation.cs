@@ -137,7 +137,7 @@ public partial class AutoBuildSnapshot
                 container: buttonsArea,
                 position: new(0.55f, 0.2f, 0.85f, 0.8f),
                 offset: LuiOffset.None,
-                command: $"{nameof(AutoBuildSnapshot)}.confirm.cancel",
+                command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandConfirmationCancel)}",
                 color: "0.5 0.3 0.3 1"
             );
 

@@ -31,7 +31,7 @@ public partial class AutoBuildSnapshot
                     container: header,
                     position: new(.8f, .15f, .93f, .85f),
                     offset: new(4, 0, 4, 0),
-                    command: $"{nameof(AutoBuildSnapshot)}.menu.snapshots.back",
+                    command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsNavigateBack)}",
                     color: "0.3 0.3 0.6 0.9"
                 );
 
@@ -105,7 +105,7 @@ public partial class AutoBuildSnapshot
                 container: buttonPanel,
                 position: new(0, .2f, .25f, .8f),
                 offset: new(10, 0, -5, 0),
-                command: $"{nameof(AutoBuildSnapshot)}.snapshots.showzones",
+                command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsShowZones)}",
                 color: "0.3 0.3 0.6 1"
             );
 
@@ -125,7 +125,7 @@ public partial class AutoBuildSnapshot
                 container: buttonPanel,
                 position: new(.35f, .2f, .6f, .8f),
                 offset: new(5, 0, -5, 0),
-                command: $"{nameof(AutoBuildSnapshot)}.snapshots.rollback",
+                command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsRollback)}",
                 color: "0.6 0.3 0.3 1"
             );
 
@@ -139,25 +139,30 @@ public partial class AutoBuildSnapshot
             alignment: TextAnchor.MiddleCenter
         );
 
-        // Undo button
-        var undoButton = cui.v2
-            .CreateButton(
-                container: buttonPanel,
-                position: new(.7f, .2f, .95f, .8f),
-                offset: new(5, 0, -10, 0),
-                command: $"{nameof(AutoBuildSnapshot)}.snapshots.undo",
-                color: "0.5 0.5 0.3 1"
-            );
+        // TODO: Show undo button if a rollback was completed.
+        bool showUndoButton = false;
+        if (showUndoButton)
+        {
+            // Undo button
+            var undoButton = cui.v2
+                .CreateButton(
+                    container: buttonPanel,
+                    position: new(.7f, .2f, .95f, .8f),
+                    offset: new(5, 0, -10, 0),
+                    command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsUndoRollback)}",
+                    color: "0.5 0.5 0.3 1"
+                );
 
-        cui.v2.CreateText(
-            container: undoButton,
-            position: LuiPosition.Full,
-            offset: LuiOffset.None,
-            color: "1 1 1 1",
-            fontSize: 14,
-            text: "Undo",
-            alignment: TextAnchor.MiddleCenter
-        );
+            cui.v2.CreateText(
+                container: undoButton,
+                position: LuiPosition.Full,
+                offset: LuiOffset.None,
+                color: "1 1 1 1",
+                fontSize: 14,
+                text: "Undo",
+                alignment: TextAnchor.MiddleCenter
+            );
+        }
 
         return container;
     }
@@ -240,7 +245,7 @@ public partial class AutoBuildSnapshot
                     container: itemBg,
                     position: LuiPosition.Full,
                     offset: LuiOffset.None,
-                    command: $"{nameof(AutoBuildSnapshot)}.snapshots.select {snapshotId}",
+                    command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsSelect)} {snapshotId}",
                     color: "1 0 0 1"
                 )
                 .AddCursor();
@@ -268,7 +273,7 @@ public partial class AutoBuildSnapshot
                         container: leftPanel,
                         position: new(.9f, .95f, .98f, .99f),
                         offset: LuiOffset.None,
-                        command: $"{nameof(AutoBuildSnapshot)}.snapshots.scroll -1",
+                        command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsScroll)} -1",
                         color: "0.3 0.3 0.3 1"
                     );
 
@@ -291,7 +296,7 @@ public partial class AutoBuildSnapshot
                         container: leftPanel,
                         position: new(.9f, .01f, .98f, .05f),
                         offset: LuiOffset.None,
-                        command: $"{nameof(AutoBuildSnapshot)}.snapshots.scroll 1",
+                        command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsScroll)} 1",
                         color: "0.3 0.3 0.3 1"
                     );
 
@@ -483,7 +488,7 @@ public partial class AutoBuildSnapshot
                     container: buildingItem,
                     position: new(.7f, .2f, .95f, .8f),
                     offset: LuiOffset.None,
-                    command: $"{nameof(AutoBuildSnapshot)}.snapshots.teleport {building.Key}",
+                    command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsTeleportToBuilding)} {building.Key}",
                     color: "0.3 0.5 0.3 1"
                 );
 
