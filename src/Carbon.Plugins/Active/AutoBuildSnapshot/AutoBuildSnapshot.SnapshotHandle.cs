@@ -1,11 +1,5 @@
-﻿using Epic.OnlineServices;
-using Facepunch;
-using Oxide.Plugins;
+﻿using Facepunch;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using UnityEngine;
 
 namespace Carbon.Plugins;
 
@@ -13,6 +7,8 @@ public partial class AutoBuildSnapshot
 {
     private class SnapshotHandle : Pool.IPooled
     {
+        private Guid _confirmationCode = Guid.Empty;
+
         public Guid ID => Meta.ID;
 
         public BuildSnapshotMetaData Meta { get; private set; }
@@ -30,8 +26,6 @@ public partial class AutoBuildSnapshot
         public TimeSpan TimeSinceModified => DateTime.UtcNow - LastModified;
 
         public TimeSpan Remaining => Expiration - DateTime.UtcNow;
-
-        public Timer PreviewTimer { get; private set; }
 
         public void PreviewZones()
         {
@@ -56,8 +50,6 @@ public partial class AutoBuildSnapshot
             if (State == stopState)
             {
                 KillTempEntities(PlayerUserID);
-                PreviewTimer?.Destroy();
-                PreviewTimer?.Dispose();
             }
             else
             {
@@ -66,6 +58,53 @@ public partial class AutoBuildSnapshot
             }
 
             Update(SnapshotState.Idle);
+        }
+
+        /// <summary>
+        /// Attempts to lock the snapshot for a rollback operation.
+        /// </summary>
+        /// <param name="player">The player initiating the rollback.</param>
+        /// <param name="confirmationCode">The confirmation code created for the lock.</param>
+        /// <returns>The confirmation code to pass when beginning the rollback.</returns>
+        public bool TryConfirmationLock(BasePlayer player, out Guid confirmationCode)
+        {
+            confirmationCode = Guid.NewGuid();
+
+            if (State != SnapshotState.Idle)
+                return false;
+
+            if (player.userID != PlayerUserID)
+                return false;
+
+            Update(SnapshotState.Locked);
+
+            _confirmationCode = confirmationCode;
+
+            return true;
+        }
+
+        /// <summary>
+        /// Attempts to start a rollback operation.
+        /// </summary>
+        /// <param name="player">The player initiating the rollback.</param>
+        /// <param name="confirmationCode">The confirmation code for the rollback.</param>
+        /// <returns>True if the rollback was started successfully; otherwise, false.</returns>
+        public bool TryBeginRollback(BasePlayer player, Guid confirmationCode)
+        {
+            if (confirmationCode != _confirmationCode)
+                return false;
+
+            if (State != SnapshotState.Locked)
+                return false;
+
+            if (player.userID != PlayerUserID)
+                return false;
+
+            // Create a snapshot of the record first
+
+            // Then, begin rollback to selected snapshot
+
+            return false;
         }
 
         private void Update(SnapshotState state)
