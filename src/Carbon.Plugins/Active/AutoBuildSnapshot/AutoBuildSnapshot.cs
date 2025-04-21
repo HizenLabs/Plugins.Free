@@ -14,7 +14,7 @@ namespace Carbon.Plugins;
 #pragma warning disable IDE0001 // Simplification warning ignore
 #pragma warning disable IDE1006 // Naming Styles
 
-[Info("AutoBuildSnapshot", "hizenxyz", "0.0.17")]
+[Info("AutoBuildSnapshot", "hizenxyz", "0.0.18")]
 [Description("Automatically backs up a player's base when they build to it, allowing it to be restored later.")]
 public partial class AutoBuildSnapshot : CarbonPlugin
 {
@@ -804,6 +804,8 @@ public partial class AutoBuildSnapshot : CarbonPlugin
     /// </summary>
     private void InitResources()
     {
+        InitDrawingResources();
+
         _buildRecords = Pool.Get<Dictionary<ulong, BuildRecord>>();
         _snapshotMetaData = Pool.Get<Dictionary<Guid, BuildSnapshotMetaData>>();
         _buildingIDToSnapshotIndex = Pool.Get<Dictionary<string, List<Guid>>>();
@@ -844,12 +846,9 @@ public partial class AutoBuildSnapshot : CarbonPlugin
     /// </summary>
     private void FreeResources()
     {
-        KillTempEntities();
+        FreeDrawingResources();
 
-        foreach (var player in BasePlayer.activePlayerList)
-        {
-            NavigateMenu(player, MenuLayer.Closed);
-        }
+        KillTempEntities();
 
         Pool.Free(ref _buildRecords, true);
         Pool.FreeUnmanaged(ref _snapshotMetaData);

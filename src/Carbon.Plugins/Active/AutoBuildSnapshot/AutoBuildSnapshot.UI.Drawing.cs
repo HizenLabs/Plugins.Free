@@ -1,4 +1,6 @@
 ﻿using Carbon.Components;
+using Facepunch;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Carbon.Plugins;
@@ -10,6 +12,27 @@ namespace Carbon.Plugins;
 /// </summary>
 public partial class AutoBuildSnapshot
 {
+    private Dictionary<MenuLayer, string> _menuLayerIdLookup;
+
+    private void InitDrawingResources()
+    {
+        _menuLayerIdLookup = Pool.Get<Dictionary<MenuLayer, string>>();
+
+        _menuLayerIdLookup[MenuLayer.MainMenu] = _mainMenuId;
+        _menuLayerIdLookup[MenuLayer.ConfirmationDialog] = _confirmationDialogId;
+        _menuLayerIdLookup[MenuLayer.Snapshots] = _snapshotMenuId;
+    }
+
+    private void FreeDrawingResources()
+    {
+        foreach (var player in BasePlayer.activePlayerList)
+        {
+            NavigateMenu(player, MenuLayer.Closed);
+        }
+
+        Pool.FreeUnmanaged(ref _menuLayerIdLookup);
+    }
+
     private LUI.LuiContainer RenderBasicLayout(Components.CUI cui, string menuId, string title, out LUI.LuiContainer main, out LUI.LuiContainer header)
     {
         // Create the base container with cursor

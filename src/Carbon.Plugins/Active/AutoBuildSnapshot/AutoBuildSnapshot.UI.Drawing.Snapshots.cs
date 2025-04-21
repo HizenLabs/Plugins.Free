@@ -164,6 +164,8 @@ public partial class AutoBuildSnapshot
         _currentSelectedSnapshot.TryGetValue(player.userID, out selectedId);
 
         // Display snapshots
+        Puts($"Displaying snapshots {scrollIndex} to {scrollIndex + visibleCount} of {snapshots.Count}");
+        Puts($" Selected ID: {selectedId}");
         for (int i = scrollIndex; i < scrollIndex + visibleCount && i < snapshots.Count; i++)
         {
             Guid snapshotId = snapshots[i];
@@ -172,14 +174,7 @@ public partial class AutoBuildSnapshot
 
             bool isSelected = snapshotId == selectedId;
 
-            // Background
-            var itemBg = cui.v2
-                .CreatePanel(
-                    container: snapshotList,
-                    position: new(0, yMin, 1, yMax),
-                    offset: new(0, 2, 0, -2),
-                    color: isSelected ? "0.2 0.4 0.6 0.8" : (i % 2 == 0 ? "0.2 0.2 0.2 0.5" : "0.25 0.25 0.25 0.5")
-                );
+            Puts($" Snapshot {i} ({snapshotId}) - Y: {yMin} to {yMax} - Selected: {isSelected}");
 
             // Get metadata
             string displayText = "Unknown Snapshot";
@@ -189,20 +184,20 @@ public partial class AutoBuildSnapshot
             }
 
             // Button to select snapshot
-            cui.v2
+            var snapshotButton = cui.v2
                 .CreateButton(
-                    container: itemBg,
-                    position: LuiPosition.Full,
-                    offset: LuiOffset.None,
+                    container: snapshotList,
+                    position: new(0, yMin, 1, yMax),
+                    offset: new(0, 2, 0, -2),
                     command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsSelect)} {snapshotId}",
-                    color: "1 0 0 1"
+                    color: isSelected ? "0.2 0.4 0.6 0.8" : (i % 2 == 0 ? "0.2 0.2 0.2 0.5" : "0.25 0.25 0.25 0.5")
                 )
                 .AddCursor();
 
             // Snapshot text
             cui.v2.CreateText(
-                container: itemBg,
-                position: new(0, 0, 1, 1),
+                container: snapshotButton,
+                    position: LuiPosition.Full,
                 offset: new(10, 0, -10, 0),
                 color: "1 1 1 .9",
                 fontSize: 12,
@@ -337,7 +332,7 @@ public partial class AutoBuildSnapshot
         );
 
         // Display authorized users
-        int authCount = Mathf.Min(snapshotData.AuthorizedPlayers.Count, 3); // Show up to 3 users
+        int authCount = Mathf.Min(snapshotData.AuthorizedPlayers.Count, 8); // Show up to 8 users
         for (int i = 0; i < authCount; i++)
         {
             var user = snapshotData.AuthorizedPlayers[i];

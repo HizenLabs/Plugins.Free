@@ -303,7 +303,7 @@ public partial class AutoBuildSnapshot
                     ID = snapshotId,
                     DataFile = dataFile,
                     TimestampUTC = now,
-                    Entities = _buildingEntities.Count,
+                    Entities = _buildingEntities.Sum(be => be.Value.Count),
                     LinkedBuildings = linkedBuildingsMeta,
                     AuthorizedPlayers = _authorizedPlayers,
                 };

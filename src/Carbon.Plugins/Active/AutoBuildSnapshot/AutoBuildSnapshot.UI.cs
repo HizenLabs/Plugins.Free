@@ -155,9 +155,9 @@ public partial class AutoBuildSnapshot
             }
         }
 
-        HandleUiDestruction(MenuLayer.ConfirmationDialog, _confirmationDialogId, player, previousLayer, currentLayer, targetLayer, hasUpdate);
-        HandleUiDestruction(MenuLayer.Snapshots, _snapshotMenuId, player, previousLayer, currentLayer, targetLayer, hasUpdate);
-        HandleUiDestruction(MenuLayer.MainMenu, _mainMenuId, player, previousLayer, currentLayer, targetLayer, hasUpdate);
+        HandleUiDestruction(MenuLayer.ConfirmationDialog, _menuLayerIdLookup[MenuLayer.ConfirmationDialog], player, previousLayer, currentLayer, targetLayer, hasUpdate);
+        HandleUiDestruction(MenuLayer.Snapshots, _menuLayerIdLookup[MenuLayer.Snapshots], player, previousLayer, currentLayer, targetLayer, hasUpdate);
+        HandleUiDestruction(MenuLayer.MainMenu, _menuLayerIdLookup[MenuLayer.MainMenu], player, previousLayer, currentLayer, targetLayer, hasUpdate);
 
         if (targetLayer == MenuLayer.Closed)
         {
@@ -167,11 +167,11 @@ public partial class AutoBuildSnapshot
 
         using var cui = CreateCUI();
 
-        string panelId;
+        LUI.LuiContainer container;
         switch (targetLayer)
         {
             case MenuLayer.MainMenu:
-                panelId = RenderMainMenu(cui, player).name;
+                container = RenderMainMenu(cui, player);
                 break;
 
             case MenuLayer.Snapshots:
@@ -185,7 +185,7 @@ public partial class AutoBuildSnapshot
                     throw new ArgumentException($"{nameof(NavigateMenu)}: Expected List<Guid> as second argument for {nameof(MenuLayer.Snapshots)}");
 
                 var record = args[0] as BuildRecord;
-                panelId = RenderSnapshotsMenu(cui, player, record, snapshots).name;
+                container = RenderSnapshotsMenu(cui, player, record, snapshots);
                 break;
 
             case MenuLayer.ConfirmationDialog:
@@ -201,16 +201,16 @@ public partial class AutoBuildSnapshot
                 if (args[2] is not string command)
                     throw new ArgumentException($"{nameof(NavigateMenu)}: Expected string as third argument for {nameof(MenuLayer.ConfirmationDialog)}");
 
-                panelId = RenderConfirmationDialog(cui, player, title, message, command).name;
+                container = RenderConfirmationDialog(cui, player, title, message, command);
                 break;
 
             default:
                 throw new NotSupportedException($"Unsupported menu layer: {targetLayer}");
         }
 
-        if (previousLayer.HasFlag(targetLayer))
+        if (hasUpdate)
         {
-            CuiHelper.DestroyUi(player, panelId);
+            container.SetDestroy(_menuLayerIdLookup[targetLayer]);
         }
 
         cui.v2.SendUi(player);
@@ -227,8 +227,12 @@ public partial class AutoBuildSnapshot
         MenuLayer targetLayer, 
         bool hasUpdate)
     {
-        if ((hasUpdate && targetLayer == layer) ||
-            (previousLayer.HasFlag(layer) && !currentLayer.HasFlag(layer)))
+        if (hasUpdate && targetLayer == layer)
+        {
+            return;
+        }
+
+        if (previousLayer.HasFlag(layer) && !currentLayer.HasFlag(layer))
         {
             CuiHelper.DestroyUi(player, uiId);
         }
