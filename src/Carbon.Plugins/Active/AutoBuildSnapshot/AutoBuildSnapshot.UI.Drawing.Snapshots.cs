@@ -361,7 +361,7 @@ public partial class AutoBuildSnapshot
         var linkedBuildingsPanel = cui.v2
             .CreatePanel(
                 container: rightPanel,
-                position: new(0, .1f, 1, .3f),
+                position: new(0, .01f, 1, .3f),
                 offset: new(10, 5, -10, -5),
                 color: "0.1 0.1 0.1 0.5"
             );
@@ -388,7 +388,7 @@ public partial class AutoBuildSnapshot
             var buildingItem = cui.v2
                 .CreatePanel(
                     container: linkedBuildingsPanel,
-                    position: new(0, .85f - ((buildingIndex + 1) * 0.2f), 1, .85f - (buildingIndex * 0.2f)),
+                    position: new(0, .85f - ((buildingIndex + 1) * 0.3f), 1, .85f - (buildingIndex * 0.3f)),
                     offset: new(5, 2, -5, -2),
                     color: buildingIndex % 2 == 0 ? "0.15 0.15 0.15 0.7" : "0.18 0.18 0.18 0.7"
                 );
@@ -433,7 +433,7 @@ public partial class AutoBuildSnapshot
             int remainingBuildings = snapshotData.LinkedBuildings.Count - buildingCount;
             cui.v2.CreateText(
                 container: linkedBuildingsPanel,
-                position: new(0, .85f - ((buildingCount + 1) * 0.2f), 1, .85f - (buildingCount * 0.2f)),
+                position: new(0, .85f - ((buildingCount + 1) * 0.3f), 1, .85f - (buildingCount * 0.3f)),
                 offset: new(5, 0, -5, 0),
                 color: "0.7 0.7 0.7 .7",
                 fontSize: 12,

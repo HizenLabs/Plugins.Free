@@ -286,37 +286,32 @@ public partial class AutoBuildSnapshot
         private void WriteSnapshotMeta(DateTime now, Guid snapshotId, string dataFile, string metaFile)
         {
             var linkedBuildingsMeta = Pool.Get<Dictionary<string, BuildingMetaData>>();
-            try
+            foreach (var kvp in _buildingEntities)
             {
-                foreach (var kvp in _buildingEntities)
+                linkedBuildingsMeta.Add(kvp.Key.PersistentID, new BuildingMetaData
                 {
-                    linkedBuildingsMeta.Add(kvp.Key.PersistentID, new BuildingMetaData
-                    {
-                        Position = kvp.Key.BaseTC.ServerPosition,
-                        Entities = kvp.Value.Count,
-                        Zones = kvp.Key.EntityZones,
-                    });
-                }
-
-                var metaData = new BuildSnapshotMetaData
-                {
-                    ID = snapshotId,
-                    DataFile = dataFile,
-                    TimestampUTC = now,
-                    Entities = _buildingEntities.Sum(be => be.Value.Count),
-                    LinkedBuildings = linkedBuildingsMeta,
-                    AuthorizedPlayers = _authorizedPlayers,
-                };
-
-                Interface.Oxide.DataFileSystem.WriteObject(metaFile, metaData);
-
-                // add metadata to the resource collection and update indexes
-                _plugin.SyncSnapshotMetaData(metaData);
+                    Position = kvp.Key.BaseTC.ServerPosition,
+                    Entities = kvp.Value.Count,
+                    Zones = kvp.Key.EntityZones,
+                });
             }
-            finally
+
+            var metaData = new BuildSnapshotMetaData
             {
-                Pool.FreeUnmanaged(ref linkedBuildingsMeta);
-            }
+                ID = snapshotId,
+                DataFile = dataFile,
+                TimestampUTC = now,
+                Entities = _buildingEntities.Sum(be => be.Value.Count),
+                LinkedBuildings = linkedBuildingsMeta,
+                AuthorizedPlayers = _authorizedPlayers,
+            };
+
+            Interface.Oxide.DataFileSystem.WriteObject(metaFile, metaData);
+
+            // add metadata to the resource collection and update indexes
+            _plugin.SyncSnapshotMetaData(metaData);
+
+            // note: do not free linkedBuildingsMeta here -- it's still being used in the snapshots menu
         }
 
         /// <summary>
