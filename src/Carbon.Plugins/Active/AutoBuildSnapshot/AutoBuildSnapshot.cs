@@ -132,6 +132,11 @@ public partial class AutoBuildSnapshot : CarbonPlugin
     private Dictionary<Guid, BuildSnapshotMetaData> _snapshotMetaData;
 
     /// <summary>
+    /// Lookup of snapshot states by snapshot id.
+    /// </summary>
+    private Dictionary<Guid, SnapshotState> _snapshotStates;
+
+    /// <summary>
     /// Index of snapshot ids by persistant building IDs for faster lookup.
     /// </summary>
     private Dictionary<string, List<System.Guid>> _buildingIDToSnapshotIndex;
@@ -808,6 +813,7 @@ public partial class AutoBuildSnapshot : CarbonPlugin
 
         _buildRecords = Pool.Get<Dictionary<ulong, BuildRecord>>();
         _snapshotMetaData = Pool.Get<Dictionary<Guid, BuildSnapshotMetaData>>();
+        _snapshotStates = Pool.Get<Dictionary<Guid, SnapshotState>>();
         _buildingIDToSnapshotIndex = Pool.Get<Dictionary<string, List<Guid>>>();
         _zoneSnapshotIndex = Pool.Get<Dictionary<Vector4, List<Guid>>>();
         _tempEntities = Pool.Get<Dictionary<ulong, List<Components.ClientEntity>>>();
@@ -852,6 +858,7 @@ public partial class AutoBuildSnapshot : CarbonPlugin
 
         Pool.Free(ref _buildRecords, true);
         Pool.FreeUnmanaged(ref _snapshotMetaData);
+        Pool.FreeUnmanaged(ref _snapshotStates);
         FreeDictionaryList(ref _buildingIDToSnapshotIndex);
         FreeDictionaryList(ref _zoneSnapshotIndex);
         FreeDictionaryList(ref _tempEntities);
@@ -925,6 +932,7 @@ public partial class AutoBuildSnapshot : CarbonPlugin
     private void SyncSnapshotMetaData(BuildSnapshotMetaData metaData)
     {
         _snapshotMetaData[metaData.ID] = metaData;
+        _snapshotStates[metaData.ID] = SnapshotState.Idle;
 
         IndexSnapshotMetaData(metaData);
     }

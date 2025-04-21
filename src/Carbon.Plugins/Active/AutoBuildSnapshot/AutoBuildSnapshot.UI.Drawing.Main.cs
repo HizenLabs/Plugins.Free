@@ -191,12 +191,13 @@ public partial class AutoBuildSnapshot
                 );
 
                 // Teleport button
+                var pos = record.BaseTC.ServerPosition;
                 var teleportButton = cui.v2
                     .CreateButton(
                         container: recordItem,
                         position: new(.65f, .2f, .8f, .8f),
                         offset: LuiOffset.None,
-                        command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandMainMenuTeleportToRecord)} {record.NetworkID}",
+                        command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandGlobalTeleport)} {pos.x} {pos.y} {pos.z}",
                         color: "0.3 0.5 0.3 1"
                     );
 

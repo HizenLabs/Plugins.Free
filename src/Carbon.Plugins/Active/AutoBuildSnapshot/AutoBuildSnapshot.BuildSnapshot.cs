@@ -568,4 +568,31 @@ public partial class AutoBuildSnapshot
         /// </summary>
         public required List<Vector4> Zones { get; init; }
     }
+
+    /// <summary>
+    /// Represents the state of a snapshot.
+    /// </summary>
+    [Flags]
+    private enum SnapshotState
+    {
+        /// <summary>
+        /// The snapshot is idle and not processing.
+        /// </summary>
+        Idle = 0,
+
+        /// <summary>
+        /// The snapshot zones previewing is enabled.
+        /// </summary>
+        PreviewZones = 1 << 0,
+
+        /// <summary>
+        /// The snapshot rollback preview is enabled.
+        /// </summary>
+        PreviewRollback = 1 << 1,
+
+        /// <summary>
+        /// The snapshot rollback is in progress.
+        /// </summary>
+        ProcessRollback = 1 << 2,
+    }
 }

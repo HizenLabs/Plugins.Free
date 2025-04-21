@@ -8,9 +8,44 @@ public partial class AutoBuildSnapshot
 {
     #region Global Menu Actions
 
+    /// <summary>
+    /// Closes the entire menu.
+    /// </summary>
+    /// <param name="player">The player to close the menu for.</param>
     [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.{nameof(CommandGlobalMenuClose)}")]
     private void CommandGlobalMenuClose(BasePlayer player) =>
         NavigateMenu(player, MenuLayer.Closed);
+
+    /// <summary>
+    /// Teleports the player to the specified record or building.
+    /// </summary>
+    /// <param name="player">The player to teleport.</param>
+    /// <param name="command">The command that was executed.</param>
+    /// <param name="args">The command arguments (target type and ID).</param>
+    [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.{nameof(CommandGlobalTeleport)}")]
+    private void CommandGlobalTeleport(BasePlayer player, string command, string[] args)
+    {
+        // Check admin permission
+        if (!permission.UserHasPermission(player.UserIDString, _config.Commands.AdminPermission))
+        {
+            player.ChatMessage(_lang.GetMessage(LangKeys.error_no_permission, player));
+            return;
+        }
+
+        //============================ MAIN MENU ========================
+        if (args.Length < 3)
+            return;
+
+        if (float.TryParse(args[0], out float x) &&
+            float.TryParse(args[1], out float y) &&
+            float.TryParse(args[2], out float z))
+        {
+            var pos = new Vector3(x, y + 2f, z);
+            player.Teleport(pos);
+            player.SendNetworkUpdate();
+            player.ChatMessage($"Teleported to TC at {x:F1}, {y:F1}, {z:F1}");
+        }
+    }
 
     #endregion
 
@@ -27,28 +62,6 @@ public partial class AutoBuildSnapshot
     #endregion
 
     #region Main Menu Actions
-
-    [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.{nameof(CommandMainMenuTeleportToRecord)}")]
-    private void CommandMainMenuTeleportToRecord(BasePlayer player, string command, string[] args)
-    {
-        if (args.Length == 0) return;
-
-        if (ulong.TryParse(args[0], out ulong recordId) && _buildRecords.TryGetValue(recordId, out var record))
-        {
-            // Check admin permission
-            if (!permission.UserHasPermission(player.UserIDString, _config.Commands.AdminPermission))
-            {
-                player.ChatMessage(_lang.GetMessage(LangKeys.error_no_permission, player));
-                return;
-            }
-
-            // Teleport player to the TC position
-            player.Teleport(record.BaseTC.ServerPosition + new Vector3(0, 1, 0));
-            player.SendNetworkUpdate();
-
-            player.ChatMessage($"Teleported to TC at {record.BaseTC.ServerPosition:F1}");
-        }
-    }
 
     [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.{nameof(CommandMainMenuOpenSnapshots)}")]
     private void CommandMainMenuOpenSnapshots(BasePlayer player, string command, string[] args)
@@ -208,32 +221,6 @@ public partial class AutoBuildSnapshot
                 $"Are you sure you want to rollback to the snapshot from {_snapshotMetaData[snapshotId].TimestampUTC:yyyy-MM-dd HH:mm:ss}?",
                 $"{nameof(AutoBuildSnapshot)}.{nameof(CommandConfirmationRollback)} {snapshotId}"
             );
-        }
-    }
-
-    [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsTeleportToBuilding)}")]
-    private void CommandSnapshotsTeleportToBuilding(BasePlayer player, string command, string[] args)
-    {
-        if (args.Length == 0)
-            return;
-
-        // Check admin permission
-        if (!permission.UserHasPermission(player.UserIDString, _config.Commands.AdminPermission))
-        {
-            player.ChatMessage(_lang.GetMessage(LangKeys.error_no_permission, player));
-            return;
-        }
-
-        // Get the position from the building metadata
-        if (_currentSelectedSnapshot.TryGetValue(player.userID, out Guid snapshotId) &&
-            _snapshotMetaData.TryGetValue(snapshotId, out var meta) &&
-            meta.LinkedBuildings.TryGetValue(args[0], out var buildingMeta))
-        {
-            // Teleport player to the building position
-            player.Teleport(buildingMeta.Position + new Vector3(0, 1, 0));
-            player.SendNetworkUpdate();
-
-            player.ChatMessage($"Teleported to building at {buildingMeta.Position:F1}");
         }
     }
 

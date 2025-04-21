@@ -94,7 +94,7 @@ public partial class AutoBuildSnapshot
         {
             CreateSnapshotsDetail(cui, rightPanel, player, snapshotData);
 
-            CreateActionButtons(cui, main);
+            CreateActionButtons(cui, main, snapshotData);
 
         }
         else
@@ -405,12 +405,13 @@ public partial class AutoBuildSnapshot
             );
 
             // Teleport button
+            var pos = building.Value.Position;
             var teleportButton = cui.v2
                 .CreateButton(
                     container: buildingItem,
                     position: new(.7f, .2f, .95f, .8f),
                     offset: LuiOffset.None,
-                    command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsTeleportToBuilding)} {building.Key}",
+                    command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandGlobalTeleport)} {pos.x} {pos.y} {pos.z}",
                     color: "0.3 0.5 0.3 1"
                 );
 
@@ -443,7 +444,7 @@ public partial class AutoBuildSnapshot
         }
     }
 
-    private void CreateActionButtons(Components.CUI cui, Components.LUI.LuiContainer main)
+    private void CreateActionButtons(Components.CUI cui, Components.LUI.LuiContainer main, BuildSnapshotMetaData snapshotData)
     {
         // Bottom buttons panel
         var buttonPanel = cui.v2
@@ -456,14 +457,31 @@ public partial class AutoBuildSnapshot
 
         var offX = 0.38f;
 
+        const string rgbZones = "0.408 0.435 0.706 1.0";
+        const string rgbZonesActive = "0.475 0.506 0.824 1.0";
+
+        const string rgbPreview = "0.275 0.514 0.651 1.0";
+        const string rgbPreviewActive = "0.322 0.600 0.761 1.0"; ;
+
+        const string rgbRollback = "0.6 0.3 0.3 1";
+        const string rgbRollbackActive = "0.75 0.35 0.35 1";
+
+        if (!_snapshotStates.TryGetValue(snapshotData.ID, out var snapshotState))
+        {
+            snapshotState = SnapshotState.Idle;
+            _snapshotStates[snapshotData.ID] = snapshotState;
+        }
+
         // Show Zones button
         var showZonesButton = cui.v2
             .CreateButton(
                 container: buttonPanel,
                 position: new(0 + offX, .2f, .18f + offX, .8f),
                 offset: new(10, 0, -5, 0),
-                command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsShowZones)}",
-                color: "0.3 0.3 0.6 1"
+                command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsShowZones)} {snapshotData.ID}",
+                color: snapshotState.HasFlag(SnapshotState.PreviewZones)
+                    ? rgbZonesActive
+                    : rgbZones
             );
 
         cui.v2.CreateText(
@@ -482,8 +500,10 @@ public partial class AutoBuildSnapshot
                 container: buttonPanel,
                 position: new(.2f + offX, .2f, .38f + offX, .8f),
                 offset: new(10, 0, -5, 0),
-                command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsPreviewRollback)}",
-                color: "0.3 0.3 0.6 1"
+                command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsPreviewRollback)} {snapshotData.ID}",
+                color: snapshotState.HasFlag(SnapshotState.PreviewRollback)
+                    ? rgbPreviewActive
+                    : rgbPreview
             );
 
         cui.v2.CreateText(
@@ -502,8 +522,10 @@ public partial class AutoBuildSnapshot
                 container: buttonPanel,
                 position: new(.4f + offX, .2f, .58f + offX, .8f),
                 offset: new(5, 0, -5, 0),
-                command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsRollback)}",
-                color: "0.6 0.3 0.3 1"
+                command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsRollback)} {snapshotData.ID}",
+                color: snapshotState.HasFlag(SnapshotState.ProcessRollback)
+                    ? rgbRollbackActive
+                    : rgbRollback
             );
 
         cui.v2.CreateText(
