@@ -161,10 +161,10 @@ public partial class AutoBuildSnapshot
 
         if (TryGetSelectedSnapshotHandle(player, out var handle))
         {
-            handle.Update(SnapshotState.Locked);
-        }
+            handle.PreviewZones();
 
-        NavigateMenu(player, MenuLayer.Snapshots, false, true, null, null);
+            NavigateMenu(player, MenuLayer.Snapshots, false, true, null, null);
+        }
     }
 
     [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsPreviewRollback)}")]
@@ -174,10 +174,10 @@ public partial class AutoBuildSnapshot
 
         if (TryGetSelectedSnapshotHandle(player, out var handle))
         {
-            handle.Update(SnapshotState.PreviewRollback);
-        }
+            handle.PreviewRollback();
 
-        NavigateMenu(player, MenuLayer.Snapshots, false, true, null, null);
+            NavigateMenu(player, MenuLayer.Snapshots, false, true, null, null);
+        }
     }
 
     [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsRollback)}")]

@@ -20,6 +20,8 @@ public partial class AutoBuildSnapshot : CarbonPlugin
 {
     #region Fields
 
+    private static AutoBuildSnapshot _instance;
+
     /// <summary>
     /// The default distance to scan for targets when running player commands.
     /// </summary>
@@ -117,7 +119,7 @@ public partial class AutoBuildSnapshot : CarbonPlugin
     /// <summary>
     /// The list of temporary entities that are created for visual feedback (e.g. spheres).
     /// </summary>
-    private Dictionary<ulong, List<Components.ClientEntity>> _tempEntities;
+    private static Dictionary<ulong, List<Components.ClientEntity>> _tempEntities;
 
     /// <summary>
     /// The set of log messages.
@@ -568,6 +570,8 @@ public partial class AutoBuildSnapshot : CarbonPlugin
     /// </summary>
     void Init()
     {
+        _instance = this;
+
         InitResources();
         InitBuildMonitor(_config.General.BuildMonitorInterval);
         InitMasks();
@@ -582,6 +586,8 @@ public partial class AutoBuildSnapshot : CarbonPlugin
     void Unload()
     {
         FreeResources();
+
+        _instance = null;
     }
 
     #endregion
@@ -1052,13 +1058,11 @@ public partial class AutoBuildSnapshot : CarbonPlugin
     /// <param name="player">The player to create the entity for.</param>
     /// <param name="prefabName">The prefab name of the entity.</param>
     /// <param name="position">The position of the entity.</param>
-    /// <param name="rotation">The rotation of the entity.</param>
-    /// <param name="timeoutSeconds">The timeout in seconds before the entity is destroyed.</param>
-    private void CreateTempEntity(BasePlayer player, string prefabName, Vector3 position, Quaternion rotation = default, int timeoutSeconds = 30)
+    /// <param name="entityBuilder">An optional action to modify the entity.</param>
+    private static void CreateTempEntity(BasePlayer player, string prefabName, Vector3 position, Quaternion rotation = default, Action<ClientEntity> entityBuilder = null)
     {
         var entity = ClientEntity.Create(prefabName, position, rotation);
-
-
+        entityBuilder?.Invoke(entity);
 
         entity.SpawnFor(player.net.connection);
 
@@ -1069,21 +1073,13 @@ public partial class AutoBuildSnapshot : CarbonPlugin
         }
 
         playerEntities.Add(entity);
-
-        timer.In(timeoutSeconds, () =>
-        {
-            entity.KillFor(player.net.connection);
-            entity.Dispose();
-
-            playerEntities.Remove(entity);
-        });
     }
 
     /// <summary>
     /// Kills all temporary client entities.
     /// </summary>
     /// <param name="playerID">Optionally, the player ID to kill entities for. Kills all temps if not specified.</param>
-    private void KillTempEntities(ulong playerID = 0)
+    private static void KillTempEntities(ulong playerID = 0)
     {
         if (_tempEntities == null || _tempEntities.Values.Count == 0)
             return;
@@ -1105,7 +1101,7 @@ public partial class AutoBuildSnapshot : CarbonPlugin
     /// Kills the specified entities.
     /// </summary>
     /// <param name="entities">The entities to kill.</param>
-    private void KillEntities(List<Components.ClientEntity> entities)
+    private static void KillEntities(List<Components.ClientEntity> entities)
     {
         foreach (var entity in entities)
         {
@@ -1279,94 +1275,4 @@ public partial class AutoBuildSnapshot : CarbonPlugin
     }
 
     #endregion
-
-    private class SnapshotHandle : Pool.IPooled
-    {
-        public Guid ID => Meta.ID;
-
-        public BuildSnapshotMetaData Meta { get; private set; }
-
-        public BasePlayer Player { get; private set; }
-
-        public ulong PlayerUserID => Player.userID;
-
-        public SnapshotState State { get; private set; }
-
-        public DateTime LastModified { get; private set; }
-
-        public DateTime Expiration => LastModified.AddSeconds(_maxSnapshotHandleDuration);
-
-        public TimeSpan TimeSinceModified => DateTime.UtcNow - LastModified;
-
-        public TimeSpan Remaining => Expiration - DateTime.UtcNow;
-
-        public void Update(SnapshotState state)
-        {
-            State = state;
-            LastModified = DateTime.UtcNow;
-        }
-
-        public static void Release(BasePlayer player)
-        {
-            if (_playerSnapshotHandles.TryGetValue(player.userID, out var handleId))
-            {
-                if (_snapshotHandles.TryGetValue(handleId, out var handle))
-                {
-                    Pool.Free(ref handle);
-
-                    _snapshotHandles.Remove(handleId);
-                }
-
-                _playerSnapshotHandles.Remove(player.userID);
-            }
-        }
-
-        public static bool TryTake(BuildSnapshotMetaData meta, BasePlayer player, out SnapshotHandle handle)
-        {
-            if (_playerSnapshotHandles.TryGetValue(player.userID, out var existingHandleId)
-                && existingHandleId != meta.ID)
-            {
-                Release(player);
-            }
-
-            if (_snapshotHandles.TryGetValue(meta.ID, out handle))
-            {
-                if (handle.Expiration < DateTime.UtcNow)
-                {
-                    handle.Player = player;
-                }
-            }
-            else
-            {
-                handle = Pool.Get<SnapshotHandle>();
-                handle.Meta = meta;
-                handle.Player = player;
-
-                _snapshotHandles[meta.ID] = handle;
-            }
-
-            if (handle.PlayerUserID == player.userID)
-            {
-                handle.LastModified = DateTime.UtcNow;
-
-                _playerSnapshotHandles[player.userID] = handle.ID;
-
-                return true;
-            }
-
-            return false;
-        }
-
-        public void EnterPool()
-        {
-            Meta = default;
-            Player = null;
-            LastModified = DateTime.MinValue;
-        }
-
-        public void LeavePool()
-        {
-            State = SnapshotState.Idle;
-        }
-    }
 }

@@ -501,6 +501,15 @@ public partial class AutoBuildSnapshot
         /// The list of players that are authorized in any of the linked buildings in the snapshot.
         /// </summary>
         public required List<PlayerMetaData> AuthorizedPlayers { get; init; }
+
+        /// <summary>
+        /// The collection of zones within this snapshot.
+        /// </summary>
+        public IEnumerable<Vector4> Zones => LinkedBuildings.Values
+            .SelectMany(b => b.Zones)
+            .Distinct();
+
+        public SnapshotData GetData() => Interface.Oxide.DataFileSystem.ReadObject<SnapshotData>(DataFile);
     }
 
     /// <summary>
@@ -567,37 +576,5 @@ public partial class AutoBuildSnapshot
         /// The zones this base is comprised of.
         /// </summary>
         public required List<Vector4> Zones { get; init; }
-    }
-
-    /// <summary>
-    /// Represents the state of a snapshot.
-    /// </summary>
-    [Flags]
-    private enum SnapshotState
-    {
-        /// <summary>
-        /// The snapshot is idle and not processing.
-        /// </summary>
-        Idle = 0,
-
-        /// <summary>
-        /// The snapshot zones previewing is enabled.
-        /// </summary>
-        PreviewZones = 1 << 0,
-
-        /// <summary>
-        /// The snapshot rollback preview is enabled.
-        /// </summary>
-        PreviewRollback = 1 << 1,
-
-        /// <summary>
-        /// The snapshot rollback is in progress.
-        /// </summary>
-        ProcessRollback = 1 << 2,
-
-        /// <summary>
-        /// The snapshot is locked and cannot be modified.
-        /// </summary>
-        Locked = 1 << 3,
     }
 }
