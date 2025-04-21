@@ -10,14 +10,14 @@ namespace Carbon.Plugins;
 /// </summary>
 public partial class AutoBuildSnapshot
 {
-    private LUI.LuiContainer RenderBasicLayout(Components.CUI cui, string title, out LUI.LuiContainer main, out LUI.LuiContainer header)
+    private LUI.LuiContainer RenderBasicLayout(Components.CUI cui, string menuId, string title, out LUI.LuiContainer main, out LUI.LuiContainer header)
     {
         // Create the base container with cursor
         var container = cui.v2
             .CreateParent(
                 parent: CUI.ClientPanels.HudMenu,
                 position: LuiPosition.Full,
-                name: _mainMenuId)
+                name: menuId)
             .AddCursor();
 
         // Main panel

@@ -77,7 +77,7 @@ public partial class AutoBuildSnapshot
 
             _playerRecordScrollIndex[player.userID] = Mathf.Max(0, currentIndex + delta);
 
-            NavigateMenu(player, MenuLayer.MainMenu, false, MenuTab.Records);
+            NavigateMenu(player, MenuLayer.MainMenu, false, true, MenuTab.Records);
         }
     }
 
@@ -93,7 +93,7 @@ public partial class AutoBuildSnapshot
 
         ClearLogMessages();
 
-        NavigateMenu(player, MenuLayer.MainMenu, false, MenuTab.Logs);
+        NavigateMenu(player, MenuLayer.MainMenu, false, true, MenuTab.Logs);
     }
 
     #endregion
@@ -120,7 +120,7 @@ public partial class AutoBuildSnapshot
             if (_currentBuildRecord.TryGetValue(player.userID, out ulong recordId) &&
                 _buildRecords.TryGetValue(recordId, out var record))
             {
-                OpenSnapshotsMenu(player, record);
+                OpenSnapshotsMenu(player, record, true);
             }
         }
     }
@@ -144,7 +144,7 @@ public partial class AutoBuildSnapshot
             if (_currentBuildRecord.TryGetValue(player.userID, out ulong recordId) &&
                 _buildRecords.TryGetValue(recordId, out var record))
             {
-                OpenSnapshotsMenu(player, record);
+                OpenSnapshotsMenu(player, record, true);
             }
         }
     }
@@ -155,6 +155,25 @@ public partial class AutoBuildSnapshot
 
     [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsShowZones)}")]
     private void CommandSnapshotsShowZones(BasePlayer player)
+    {
+        // Check admin permission
+        if (!permission.UserHasPermission(player.UserIDString, _config.Commands.AdminPermission))
+        {
+            player.ChatMessage(_lang.GetMessage(LangKeys.error_no_permission, player));
+            return;
+        }
+
+        /*
+        if (_currentSelectedSnapshot.TryGetValue(player.userID, out var snapshotId))
+        {
+            // TODO: Create visualization for the zones
+            // Create timer callback to remove the zones after a certain time
+        }
+        */
+    }
+
+    [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsPreviewRollback)}")]
+    private void CommandSnapshotsPreviewRollback(BasePlayer player)
     {
         // Check admin permission
         if (!permission.UserHasPermission(player.UserIDString, _config.Commands.AdminPermission))
@@ -184,29 +203,12 @@ public partial class AutoBuildSnapshot
 
         if (_currentSelectedSnapshot.TryGetValue(player.userID, out Guid snapshotId))
         {
-            NavigateMenu(player, MenuLayer.ConfirmationDialog, false,
+            NavigateMenu(player, MenuLayer.ConfirmationDialog, true, false,
                 "Confirm Rollback",
                 $"Are you sure you want to rollback to the snapshot from {_snapshotMetaData[snapshotId].TimestampUTC:yyyy-MM-dd HH:mm:ss}?",
                 $"{nameof(AutoBuildSnapshot)}.{nameof(CommandConfirmationRollback)} {snapshotId}"
             );
         }
-    }
-
-    [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsUndoRollback)}")]
-    private void CommandSnapshotsUndoRollback(BasePlayer player)
-    {
-        // Check admin permission
-        if (!_config.Commands.UserHasPermission(player, _config.Commands.Rollback, this))
-        {
-            player.ChatMessage(_lang.GetMessage(LangKeys.error_no_permission, player));
-            return;
-        }
-
-        NavigateMenu(player, MenuLayer.ConfirmationDialog, false,
-            "Confirm Undo",
-            "Are you sure you want to undo the last rollback operation?",
-            $"{nameof(AutoBuildSnapshot)}.{nameof(CommandConfirmationUndo)}"
-        );
     }
 
     [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsTeleportToBuilding)}")]
@@ -267,23 +269,6 @@ public partial class AutoBuildSnapshot
             // Execute rollback (implementation would be in your plugin)
             ExecuteRollback(player, snapshotId);
         }
-    }
-
-    [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.{nameof(CommandConfirmationUndo)}")]
-    private void CommandConfirmationUndo(BasePlayer player)
-    {
-        // Check admin permission
-        if (!_config.Commands.UserHasPermission(player, _config.Commands.Rollback, this))
-        {
-            player.ChatMessage(_lang.GetMessage(LangKeys.error_no_permission, player));
-            CloseConfirmationDialog(player);
-            return;
-        }
-
-        CloseConfirmationDialog(player);
-
-        // Execute undo (implementation would be in your plugin)
-        ExecuteUndo(player);
     }
 
     #endregion

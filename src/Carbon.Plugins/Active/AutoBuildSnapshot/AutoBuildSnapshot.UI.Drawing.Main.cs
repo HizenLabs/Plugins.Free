@@ -1,5 +1,6 @@
 ﻿using Carbon.Components;
 using Facepunch;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -16,16 +17,26 @@ public partial class AutoBuildSnapshot
     private LUI.LuiContainer RenderMainMenu(Components.CUI cui, BasePlayer player)
     {
         var title = _lang.GetMessage(LangKeys.ui_main_title, player);
-        var container = RenderBasicLayout(cui, title, out var main, out var header);
+
+        var container = RenderBasicLayout(cui, _mainMenuId, title, out var main, out var header);
 
         // Tabs at the top
         var tabsPanel = cui.v2
             .CreatePanel(
                 container: main,
-                position: new(0, .90f, 1, .94f),
+                position: new(0, .88f, 1, .94f),
                 offset: LuiOffset.None,
                 color: "0.2 0.2 0.2 1"
             );
+
+        if (!_currentMenuTab.TryGetValue(player.userID, out var tab))
+        {
+            tab = MenuTab.Records;
+            _currentMenuTab[player.userID] = tab;
+        }
+
+        const string highlightColor = "0.3 0.5 0.3 1";
+        const string defaultColor = "0.2 0.2 0.2 1";
 
         // Records tab button
         var recordsTabButton = cui.v2
@@ -34,7 +45,7 @@ public partial class AutoBuildSnapshot
                 position: new(0, 0, .5f, 1),
                 offset: LuiOffset.None,
                 command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandMainMenuTabRecords)}",
-                color: "0.3 0.3 0.3 1"
+                color: tab == MenuTab.Records ? highlightColor : defaultColor
             );
 
         cui.v2.CreateText(
@@ -54,7 +65,7 @@ public partial class AutoBuildSnapshot
                 position: new(.5f, 0, 1, 1),
                 offset: LuiOffset.None,
                 command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandMainMenuTabLogs)}",
-                color: "0.2 0.2 0.2 1"
+                color: tab == MenuTab.Logs ? highlightColor : defaultColor
             );
 
         cui.v2.CreateText(
@@ -71,28 +82,23 @@ public partial class AutoBuildSnapshot
         var contentPanel = cui.v2
             .CreatePanel(
                 container: main,
-                position: new(0, .05f, 1, .90f),
+                position: new(0, .05f, 1, .88f),
                 offset: LuiOffset.None,
                 color: "0.15 0.15 0.15 1"
             );
 
-        if (_currentMenuTab.TryGetValue(player.userID, out var tab))
+        switch (tab)
         {
-            switch (tab)
-            {
-                case MenuTab.Records:
-                    RenderRecordsPanel(player, cui, contentPanel);
-                    break;
-                case MenuTab.Logs:
-                    RenderLogsPanel(player, cui, contentPanel);
-                    break;
-            }
-        }
-        else
-        {
-            // Default to records tab
-            _currentMenuTab[player.userID] = MenuTab.Records;
-            RenderRecordsPanel(player, cui, contentPanel);
+            case MenuTab.Records:
+                RenderRecordsPanel(player, cui, contentPanel);
+                break;
+
+            case MenuTab.Logs:
+                RenderLogsPanel(player, cui, contentPanel);
+                break;
+
+            default:
+                throw new NotImplementedException($"Menu tab {tab} is not implemented.");
         }
 
         return container;
@@ -109,7 +115,7 @@ public partial class AutoBuildSnapshot
         // Title
         cui.v2.CreateText(
             container: contentPanel,
-            position: new(0, .95f, 1, 1),
+            position: new(0, .91f, 1, 1),
             offset: new(10, 0, -10, 0),
             color: "1 1 1 .8",
             fontSize: 14,
@@ -121,7 +127,7 @@ public partial class AutoBuildSnapshot
         var recordsScrollContainer = cui.v2
             .CreatePanel(
                 container: contentPanel,
-                position: new(0, 0, 1, .95f),
+                position: new(0, 0, 1, .92f),
                 offset: new(10, 10, -10, -5),
                 color: "0 0 0 0"
             );
@@ -290,7 +296,7 @@ public partial class AutoBuildSnapshot
         // Title
         cui.v2.CreateText(
             container: contentPanel,
-            position: new(0, .95f, 1, 1),
+            position: new(0, .91f, 1, 1),
             offset: new(10, 0, -10, 0),
             color: "1 1 1 .8",
             fontSize: 14,
@@ -302,7 +308,7 @@ public partial class AutoBuildSnapshot
         var logsPanel = cui.v2
             .CreatePanel(
                 container: contentPanel,
-                position: new(0, 0, 1, .95f),
+                position: new(0, 0, 1, .92f),
                 offset: new(10, 10, -10, -5),
                 color: "0.1 0.1 0.1 0.5"
             );
@@ -350,7 +356,7 @@ public partial class AutoBuildSnapshot
         var clearButton = cui.v2
             .CreateButton(
                 container: contentPanel,
-                position: new(.85f, .95f, .98f, .98f),
+                position: new(.85f, .91f, .98f, .98f),
                 offset: LuiOffset.None,
                 command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandMainMenuClearLogs)}",
                 color: "0.5 0.3 0.3 1"

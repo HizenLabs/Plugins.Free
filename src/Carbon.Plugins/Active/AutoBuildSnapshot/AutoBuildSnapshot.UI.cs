@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using static UnityEngine.PlayerLoop.PreUpdate;
 
 namespace Carbon.Plugins;
 
@@ -24,7 +25,7 @@ public partial class AutoBuildSnapshot
     {
         _currentMenuTab[player.userID] = tab;
 
-        NavigateMenu(player, MenuLayer.MainMenu);
+        NavigateMenu(player, MenuLayer.MainMenu, hasUpdate: true);
     }
 
     /// <summary>
@@ -32,21 +33,18 @@ public partial class AutoBuildSnapshot
     /// </summary>
     /// <param name="player">The player to show the menu to.</param>
     /// <param name="record">The building record to show snapshots for.</param>
-    private void OpenSnapshotsMenu(BasePlayer player, BuildRecord record)
+    private void OpenSnapshotsMenu(BasePlayer player, BuildRecord record, bool isRefresh = false)
     {
         _currentBuildRecord[player.userID] = record.NetworkID;
 
-        var snapshots = Pool.Get<List<Guid>>();
-        GetSnapshotsForRecord(snapshots, record);
+        var snapshots = GetSnapshotsForRecord(record);
 
         if (snapshots.Count > 0 && !_currentSelectedSnapshot.ContainsKey(player.userID))
         {
             _currentSelectedSnapshot[player.userID] = snapshots[0];
         }
 
-        NavigateMenu(player, MenuLayer.Snapshots, true, record, snapshots);
-
-        Pool.FreeUnmanaged(ref snapshots);
+        NavigateMenu(player, MenuLayer.Snapshots, !isRefresh, isRefresh, record, snapshots);
     }
 
     /// <summary>
@@ -54,9 +52,9 @@ public partial class AutoBuildSnapshot
     /// </summary>
     /// <param name="record">The building record to get snapshots for.</param>
     /// <returns>A list of snapshot IDs for the record.</returns>
-    private void GetSnapshotsForRecord(List<System.Guid> results, BuildRecord record)
+    private List<System.Guid> GetSnapshotsForRecord(BuildRecord record)
     {
-        List<Guid> result = new();
+        var result = Pool.Get<List<Guid>>();
 
         // Try to find snapshots by the persistent ID
         if (_buildingIDToSnapshotIndex.TryGetValue(record.PersistentID, out var snapshots))
@@ -74,6 +72,8 @@ public partial class AutoBuildSnapshot
             }
             return 0;
         });
+
+        return result;
     }
 
     /// <summary>
@@ -83,6 +83,15 @@ public partial class AutoBuildSnapshot
     private void CloseConfirmationDialog(BasePlayer player)
     {
         CuiHelper.DestroyUi(player, _confirmationDialogId);
+
+        if (!_playerMenuStates.TryGetValue(player.userID, out var currentLayer))
+        {
+            // we should never get here, but catch it just in case
+            UpdateMenuState(player, MenuLayer.Closed, MenuLayer.Closed);
+            return;
+        }
+        
+        UpdateMenuState(player, currentLayer, currentLayer & ~MenuLayer.ConfirmationDialog);
     }
 
     /// <summary>
@@ -92,6 +101,7 @@ public partial class AutoBuildSnapshot
         BasePlayer player,
         MenuLayer targetLayer,
         bool appendLayer = false,
+        bool hasUpdate = false,
         params object[] args)
     {
         if (targetLayer == MenuLayer.Closed)
@@ -114,49 +124,46 @@ public partial class AutoBuildSnapshot
         if (!_playerMenuStates.TryGetValue(player.userID, out var currentLayer))
             currentLayer = MenuLayer.Closed;
 
-        if (targetLayer == currentLayer)
+        if (!hasUpdate && targetLayer == currentLayer)
         {
-            if (targetLayer == MenuLayer.MainMenu && args.Length > 0 && args[0] is MenuTab newTab)
-            {
-                if (_currentMenuTab.TryGetValue(player.userID, out var currentTab) && currentTab == newTab)
-                {
-                    return;
-                }
-            }
-            else
-            {
-                return;
-            }
+            return;
         }
 
         var previousLayer = currentLayer;
 
-        if (appendLayer)
+        if (hasUpdate)
         {
-            currentLayer |= targetLayer;
+            if (appendLayer)
+            {
+                throw new Exception($"Cannot append layer when {nameof(hasUpdate)} is true");
+            }
+
+            if (!currentLayer.HasFlag(targetLayer))
+            {
+                throw new Exception("Cannot update layer if it does not already exist in the stack");
+            }
         }
         else
         {
-            currentLayer = targetLayer;
+            if (appendLayer)
+            {
+                currentLayer |= targetLayer;
+            }
+            else
+            {
+                currentLayer = targetLayer;
+            }
         }
 
-        if (previousLayer.HasFlag(MenuLayer.ConfirmationDialog) && !currentLayer.HasFlag(MenuLayer.ConfirmationDialog))
-        {
-            CuiHelper.DestroyUi(player, _confirmationDialogId);
-        }
-
-        if (previousLayer.HasFlag(MenuLayer.Snapshots) && !currentLayer.HasFlag(MenuLayer.Snapshots))
-        {
-            CuiHelper.DestroyUi(player, _snapshotMenuId);
-        }
-
-        if (previousLayer.HasFlag(MenuLayer.MainMenu) && !currentLayer.HasFlag(MenuLayer.MainMenu))
-        {
-            CuiHelper.DestroyUi(player, _mainMenuId);
-        }
+        HandleUiDestruction(MenuLayer.ConfirmationDialog, _confirmationDialogId, player, previousLayer, currentLayer, targetLayer, hasUpdate);
+        HandleUiDestruction(MenuLayer.Snapshots, _snapshotMenuId, player, previousLayer, currentLayer, targetLayer, hasUpdate);
+        HandleUiDestruction(MenuLayer.MainMenu, _mainMenuId, player, previousLayer, currentLayer, targetLayer, hasUpdate);
 
         if (targetLayer == MenuLayer.Closed)
+        {
+            UpdateMenuState(player, previousLayer, currentLayer);
             return;
+        }
 
         using var cui = CreateCUI();
 
@@ -208,8 +215,29 @@ public partial class AutoBuildSnapshot
 
         cui.v2.SendUi(player);
 
+        UpdateMenuState(player, previousLayer, currentLayer);
+    }
+
+    private void HandleUiDestruction(
+        MenuLayer layer,
+        string uiId,
+        BasePlayer player,
+        MenuLayer previousLayer, 
+        MenuLayer currentLayer, 
+        MenuLayer targetLayer, 
+        bool hasUpdate)
+    {
+        if ((hasUpdate && targetLayer == layer) ||
+            (previousLayer.HasFlag(layer) && !currentLayer.HasFlag(layer)))
+        {
+            CuiHelper.DestroyUi(player, uiId);
+        }
+    }
+
+    private void UpdateMenuState(BasePlayer player, MenuLayer previousLayer, MenuLayer targetLayer)
+    {
         _previousMenuState[player.userID] = previousLayer;
-        _playerMenuStates[player.userID] = currentLayer;
+        _playerMenuStates[player.userID] = targetLayer;
     }
 
     /// <summary>
@@ -229,23 +257,6 @@ public partial class AutoBuildSnapshot
         // 2. Create a backup of the current state as an "undo" point
         // 3. Perform the rollback by removing/adding entities according to the snapshot
         // 4. Update all relevant tracking information
-    }
-
-    /// <summary>
-    /// Executes the undo operation for the last rollback.
-    /// </summary>
-    /// <param name="player">The player who initiated the undo.</param>
-    private void ExecuteUndo(BasePlayer player)
-    {
-        // This method would contain your implementation of the undo process
-        // For now, it just logs the action and notifies the player
-        AddLogMessage($"Player {player.displayName} initiated undo of last rollback");
-        player.ChatMessage("Undo of last rollback initiated. This feature is not yet fully implemented.");
-
-        // In a complete implementation, you would:
-        // 1. Check if there is an undo point available
-        // 2. If so, load the undo data and restore the previous state
-        // 3. Update all relevant tracking information
     }
 
     private List<string> GetRecentLogs(int count)
@@ -330,7 +341,7 @@ public partial class AutoBuildSnapshot
             return;
         }
 
-        NavigateMenu(player, MenuLayer.Snapshots, false, null, snapshotIds);
+        NavigateMenu(player, MenuLayer.Snapshots, false, false, null, snapshotIds);
 
         Pool.FreeUnmanaged(ref snapshotIds);
     }

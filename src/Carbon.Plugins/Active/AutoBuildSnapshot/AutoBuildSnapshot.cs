@@ -708,7 +708,7 @@ public partial class AutoBuildSnapshot : CarbonPlugin
     /// <param name="args">The arguments.</param>
     private void CommandToggleMenu(BasePlayer player, string command, string[] args)
     {
-        if (_playerMenuStates.TryGetValue(player.userID, out var state) && state == MenuLayer.MainMenu)
+        if (_playerMenuStates.TryGetValue(player.userID, out var state) && state != MenuLayer.Closed)
         {
             NavigateMenu(player, MenuLayer.Closed);
             return;

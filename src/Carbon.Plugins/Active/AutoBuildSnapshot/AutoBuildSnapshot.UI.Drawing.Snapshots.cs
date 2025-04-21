@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System;
 using UnityEngine;
+using Facepunch;
 
 namespace Carbon.Plugins;
 
@@ -21,7 +22,7 @@ public partial class AutoBuildSnapshot
             ? "Snapshot results"
             : $"Snapshots for Building at {record.BaseTC.ServerPosition:F1}";
 
-        var container = RenderBasicLayout(cui, title, out var main, out var header);
+        var container = RenderBasicLayout(cui, _snapshotMenuId, title, out var main, out var header);
 
         if (record != null)
         {
@@ -29,8 +30,8 @@ public partial class AutoBuildSnapshot
             var backButton = cui.v2
                 .CreateButton(
                     container: header,
-                    position: new(.8f, .15f, .93f, .85f),
-                    offset: new(4, 0, 4, 0),
+                    position: new(.88f, .15f, .962f, .85f),
+                    offset: LuiOffset.None,
                     command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsNavigateBack)}",
                     color: "0.3 0.3 0.6 0.9"
                 );
@@ -87,82 +88,30 @@ public partial class AutoBuildSnapshot
                 color: "0.15 0.15 0.15 1"
             );
 
-        // Create the snapshot details area
-        CreateSnapshotsDetail(cui, rightPanel, player, snapshots);
-
-        // Bottom buttons panel
-        var buttonPanel = cui.v2
-            .CreatePanel(
-                container: main,
-                position: new(0, 0, 1, .08f),
-                offset: new(10, 5, -10, -5),
-                color: "0.2 0.2 0.2 1"
-            );
-
-        // Show Zones button
-        var showZonesButton = cui.v2
-            .CreateButton(
-                container: buttonPanel,
-                position: new(0, .2f, .25f, .8f),
-                offset: new(10, 0, -5, 0),
-                command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsShowZones)}",
-                color: "0.3 0.3 0.6 1"
-            );
-
-        cui.v2.CreateText(
-            container: showZonesButton,
-            position: LuiPosition.Full,
-            offset: LuiOffset.None,
-            color: "1 1 1 1",
-            fontSize: 14,
-            text: "Show Zones",
-            alignment: TextAnchor.MiddleCenter
-        );
-
-        // Rollback button
-        var rollbackButton = cui.v2
-            .CreateButton(
-                container: buttonPanel,
-                position: new(.35f, .2f, .6f, .8f),
-                offset: new(5, 0, -5, 0),
-                command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsRollback)}",
-                color: "0.6 0.3 0.3 1"
-            );
-
-        cui.v2.CreateText(
-            container: rollbackButton,
-            position: LuiPosition.Full,
-            offset: LuiOffset.None,
-            color: "1 1 1 1",
-            fontSize: 14,
-            text: "Rollback",
-            alignment: TextAnchor.MiddleCenter
-        );
-
-        // TODO: Show undo button if a rollback was completed.
-        bool showUndoButton = false;
-        if (showUndoButton)
+        if (snapshots.Count > 0
+            && _currentSelectedSnapshot.TryGetValue(player.userID, out var selectedSnapshot)
+            && _snapshotMetaData.TryGetValue(selectedSnapshot, out var snapshotData))
         {
-            // Undo button
-            var undoButton = cui.v2
-                .CreateButton(
-                    container: buttonPanel,
-                    position: new(.7f, .2f, .95f, .8f),
-                    offset: new(5, 0, -10, 0),
-                    command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsUndoRollback)}",
-                    color: "0.5 0.5 0.3 1"
-                );
+            CreateSnapshotsDetail(cui, rightPanel, player, snapshotData);
 
+            CreateActionButtons(cui, main);
+
+        }
+        else
+        {
+            // No snapshot selected message
             cui.v2.CreateText(
-                container: undoButton,
+                container: rightPanel,
                 position: LuiPosition.Full,
                 offset: LuiOffset.None,
-                color: "1 1 1 1",
+                color: "1 1 1 .5",
                 fontSize: 14,
-                text: "Undo",
+                text: "Select a snapshot to view details.",
                 alignment: TextAnchor.MiddleCenter
             );
         }
+
+        Pool.FreeUnmanaged(ref snapshots);
 
         return container;
     }
@@ -313,25 +262,8 @@ public partial class AutoBuildSnapshot
         }
     }
 
-    private void CreateSnapshotsDetail(Components.CUI cui, Components.LUI.LuiContainer rightPanel, BasePlayer player, List<System.Guid> snapshots)
+    private void CreateSnapshotsDetail(Components.CUI cui, Components.LUI.LuiContainer rightPanel, BasePlayer player, BuildSnapshotMetaData snapshotData)
     {
-        if (snapshots.Count == 0
-            || !_currentSelectedSnapshot.TryGetValue(player.userID, out var selectedSnapshot)
-            || !_snapshotMetaData.TryGetValue(selectedSnapshot, out var snapshotData))
-        {
-            // No snapshot selected message
-            cui.v2.CreateText(
-                container: rightPanel,
-                position: LuiPosition.Full,
-                offset: LuiOffset.None,
-                color: "1 1 1 .5",
-                fontSize: 14,
-                text: "Select a snapshot to view details.",
-                alignment: TextAnchor.MiddleCenter
-            );
-            return;
-        }
-
         // Snapshot details section
         var detailsHeader = cui.v2
             .CreatePanel(
@@ -519,5 +451,79 @@ public partial class AutoBuildSnapshot
                 alignment: TextAnchor.MiddleLeft
             );
         }
+    }
+
+    private void CreateActionButtons(Components.CUI cui, Components.LUI.LuiContainer main)
+    {
+        // Bottom buttons panel
+        var buttonPanel = cui.v2
+            .CreatePanel(
+                container: main,
+                position: new(0, 0, 1, .08f),
+                offset: new(10, 5, -10, -5),
+                color: "0.2 0.2 0.2 1"
+            );
+
+        var offX = 0.38f;
+
+        // Show Zones button
+        var showZonesButton = cui.v2
+            .CreateButton(
+                container: buttonPanel,
+                position: new(0 + offX, .2f, .18f + offX, .8f),
+                offset: new(10, 0, -5, 0),
+                command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsShowZones)}",
+                color: "0.3 0.3 0.6 1"
+            );
+
+        cui.v2.CreateText(
+            container: showZonesButton,
+            position: LuiPosition.Full,
+            offset: LuiOffset.None,
+            color: "1 1 1 1",
+            fontSize: 14,
+            text: "Show Zones",
+            alignment: TextAnchor.MiddleCenter
+        );
+
+        // Preview button
+        var previewButton = cui.v2
+            .CreateButton(
+                container: buttonPanel,
+                position: new(.2f + offX, .2f, .38f + offX, .8f),
+                offset: new(10, 0, -5, 0),
+                command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsPreviewRollback)}",
+                color: "0.3 0.3 0.6 1"
+            );
+
+        cui.v2.CreateText(
+            container: previewButton,
+            position: LuiPosition.Full,
+            offset: LuiOffset.None,
+            color: "1 1 1 1",
+            fontSize: 14,
+            text: "Preview (30s)",
+            alignment: TextAnchor.MiddleCenter
+        );
+
+        // Rollback button
+        var rollbackButton = cui.v2
+            .CreateButton(
+                container: buttonPanel,
+                position: new(.4f + offX, .2f, .58f + offX, .8f),
+                offset: new(5, 0, -5, 0),
+                command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsRollback)}",
+                color: "0.6 0.3 0.3 1"
+            );
+
+        cui.v2.CreateText(
+            container: rollbackButton,
+            position: LuiPosition.Full,
+            offset: LuiOffset.None,
+            color: "1 1 1 1",
+            fontSize: 14,
+            text: "Rollback",
+            alignment: TextAnchor.MiddleCenter
+        );
     }
 }
