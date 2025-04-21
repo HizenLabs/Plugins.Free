@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System;
 using UnityEngine;
 using Facepunch;
+using System.Linq;
 
 namespace Carbon.Plugins;
 
@@ -116,8 +117,10 @@ public partial class AutoBuildSnapshot
         return container;
     }
 
-    private void CreateSnapshotsList(Components.CUI cui, Components.LUI.LuiContainer leftPanel, BasePlayer player, List<System.Guid> snapshots)
+    private void CreateSnapshotsList(Components.CUI cui, Components.LUI.LuiContainer leftPanel, BasePlayer player, List<System.Guid> snapshotIds)
     {
+        const int maxVisibleScrollItems = 12;
+
         // Snapshot list
         var snapshotList = cui.v2
             .CreatePanel(
@@ -127,7 +130,7 @@ public partial class AutoBuildSnapshot
                 color: "0 0 0 0"
             );
 
-        if (snapshots.Count == 0)
+        if (snapshotIds.Count == 0)
         {
             // No snapshots message
             cui.v2.CreateText(
@@ -143,10 +146,6 @@ public partial class AutoBuildSnapshot
             return;
         }
 
-        // List snapshots
-        float itemHeight = 0.08f;
-        int visibleCount = Mathf.Min(snapshots.Count, 10);
-
         // Get scroll position
         if (!_snapshotScrollIndex.TryGetValue(player.userID, out int scrollIndex))
         {
@@ -154,29 +153,43 @@ public partial class AutoBuildSnapshot
             scrollIndex = 0;
         }
 
+        var snapshots = Pool.Get<List<BuildSnapshotMetaData>>();
+        snapshots.AddRange(_snapshotMetaData
+            .Where(x => snapshotIds.Contains(x.Key))
+            .Select(x => x.Value)
+            .OrderByDescending(x => x.TimestampUTC));
+
+        var visibleLowerItem = scrollIndex + 1;
+        var visibleUpperItem = scrollIndex + maxVisibleScrollItems;
+
+        // List snapshots
+        float itemHeight = 0.08f;
+        int visibleCount = Mathf.Min(snapshots.Count, maxVisibleScrollItems);
+
         // Clamp scroll index
-        int maxScroll = Mathf.Max(0, snapshots.Count - visibleCount);
+        int maxScroll = Mathf.Max(0, snapshotIds.Count - maxVisibleScrollItems);
         scrollIndex = Mathf.Clamp(scrollIndex, 0, maxScroll);
         _snapshotScrollIndex[player.userID] = scrollIndex;
 
         // Get current selection
         Guid selectedId = Guid.Empty;
         _currentSelectedSnapshot.TryGetValue(player.userID, out selectedId);
+        
+        if (!snapshotIds.Contains(selectedId))
+        {
+            _currentSelectedSnapshot[player.userID] = Guid.Empty;
+        }
 
         for (int i = scrollIndex; i < scrollIndex + visibleCount && i < snapshots.Count; i++)
         {
-            Guid snapshotId = snapshots[i];
+            // Get metadata
+            var meta = snapshots[i];
             float yMin = 1f - (i - scrollIndex + 1) * itemHeight;
             float yMax = 1f - (i - scrollIndex) * itemHeight;
 
-            bool isSelected = snapshotId == selectedId;
+            bool isSelected = meta.ID == selectedId;
 
-            // Get metadata
-            string displayText = "Unknown Snapshot";
-            if (_snapshotMetaData.TryGetValue(snapshotId, out var meta))
-            {
-                displayText = $"{meta.TimestampUTC:yyyy-MM-dd HH:mm} ({meta.Entities} entities)";
-            }
+            var displayText = $"{meta.TimestampUTC:yyyy-MM-dd HH:mm} ({meta.Entities} entities)";
 
             // Button to select snapshot
             var snapshotButton = cui.v2
@@ -184,7 +197,7 @@ public partial class AutoBuildSnapshot
                     container: snapshotList,
                     position: new(0, yMin, 1, yMax),
                     offset: new(0, 2, 0, -2),
-                    command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsSelect)} {snapshotId}",
+                    command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsSelect)} {meta.ID}",
                     color: isSelected ? "0.2 0.4 0.6 0.8" : (i % 2 == 0 ? "0.2 0.2 0.2 0.5" : "0.25 0.25 0.25 0.5")
                 )
                 .AddCursor();
@@ -202,7 +215,7 @@ public partial class AutoBuildSnapshot
         }
 
         // Add scroll buttons if needed
-        if (snapshots.Count > visibleCount)
+        if (snapshotIds.Count > visibleCount)
         {
             // Up button (if not at top)
             if (scrollIndex > 0)
