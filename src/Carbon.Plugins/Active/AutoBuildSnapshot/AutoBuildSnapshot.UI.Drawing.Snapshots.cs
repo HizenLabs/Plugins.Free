@@ -163,9 +163,6 @@ public partial class AutoBuildSnapshot
         Guid selectedId = Guid.Empty;
         _currentSelectedSnapshot.TryGetValue(player.userID, out selectedId);
 
-        // Display snapshots
-        Puts($"Displaying snapshots {scrollIndex} to {scrollIndex + visibleCount} of {snapshots.Count}");
-        Puts($" Selected ID: {selectedId}");
         for (int i = scrollIndex; i < scrollIndex + visibleCount && i < snapshots.Count; i++)
         {
             Guid snapshotId = snapshots[i];
@@ -173,8 +170,6 @@ public partial class AutoBuildSnapshot
             float yMax = 1f - (i - scrollIndex) * itemHeight;
 
             bool isSelected = snapshotId == selectedId;
-
-            Puts($" Snapshot {i} ({snapshotId}) - Y: {yMin} to {yMax} - Selected: {isSelected}");
 
             // Get metadata
             string displayText = "Unknown Snapshot";
