@@ -15,61 +15,8 @@ public partial class AutoBuildSnapshot
     /// <param name="player">The player to show the menu to.</param>
     private LUI.LuiContainer RenderMainMenu(Components.CUI cui, BasePlayer player)
     {
-        // Create the base container with cursor
-        var container = cui.v2
-            .CreateParent(
-                parent: CUI.ClientPanels.HudMenu,
-                position: LuiPosition.Full,
-                name: _mainMenuId)
-            .AddCursor();
-
-        // Main panel
-        var main = cui.v2
-            .CreatePanel(
-                container: container,
-                position: LuiPosition.MiddleCenter,
-                offset: new(-450, -275, 450, 275),
-                color: "0 0 0 .95"
-            );
-
-        // Header
-        var header = cui.v2
-            .CreatePanel(
-                container: main,
-                position: new(0, .94f, 1, 1),
-                offset: LuiOffset.None,
-                color: "0 0 0 .9"
-            );
-
-        // Title
-        cui.v2.CreateText(
-                container: header,
-                position: new(.015f, 0.01f, .99f, .95f),
-                offset: new(0, 0, 0, 0),
-                color: "1 1 1 .8",
-                fontSize: 18,
-                text: _lang.GetMessage(LangKeys.ui_main_title, player),
-                alignment: TextAnchor.MiddleLeft
-            )
-            .SetTextFont(CUI.Handler.FontTypes.RobotoCondensedBold);
-
-        // Close button
-        var closeButton = cui.v2
-            .CreateButton(
-                container: header,
-                position: new(.965f, .15f, .99f, .85f),
-                offset: new(4, 0, 4, 0),
-                command: $"{nameof(AutoBuildSnapshot)}.menu.close",
-                color: ".6 .2 .2 .9"
-            );
-
-        cui.v2.CreateImageFromDb(
-            container: closeButton,
-            position: new(.2f, .2f, .8f, .8f),
-            offset: LuiOffset.None,
-            dbName: "close",
-            color: "1 1 1 .5"
-        );
+        var title = _lang.GetMessage(LangKeys.ui_main_title, player);
+        var container = RenderBasicLayout(cui, title, out var main, out var header);
 
         // Tabs at the top
         var tabsPanel = cui.v2

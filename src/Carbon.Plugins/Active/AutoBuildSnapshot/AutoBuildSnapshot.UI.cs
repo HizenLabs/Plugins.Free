@@ -171,12 +171,13 @@ public partial class AutoBuildSnapshot
                 if (args.Length < 2)
                     throw new ArgumentException($"{nameof(NavigateMenu)}: Expected at least 2 arguments for {nameof(MenuLayer.Snapshots)}");
 
-                if (args[0] is not BuildRecord record)
+                if (args[0] != null && args[0] is not BuildRecord)
                     throw new ArgumentException($"{nameof(NavigateMenu)}: Expected BuildRecord as first argument for {nameof(MenuLayer.Snapshots)}");
 
                 if (args[1] is not List<Guid> snapshots)
                     throw new ArgumentException($"{nameof(NavigateMenu)}: Expected List<Guid> as second argument for {nameof(MenuLayer.Snapshots)}");
 
+                var record = args[0] as BuildRecord;
                 panelId = RenderSnapshotsMenu(cui, player, record, snapshots).name;
                 break;
 
@@ -317,11 +318,21 @@ public partial class AutoBuildSnapshot
         }
         else if (!TryGetPlayerTargetCoordinates(player, out targetCoords))
         {
-            // No target found, get coords from target
-            player.ChatMessage(_lang.GetMessage(LangKeys.error_target_missing, player));
+            // No target or coordinates within maxDistance found
+            player.ChatMessage(_lang.GetMessage(LangKeys.error_invalid_target, player));
             return;
         }
 
+        var snapshotIds = Pool.Get<List<Guid>>();
+        if (!TryGetSnapshotIdsAtPosition(targetCoords, snapshotIds))
+        {
+            player.ChatMessage(_lang.GetMessage(LangKeys.error_target_no_record, player));
+            return;
+        }
+
+        NavigateMenu(player, MenuLayer.Snapshots, false, null, snapshotIds);
+
+        Pool.FreeUnmanaged(ref snapshotIds);
     }
 
     #endregion

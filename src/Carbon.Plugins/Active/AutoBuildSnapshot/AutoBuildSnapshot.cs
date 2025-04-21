@@ -478,7 +478,7 @@ public partial class AutoBuildSnapshot : CarbonPlugin
                 _abs.lang.RegisterMessages(new()
                 {
                     [nameof(LangKeys.error_no_permission)] = set.error_no_permission,
-                    [nameof(LangKeys.error_target_missing)] = set.error_target_missing,
+                    [nameof(LangKeys.error_invalid_target)] = set.error_invalid_target,
 
                     [nameof(LangKeys.ui_main_title)] = set.ui_main_title,
                 },
@@ -496,7 +496,7 @@ public partial class AutoBuildSnapshot : CarbonPlugin
 
             // Errors
             string error_no_permission { get; }
-            string error_target_missing { get; }
+            string error_invalid_target { get; }
             string error_target_no_record { get; }
 
             // User Interface
@@ -511,8 +511,8 @@ public partial class AutoBuildSnapshot : CarbonPlugin
             public string LangCode => "en";
 
             public string error_no_permission => "You do not have permission to use this command.";
-            public string error_target_missing => "You must be looking at a target object or ground.";
-            public string error_target_no_record => "Unable to find any backup records captured in the target zone.";
+            public string error_invalid_target => "You must be looking at a target object or ground.";
+            public string error_target_no_record => "Unable to find any backup records in the target area.";
 
             public string ui_main_title => "Auto Build Snapshot";
 
@@ -529,9 +529,11 @@ public partial class AutoBuildSnapshot : CarbonPlugin
         /// <summary>
         /// You must be looking at a target object or ground.
         /// </summary>
-        error_target_missing,
+        error_invalid_target,
 
-
+        /// <summary>
+        /// Unable to find any backup records in the target area.
+        /// </summary>
         error_target_no_record,
 
         /// <summary>
@@ -1178,6 +1180,33 @@ public partial class AutoBuildSnapshot : CarbonPlugin
         position = Vector3.zero;
         return false;
     }
+
+    /// <summary>
+    /// Tries to get the snapshot IDs at the specified position.
+    /// </summary>
+    /// <param name="position">The position to check.</param>
+    /// <param name="snapshotIds">The list to store the snapshot IDs.</param>
+    /// <returns>True if snapshot IDs were found, false otherwise.</returns>
+    private bool TryGetSnapshotIdsAtPosition(Vector3 position, List<System.Guid> snapshotIds)
+    {
+        var zones = _zoneSnapshotIndex
+            .Where(idx => ZoneContains(idx.Key, position))
+            .SelectMany(idx => idx.Value)
+            .Distinct();
+
+        snapshotIds.AddRange(zones);
+
+        return snapshotIds.Count > 0;
+    }
+
+    /// <summary>
+    /// Checks if the zone contains the specified coordinate.
+    /// </summary>
+    /// <param name="zone">The zone to check.</param>
+    /// <param name="coordinate">The coordinate to check.</param>
+    /// <returns>True if the zone contains the coordinate, false otherwise.</returns>
+    private bool ZoneContains(Vector4 zone, Vector3 coordinate) =>
+        (coordinate - (Vector3)zone).sqrMagnitude <= zone.w * zone.w;
 
     #endregion
 }
