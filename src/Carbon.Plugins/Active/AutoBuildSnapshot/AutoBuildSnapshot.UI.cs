@@ -181,10 +181,11 @@ public partial class AutoBuildSnapshot
                 if (args[0] != null && args[0] is not BuildRecord)
                     throw new ArgumentException($"{nameof(NavigateMenu)}: Expected BuildRecord as first argument for {nameof(MenuLayer.Snapshots)}");
 
-                if (args[1] is not List<Guid> snapshots)
+                if (args[1] != null && args[1] is not List<Guid>)
                     throw new ArgumentException($"{nameof(NavigateMenu)}: Expected List<Guid> as second argument for {nameof(MenuLayer.Snapshots)}");
 
                 var record = args[0] as BuildRecord;
+                var snapshots = args[1] as List<Guid>;
                 container = RenderSnapshotsMenu(cui, player, record, snapshots);
                 break;
 

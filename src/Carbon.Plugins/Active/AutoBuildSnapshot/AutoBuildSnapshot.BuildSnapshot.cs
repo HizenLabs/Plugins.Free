@@ -594,5 +594,10 @@ public partial class AutoBuildSnapshot
         /// The snapshot rollback is in progress.
         /// </summary>
         ProcessRollback = 1 << 2,
+
+        /// <summary>
+        /// The snapshot is locked and cannot be modified.
+        /// </summary>
+        Locked = 1 << 3,
     }
 }

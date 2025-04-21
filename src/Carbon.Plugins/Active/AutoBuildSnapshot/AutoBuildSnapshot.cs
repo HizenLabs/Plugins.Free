@@ -25,12 +25,17 @@ public partial class AutoBuildSnapshot : CarbonPlugin
     /// </summary>
     private const float _defaultMaxTargetDistance = 60;
 
+    /// <summary>
+    /// The maximum duration, in seconds, that a user can hold a snapshot handle.
+    /// </summary>
+    private const float _maxSnapshotHandleDuration = 120f;
+
     #region Debug Constants
 
-    private const string spherePrefab = "assets/prefabs/visualization/sphere.prefab";
-    private const string spherePrefabRed = "assets/bundled/prefabs/modding/events/twitch/br_sphere_red.prefab";
-    private const string spherePrefabGreen = "assets/bundled/prefabs/modding/events/twitch/br_sphere_green.prefab";
-    private const string spherePrefabPurple = "assets/bundled/prefabs/modding/events/twitch/br_sphere_purple.prefab";
+    private const string prefabSphere = "assets/prefabs/visualization/sphere.prefab";
+    private const string prefabSphereRed = "assets/bundled/prefabs/modding/events/twitch/br_sphere_red.prefab";
+    private const string prefabSphereGreen = "assets/bundled/prefabs/modding/events/twitch/br_sphere_green.prefab";
+    private const string prefabSpherePurple = "assets/bundled/prefabs/modding/events/twitch/br_sphere_purple.prefab";
 
     #endregion
 
@@ -132,9 +137,14 @@ public partial class AutoBuildSnapshot : CarbonPlugin
     private Dictionary<Guid, BuildSnapshotMetaData> _snapshotMetaData;
 
     /// <summary>
-    /// Lookup of snapshot states by snapshot id.
+    /// Handles for the snapshots that are currently being processed.
     /// </summary>
-    private Dictionary<Guid, SnapshotState> _snapshotStates;
+    private static Dictionary<Guid, SnapshotHandle> _snapshotHandles;
+
+    /// <summary>
+    /// The currently held handles by player.
+    /// </summary>
+    private static Dictionary<ulong, Guid> _playerSnapshotHandles;
 
     /// <summary>
     /// Index of snapshot ids by persistant building IDs for faster lookup.
@@ -813,7 +823,8 @@ public partial class AutoBuildSnapshot : CarbonPlugin
 
         _buildRecords = Pool.Get<Dictionary<ulong, BuildRecord>>();
         _snapshotMetaData = Pool.Get<Dictionary<Guid, BuildSnapshotMetaData>>();
-        _snapshotStates = Pool.Get<Dictionary<Guid, SnapshotState>>();
+        _snapshotHandles = Pool.Get<Dictionary<Guid, SnapshotHandle>>();
+        _playerSnapshotHandles = Pool.Get<Dictionary<ulong, Guid>>();
         _buildingIDToSnapshotIndex = Pool.Get<Dictionary<string, List<Guid>>>();
         _zoneSnapshotIndex = Pool.Get<Dictionary<Vector4, List<Guid>>>();
         _tempEntities = Pool.Get<Dictionary<ulong, List<Components.ClientEntity>>>();
@@ -858,7 +869,8 @@ public partial class AutoBuildSnapshot : CarbonPlugin
 
         Pool.Free(ref _buildRecords, true);
         Pool.FreeUnmanaged(ref _snapshotMetaData);
-        Pool.FreeUnmanaged(ref _snapshotStates);
+        Pool.Free(ref _snapshotHandles, true);
+        Pool.FreeUnmanaged(ref _playerSnapshotHandles);
         FreeDictionaryList(ref _buildingIDToSnapshotIndex);
         FreeDictionaryList(ref _zoneSnapshotIndex);
         FreeDictionaryList(ref _tempEntities);
@@ -872,7 +884,6 @@ public partial class AutoBuildSnapshot : CarbonPlugin
         Pool.FreeUnmanaged(ref _currentSelectedSnapshot);
         Pool.FreeUnmanaged(ref _snapshotScrollIndex);
         Pool.FreeUnmanaged(ref _playerRecordScrollIndex);
-
     }
 
     /// <summary>
@@ -932,7 +943,6 @@ public partial class AutoBuildSnapshot : CarbonPlugin
     private void SyncSnapshotMetaData(BuildSnapshotMetaData metaData)
     {
         _snapshotMetaData[metaData.ID] = metaData;
-        _snapshotStates[metaData.ID] = SnapshotState.Idle;
 
         IndexSnapshotMetaData(metaData);
     }
@@ -1215,5 +1225,148 @@ public partial class AutoBuildSnapshot : CarbonPlugin
     private bool ZoneContains(Vector4 zone, Vector3 coordinate) =>
         (coordinate - (Vector3)zone).sqrMagnitude <= zone.w * zone.w;
 
+    /// <summary>
+    /// Gets the snapshot state for the specified snapshot ID.
+    /// </summary>
+    /// <param name="snapshotId">The snapshot ID to check.</param>
+    /// <returns>The snapshot state.</returns>
+    private SnapshotState GetSnapshotState(BasePlayer player, System.Guid snapshotId)
+    {
+        if (_snapshotHandles.TryGetValue(snapshotId, out var handle))
+        {
+            if (handle.PlayerUserID != player.userID)
+            {
+                return SnapshotState.Locked;
+            }
+
+            return handle.State;
+        }
+
+        return SnapshotState.Idle;
+    }
+
+    /// <summary>
+    /// Formats the relative time for display.
+    /// </summary>
+    /// <param name="timeSpan">The time span to format.</param>
+    /// <returns>The formatted relative time string.</returns>
+    private string FormatRelativeTime(System.TimeSpan timeSpan)
+    {
+        List<string> parts = Pool.Get<List<string>>();
+
+        // Add days if they exist
+        if (timeSpan.Days > 0)
+            parts.Add($"{timeSpan.Days} day{(timeSpan.Days != 1 ? "s" : "")}");
+
+        // Add hours if they exist
+        if (timeSpan.Hours > 0)
+            parts.Add($"{timeSpan.Hours} hour{(timeSpan.Hours != 1 ? "s" : "")}");
+
+        // Add minutes if they exist
+        if (timeSpan.Minutes > 0)
+            parts.Add($"{timeSpan.Minutes} minute{(timeSpan.Minutes != 1 ? "s" : "")}");
+
+        // Add seconds if they exist (or if no other time units exist)
+        if (timeSpan.Seconds > 0 || parts.Count == 0)
+            parts.Add($"{timeSpan.Seconds} second{(timeSpan.Seconds != 1 ? "s" : "")}");
+
+        // Join with commas
+        var result = string.Join(", ", parts);
+
+        Pool.FreeUnmanaged(ref parts);
+
+        return result;
+    }
+
     #endregion
+
+    private class SnapshotHandle : Pool.IPooled
+    {
+        public Guid ID => Meta.ID;
+
+        public BuildSnapshotMetaData Meta { get; private set; }
+
+        public BasePlayer Player { get; private set; }
+
+        public ulong PlayerUserID => Player.userID;
+
+        public SnapshotState State { get; private set; }
+
+        public DateTime LastModified { get; private set; }
+
+        public DateTime Expiration => LastModified.AddSeconds(_maxSnapshotHandleDuration);
+
+        public TimeSpan TimeSinceModified => DateTime.UtcNow - LastModified;
+
+        public TimeSpan Remaining => Expiration - DateTime.UtcNow;
+
+        public void Update(SnapshotState state)
+        {
+            State = state;
+            LastModified = DateTime.UtcNow;
+        }
+
+        public static void Release(BasePlayer player)
+        {
+            if (_playerSnapshotHandles.TryGetValue(player.userID, out var handleId))
+            {
+                if (_snapshotHandles.TryGetValue(handleId, out var handle))
+                {
+                    Pool.Free(ref handle);
+
+                    _snapshotHandles.Remove(handleId);
+                }
+
+                _playerSnapshotHandles.Remove(player.userID);
+            }
+        }
+
+        public static bool TryTake(BuildSnapshotMetaData meta, BasePlayer player, out SnapshotHandle handle)
+        {
+            if (_playerSnapshotHandles.TryGetValue(player.userID, out var existingHandleId)
+                && existingHandleId != meta.ID)
+            {
+                Release(player);
+            }
+
+            if (_snapshotHandles.TryGetValue(meta.ID, out handle))
+            {
+                if (handle.Expiration < DateTime.UtcNow)
+                {
+                    handle.Player = player;
+                }
+            }
+            else
+            {
+                handle = Pool.Get<SnapshotHandle>();
+                handle.Meta = meta;
+                handle.Player = player;
+
+                _snapshotHandles[meta.ID] = handle;
+            }
+
+            if (handle.PlayerUserID == player.userID)
+            {
+                handle.LastModified = DateTime.UtcNow;
+
+                _playerSnapshotHandles[player.userID] = handle.ID;
+
+                return true;
+            }
+
+            return false;
+        }
+
+        public void EnterPool()
+        {
+            Meta = default;
+            Player = null;
+            LastModified = DateTime.MinValue;
+        }
+
+        public void LeavePool()
+        {
+            State = SnapshotState.Idle;
+        }
+    }
 }

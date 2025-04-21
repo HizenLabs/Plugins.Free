@@ -19,11 +19,24 @@ public partial class AutoBuildSnapshot
     /// <param name="snapshots">The list of snapshots for the record.</param>
     private LUI.LuiContainer RenderSnapshotsMenu(Components.CUI cui, BasePlayer player, BuildRecord record, List<System.Guid> snapshots)
     {
-        var title = record == null
-            ? "Snapshot results"
-            : $"Snapshots for Building at {record.BaseTC.ServerPosition:F1}";
+        if (!_snapshotGuids.TryGetValue(player.userID, out var existingList))
+        {
+            existingList = Pool.Get<List<Guid>>();
+            _snapshotGuids[player.userID] = existingList;
+        }
 
-        var container = RenderBasicLayout(cui, _snapshotMenuId, title, out var main, out var header);
+        if (snapshots == null)
+        {
+            snapshots = Pool.Get<List<Guid>>();
+            snapshots.AddRange(existingList);
+        }
+        else
+        {
+            existingList.Clear();
+            existingList.AddRange(snapshots);
+        }
+
+        var container = RenderBasicLayout(cui, _snapshotMenuId, "Snapshot results", out var main, out var header);
 
         if (record != null)
         {
@@ -93,9 +106,15 @@ public partial class AutoBuildSnapshot
             && _currentSelectedSnapshot.TryGetValue(player.userID, out var selectedSnapshot)
             && _snapshotMetaData.TryGetValue(selectedSnapshot, out var snapshotData))
         {
-            CreateSnapshotsDetail(cui, rightPanel, player, snapshotData);
+            if (TryGetSelectedSnapshotHandle(player, out var handle)
+                && handle.State == SnapshotState.Idle)
+            {
+                handle.Update(SnapshotState.Idle);
+            }
 
-            CreateActionButtons(cui, main, snapshotData);
+            CreateSnapshotsDetail(cui, player, rightPanel, handle);
+
+            CreateActionButtons(cui, player, main, handle);
 
         }
         else
@@ -265,7 +284,12 @@ public partial class AutoBuildSnapshot
         }
     }
 
-    private void CreateSnapshotsDetail(Components.CUI cui, Components.LUI.LuiContainer rightPanel, BasePlayer player, BuildSnapshotMetaData snapshotData)
+    private void CreateSnapshotsDetail(
+        Components.CUI cui,
+        BasePlayer player, 
+        Components.LUI.LuiContainer rightPanel, 
+        SnapshotHandle handle
+    )
     {
         const int maxVisibleAuthUsers = 6;
 
@@ -278,13 +302,21 @@ public partial class AutoBuildSnapshot
                 color: "0.2 0.2 0.3 1"
             );
 
+        string extra = string.Empty;
+
+        string title = "Snapshot Details";
+        if (handle.PlayerUserID != player.userID)
+        {
+            title += $" (in use by {handle.Player.displayName} | {handle.State} {FormatRelativeTime(handle.TimeSinceModified)} ago)";
+        }
+
         cui.v2.CreateText(
             container: detailsHeader,
             position: LuiPosition.Full,
             offset: new(10, 0, -10, 0),
             color: "1 1 1 1",
             fontSize: 14,
-            text: "Snapshot Details",
+            text: title,
             alignment: TextAnchor.MiddleLeft
         ).SetTextFont(CUI.Handler.FontTypes.RobotoCondensedBold);
 
@@ -304,7 +336,7 @@ public partial class AutoBuildSnapshot
             offset: new(5, 0, -5, 0),
             color: "1 1 1 .9",
             fontSize: 14,
-            text: $"Timestamp: {snapshotData.TimestampUTC:yyyy-MM-dd HH:mm:ss} UTC",
+            text: $"Timestamp: {handle.Meta.TimestampUTC:yyyy-MM-dd HH:mm:ss} UTC",
             alignment: TextAnchor.MiddleLeft
         );
 
@@ -315,7 +347,7 @@ public partial class AutoBuildSnapshot
             offset: new(5, 0, -5, 0),
             color: "1 1 1 .9",
             fontSize: 14,
-            text: $"Total Entities: {snapshotData.Entities}",
+            text: $"Total Entities: {handle.Meta.Entities}",
             alignment: TextAnchor.MiddleLeft
         );
 
@@ -326,7 +358,7 @@ public partial class AutoBuildSnapshot
             offset: new(5, 0, -5, 0),
             color: "1 1 1 .9",
             fontSize: 14,
-            text: $"Linked Buildings: {snapshotData.LinkedBuildings.Count}",
+            text: $"Linked Buildings: {handle.Meta.LinkedBuildings.Count}",
             alignment: TextAnchor.MiddleLeft
         );
 
@@ -337,15 +369,15 @@ public partial class AutoBuildSnapshot
             offset: new(5, 0, -5, 0),
             color: "1 1 1 .9",
             fontSize: 14,
-            text: $"Authorized Users: {snapshotData.AuthorizedPlayers.Count}",
+            text: $"Authorized Users: {handle.Meta.AuthorizedPlayers.Count}",
             alignment: TextAnchor.MiddleLeft
         );
 
         // Display authorized users
-        int authCount = Mathf.Min(snapshotData.AuthorizedPlayers.Count, maxVisibleAuthUsers);
+        int authCount = Mathf.Min(handle.Meta.AuthorizedPlayers.Count, maxVisibleAuthUsers);
         for (int i = 0; i < authCount; i++)
         {
-            var user = snapshotData.AuthorizedPlayers[i];
+            var user = handle.Meta.AuthorizedPlayers[i];
             cui.v2.CreateText(
                 container: detailsContent,
                 position: new(0.03f, .55f - ((i + 1) * 0.08f), 1, .55f - (i * 0.08f)),
@@ -358,9 +390,9 @@ public partial class AutoBuildSnapshot
         }
 
         // Show "more users" if there are more than we displayed
-        if (snapshotData.AuthorizedPlayers.Count > authCount)
+        if (handle.Meta.AuthorizedPlayers.Count > authCount)
         {
-            int remainingUsers = snapshotData.AuthorizedPlayers.Count - authCount;
+            int remainingUsers = handle.Meta.AuthorizedPlayers.Count - authCount;
             cui.v2.CreateText(
                 container: detailsContent,
                 position: new(0.03f, .55f - ((authCount + 1) * 0.08f), 1, .55f - (authCount * 0.08f)),
@@ -392,10 +424,10 @@ public partial class AutoBuildSnapshot
         ).SetTextFont(CUI.Handler.FontTypes.RobotoCondensedBold);
 
         // List linked buildings
-        int buildingCount = Mathf.Min(snapshotData.LinkedBuildings.Count, 3); // Show up to 3 buildings
+        int buildingCount = Mathf.Min(handle.Meta.LinkedBuildings.Count, 3); // Show up to 3 buildings
         int buildingIndex = 0;
 
-        foreach (var building in snapshotData.LinkedBuildings)
+        foreach (var building in handle.Meta.LinkedBuildings)
         {
             if (buildingIndex >= buildingCount) break;
 
@@ -444,9 +476,9 @@ public partial class AutoBuildSnapshot
         }
 
         // Show "more buildings" if there are more than we displayed
-        if (snapshotData.LinkedBuildings.Count > buildingCount)
+        if (handle.Meta.LinkedBuildings.Count > buildingCount)
         {
-            int remainingBuildings = snapshotData.LinkedBuildings.Count - buildingCount;
+            int remainingBuildings = handle.Meta.LinkedBuildings.Count - buildingCount;
             cui.v2.CreateText(
                 container: linkedBuildingsPanel,
                 position: new(0, .85f - ((buildingCount + 1) * 0.3f), 1, .85f - (buildingCount * 0.3f)),
@@ -459,8 +491,22 @@ public partial class AutoBuildSnapshot
         }
     }
 
-    private void CreateActionButtons(Components.CUI cui, Components.LUI.LuiContainer main, BuildSnapshotMetaData snapshotData)
+    private void CreateActionButtons(
+        Components.CUI cui,
+        BasePlayer player,
+        Components.LUI.LuiContainer main,
+        SnapshotHandle handle
+    )
     {
+        const float offX = 0.38f;
+        const string rgbZones = "0.408 0.435 0.706 1.0";
+        const string rgbZonesActive = "0.475 0.506 0.824 1.0";
+        const string rgbPreview = "0.275 0.514 0.651 1.0";
+        const string rgbPreviewActive = "0.322 0.600 0.761 1.0"; ;
+        const string rgbRollback = "0.6 0.3 0.3 1";
+        const string rgbRollbackActive = "0.75 0.35 0.35 1";
+        const string rgbDisabled = ".5 .5 .5 1";
+
         // Bottom buttons panel
         var buttonPanel = cui.v2
             .CreatePanel(
@@ -470,34 +516,68 @@ public partial class AutoBuildSnapshot
                 color: "0.2 0.2 0.2 1"
             );
 
-        var offX = 0.38f;
-
-        const string rgbZones = "0.408 0.435 0.706 1.0";
-        const string rgbZonesActive = "0.475 0.506 0.824 1.0";
-
-        const string rgbPreview = "0.275 0.514 0.651 1.0";
-        const string rgbPreviewActive = "0.322 0.600 0.761 1.0"; ;
-
-        const string rgbRollback = "0.6 0.3 0.3 1";
-        const string rgbRollbackActive = "0.75 0.35 0.35 1";
-
-        if (!_snapshotStates.TryGetValue(snapshotData.ID, out var snapshotState))
+        LUI.LuiContainer showZonesButton, previewButton, rollbackButton;
+        if (handle.PlayerUserID != player.userID)
         {
-            snapshotState = SnapshotState.Idle;
-            _snapshotStates[snapshotData.ID] = snapshotState;
-        }
+            showZonesButton = cui.v2
+                .CreatePanel(
+                    container: buttonPanel,
+                    position: new(0 + offX, .2f, .18f + offX, .8f),
+                    offset: new(10, 0, -5, 0),
+                    color: rgbDisabled
+                );
 
-        // Show Zones button
-        var showZonesButton = cui.v2
-            .CreateButton(
-                container: buttonPanel,
-                position: new(0 + offX, .2f, .18f + offX, .8f),
-                offset: new(10, 0, -5, 0),
-                command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsShowZones)} {snapshotData.ID}",
-                color: snapshotState.HasFlag(SnapshotState.PreviewZones)
-                    ? rgbZonesActive
-                    : rgbZones
-            );
+            previewButton = cui.v2
+                .CreatePanel(
+                    container: buttonPanel,
+                    position: new(.2f + offX, .2f, .38f + offX, .8f),
+                    offset: new(10, 0, -5, 0),
+                    color: rgbDisabled
+                );
+
+            rollbackButton = cui.v2
+                .CreatePanel(
+                    container: buttonPanel,
+                    position: new(.4f + offX, .2f, .58f + offX, .8f),
+                    offset: new(5, 0, -5, 0),
+                    color: rgbDisabled
+                );
+        }
+        else
+        {
+            showZonesButton = cui.v2
+                .CreateButton(
+                    container: buttonPanel,
+                    position: new(0 + offX, .2f, .18f + offX, .8f),
+                    offset: new(10, 0, -5, 0),
+                    command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsShowZones)} {handle.Meta.ID}",
+                    color: handle.State.HasFlag(SnapshotState.PreviewZones)
+                        ? rgbZonesActive
+                        : rgbZones
+                );
+
+            previewButton = cui.v2
+                .CreateButton(
+                    container: buttonPanel,
+                    position: new(.2f + offX, .2f, .38f + offX, .8f),
+                    offset: new(10, 0, -5, 0),
+                    command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsPreviewRollback)} {handle.Meta.ID}",
+                    color: handle.State.HasFlag(SnapshotState.PreviewRollback)
+                        ? rgbPreviewActive
+                        : rgbPreview
+                );
+
+            rollbackButton = cui.v2
+                .CreateButton(
+                    container: buttonPanel,
+                    position: new(.4f + offX, .2f, .58f + offX, .8f),
+                    offset: new(5, 0, -5, 0),
+                    command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsRollback)} {handle.Meta.ID}",
+                    color: handle.State.HasFlag(SnapshotState.ProcessRollback)
+                        ? rgbRollbackActive
+                        : rgbRollback
+                );
+        }
 
         cui.v2.CreateText(
             container: showZonesButton,
@@ -509,18 +589,6 @@ public partial class AutoBuildSnapshot
             alignment: TextAnchor.MiddleCenter
         );
 
-        // Preview button
-        var previewButton = cui.v2
-            .CreateButton(
-                container: buttonPanel,
-                position: new(.2f + offX, .2f, .38f + offX, .8f),
-                offset: new(10, 0, -5, 0),
-                command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsPreviewRollback)} {snapshotData.ID}",
-                color: snapshotState.HasFlag(SnapshotState.PreviewRollback)
-                    ? rgbPreviewActive
-                    : rgbPreview
-            );
-
         cui.v2.CreateText(
             container: previewButton,
             position: LuiPosition.Full,
@@ -530,18 +598,6 @@ public partial class AutoBuildSnapshot
             text: "Preview (30s)",
             alignment: TextAnchor.MiddleCenter
         );
-
-        // Rollback button
-        var rollbackButton = cui.v2
-            .CreateButton(
-                container: buttonPanel,
-                position: new(.4f + offX, .2f, .58f + offX, .8f),
-                offset: new(5, 0, -5, 0),
-                command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsRollback)} {snapshotData.ID}",
-                color: snapshotState.HasFlag(SnapshotState.ProcessRollback)
-                    ? rgbRollbackActive
-                    : rgbRollback
-            );
 
         cui.v2.CreateText(
             container: rollbackButton,

@@ -25,16 +25,9 @@ public partial class AutoBuildSnapshot
     [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.{nameof(CommandGlobalTeleport)}")]
     private void CommandGlobalTeleport(BasePlayer player, string command, string[] args)
     {
-        // Check admin permission
-        if (!permission.UserHasPermission(player.UserIDString, _config.Commands.AdminPermission))
-        {
-            player.ChatMessage(_lang.GetMessage(LangKeys.error_no_permission, player));
-            return;
-        }
+        if (!UserHasPermission(player, _config.Commands.AdminPermission)) return;
 
-        //============================ MAIN MENU ========================
-        if (args.Length < 3)
-            return;
+        if (args.Length < 3) return;
 
         if (float.TryParse(args[0], out float x) &&
             float.TryParse(args[1], out float y) &&
@@ -97,12 +90,7 @@ public partial class AutoBuildSnapshot
     [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.{nameof(CommandMainMenuClearLogs)}")]
     private void CommandMainMenuClearLogs(BasePlayer player)
     {
-        // Check admin permission
-        if (!permission.UserHasPermission(player.UserIDString, _config.Commands.AdminPermission))
-        {
-            player.ChatMessage(_lang.GetMessage(LangKeys.error_no_permission, player));
-            return;
-        }
+        if (!UserHasPermission(player, _config.Commands.AdminPermission)) return;
 
         ClearLogMessages();
 
@@ -169,57 +157,40 @@ public partial class AutoBuildSnapshot
     [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsShowZones)}")]
     private void CommandSnapshotsShowZones(BasePlayer player)
     {
-        // Check admin permission
-        if (!permission.UserHasPermission(player.UserIDString, _config.Commands.AdminPermission))
+        if (!UserHasPermission(player, _config.Commands.AdminPermission)) return;
+
+        if (TryGetSelectedSnapshotHandle(player, out var handle))
         {
-            player.ChatMessage(_lang.GetMessage(LangKeys.error_no_permission, player));
-            return;
+            handle.Update(SnapshotState.Locked);
         }
 
-        /*
-        if (_currentSelectedSnapshot.TryGetValue(player.userID, out var snapshotId))
-        {
-            // TODO: Create visualization for the zones
-            // Create timer callback to remove the zones after a certain time
-        }
-        */
+        NavigateMenu(player, MenuLayer.Snapshots, false, true, null, null);
     }
 
     [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsPreviewRollback)}")]
     private void CommandSnapshotsPreviewRollback(BasePlayer player)
     {
-        // Check admin permission
-        if (!permission.UserHasPermission(player.UserIDString, _config.Commands.AdminPermission))
+        if (!UserHasPermission(player, _config.Commands.AdminPermission)) return;
+
+        if (TryGetSelectedSnapshotHandle(player, out var handle))
         {
-            player.ChatMessage(_lang.GetMessage(LangKeys.error_no_permission, player));
-            return;
+            handle.Update(SnapshotState.PreviewRollback);
         }
 
-        /*
-        if (_currentSelectedSnapshot.TryGetValue(player.userID, out var snapshotId))
-        {
-            // TODO: Create visualization for the zones
-            // Create timer callback to remove the zones after a certain time
-        }
-        */
+        NavigateMenu(player, MenuLayer.Snapshots, false, true, null, null);
     }
 
     [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsRollback)}")]
     private void CommandSnapshotsRollback(BasePlayer player)
     {
-        // Check admin permission
-        if (!_config.Commands.UserHasPermission(player, _config.Commands.Rollback, this))
-        {
-            player.ChatMessage(_lang.GetMessage(LangKeys.error_no_permission, player));
-            return;
-        }
+        if (!UserHasPermission(player, _config.Commands.AdminPermission)) return;
 
-        if (_currentSelectedSnapshot.TryGetValue(player.userID, out Guid snapshotId))
+        if (TryGetSelectedSnapshotHandle(player, out var handle))
         {
             NavigateMenu(player, MenuLayer.ConfirmationDialog, true, false,
                 "Confirm Rollback",
-                $"Are you sure you want to rollback to the snapshot from {_snapshotMetaData[snapshotId].TimestampUTC:yyyy-MM-dd HH:mm:ss}?",
-                $"{nameof(AutoBuildSnapshot)}.{nameof(CommandConfirmationRollback)} {snapshotId}"
+                $"Are you sure you want to rollback to the snapshot from {handle.Meta.TimestampUTC:yyyy-MM-dd HH:mm:ss}?",
+                $"{nameof(AutoBuildSnapshot)}.{nameof(CommandConfirmationRollback)} {handle.ID}"
             );
         }
     }
@@ -256,6 +227,70 @@ public partial class AutoBuildSnapshot
             // Execute rollback (implementation would be in your plugin)
             ExecuteRollback(player, snapshotId);
         }
+    }
+
+    #endregion
+
+    #region Helpers
+
+    private bool UserHasPermission(BasePlayer player, string permissionName)
+    {
+        if (!permission.UserHasPermission(player.UserIDString, permissionName))
+        {
+            player.ChatMessage(_lang.GetMessage(LangKeys.error_no_permission, player));
+            return false;
+        }
+
+        return true;
+    }
+
+    private bool UserHasPermission(BasePlayer player, AutoBuildSnapshotConfig.CommandSetting command)
+    {
+        if (_config.Commands.UserHasPermission(player, command, this))
+        {
+            player.ChatMessage(_lang.GetMessage(LangKeys.error_no_permission, player));
+            return false;
+        }
+
+        return true;
+    }
+
+    private bool TryGetSelectedSnapshotHandle(BasePlayer player, out SnapshotHandle handle)
+    {
+        if (!_currentSelectedSnapshot.TryGetValue(player.userID, out var snapshotId))
+        {
+            player.ChatMessage("You must select a snapshot before doing that.");
+
+            handle = null;
+            return false;
+        }
+
+        if (!_snapshotMetaData.TryGetValue(snapshotId, out var meta))
+        {
+            player.ChatMessage("Invalid snapshot selected.");
+
+            handle = null;
+            return false;
+        }
+
+        if (!SnapshotHandle.TryTake(meta, player, out handle))
+        {
+            if (handle != null)
+            {
+                player.ChatMessage($"Snapshot is already in use by '{handle.Player.displayName}' (State: {handle.State})");
+                player.ChatMessage($" Last activity: {FormatRelativeTime(handle.TimeSinceModified)} ago");
+                player.ChatMessage($" Expiration: {handle.Expiration:yyyy-MM-dd HH:mm:ss} (in {FormatRelativeTime(handle.Remaining)})");
+            }
+            else
+            {
+                // This should not happen. We either create or retrieve existing handle.
+                throw new Exception("Handle should not be null.");
+            }
+
+            return false;
+        }
+
+        return true;
     }
 
     #endregion

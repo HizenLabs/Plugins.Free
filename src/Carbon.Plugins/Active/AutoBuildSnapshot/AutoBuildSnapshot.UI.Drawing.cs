@@ -1,5 +1,6 @@
 ﻿using Carbon.Components;
 using Facepunch;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -13,10 +14,12 @@ namespace Carbon.Plugins;
 public partial class AutoBuildSnapshot
 {
     private Dictionary<MenuLayer, string> _menuLayerIdLookup;
+    private Dictionary<ulong, List<Guid>> _snapshotGuids;
 
     private void InitDrawingResources()
     {
         _menuLayerIdLookup = Pool.Get<Dictionary<MenuLayer, string>>();
+        _snapshotGuids = Pool.Get<Dictionary<ulong, List<Guid>>>();
 
         _menuLayerIdLookup[MenuLayer.MainMenu] = _mainMenuId;
         _menuLayerIdLookup[MenuLayer.ConfirmationDialog] = _confirmationDialogId;
@@ -31,6 +34,7 @@ public partial class AutoBuildSnapshot
         }
 
         Pool.FreeUnmanaged(ref _menuLayerIdLookup);
+        FreeDictionaryList(ref _snapshotGuids);
     }
 
     private LUI.LuiContainer RenderBasicLayout(Components.CUI cui, string menuId, string title, out LUI.LuiContainer main, out LUI.LuiContainer header)
