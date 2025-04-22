@@ -3,6 +3,7 @@ using Oxide.Core;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using UnityEngine;
 
@@ -264,9 +265,8 @@ public partial class AutoBuildSnapshot
             {
                 var now = DateTime.UtcNow;
                 var snapshotId = Guid.NewGuid();
-                var snapshotPrefix = $"{now:hhmmss}_{snapshotId}";
-                var dataFile = $"{_snapshotDataDirectory}/{snapshotPrefix}.{_snapshotDataExtension}";
-                var metaFile = $"{_snapshotDataDirectory}/{snapshotPrefix}.{_snapshotMetaExtension}";
+                var dataFile = $"{_snapshotDataDirectory}/{now:yyyyMMdd}/{now:hhmmss}_{snapshotId}.{_snapshotDataExtension}";
+                var metaFile = $"{_snapshotDataDirectory}/{now:yyyyMMdd}/{now:hhmmss}_{snapshotId}.{_snapshotMetaExtension}";
 
                 WriteSnapshotMeta(now, snapshotId, dataFile, metaFile);
                 WriteSnapshotData(now, snapshotId, dataFile, metaFile);
@@ -348,7 +348,8 @@ public partial class AutoBuildSnapshot
                     Zones = zones,
                 };
 
-                Interface.Oxide.DataFileSystem.WriteObject(dataFile, snapshotData);
+                // Interface.Oxide.DataFileSystem.WriteObject(dataFile, snapshotData);
+                snapshotData.Save(Path.Combine(Interface.Oxide.DataDirectory, dataFile));
             }
             finally
             {
@@ -425,17 +426,7 @@ public partial class AutoBuildSnapshot
         /// </summary>
         public void EnterPool()
         {
-            foreach (var recordId in _buildingEntities.Keys)
-            {
-                var recordEntities = _buildingEntities[recordId];
-                if (recordEntities != null)
-                {
-                    Pool.FreeUnmanaged(ref recordEntities);
-                    _buildingEntities[recordId] = null;
-                }
-            }
-
-            Pool.FreeUnmanaged(ref _buildingEntities);
+            FreeDictionaryList(ref _buildingEntities);
             Pool.FreeUnmanaged(ref _authorizedPlayers);
             Pool.FreeUnmanaged(ref _linkedRecords);
             Pool.FreeUnmanaged(ref _stepRecordQueue);
@@ -576,5 +567,37 @@ public partial class AutoBuildSnapshot
         /// The zones this base is comprised of.
         /// </summary>
         public required List<Vector4> Zones { get; init; }
+
+        /// <summary>
+        /// Saves the snapshot data to the specified file.
+        /// </summary>
+        /// <param name="file">The file to save to.</param>
+        public void Save(string file)
+        {
+            using var stream = File.Open(file, FileMode.Create);
+            using var writer = new BinaryWriter(stream);
+
+            SerializationHelper.Write(writer, _instance.Version);
+            writer.Write(ID.ToByteArray());
+            writer.Write(MetaDataFile);
+            writer.Write(Timestamp.ToBinary());
+
+            writer.Write(Zones.Count);
+            foreach (var zone in Zones)
+            {
+                SerializationHelper.Write(writer, zone);
+            }
+
+            writer.Write(Entities.Count);
+            foreach (var kvp in Entities)
+            {
+                writer.Write(kvp.Key);
+                writer.Write(kvp.Value.Count);
+                foreach (var entity in kvp.Value)
+                {
+                    entity.Save(writer);
+                }
+            }
+        }
     }
 }

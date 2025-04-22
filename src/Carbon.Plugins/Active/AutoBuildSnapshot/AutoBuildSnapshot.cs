@@ -63,9 +63,9 @@ public partial class AutoBuildSnapshot : CarbonPlugin
 
     #region Snapshot Files
 
-    private const string _snapshotDataDirectory = "autobuildsnapshot/v1";
-    private const string _snapshotDataExtension = "data";
-    private const string _snapshotMetaExtension = "data.info";
+    private const string _snapshotDataDirectory = "abs/v1";
+    private const string _snapshotDataExtension = "data.bin";
+    private const string _snapshotMetaExtension = "meta";
 
     #endregion
 
@@ -904,14 +904,19 @@ public partial class AutoBuildSnapshot : CarbonPlugin
             return;
         }
 
-        var snapshotMetaDataFiles = Interface.Oxide.DataFileSystem.GetFiles(_snapshotDataDirectory, $"*.{_snapshotMetaExtension}.json");
-        if (snapshotMetaDataFiles.Length == 0)
+        var snapshotMetaDataFiles = Pool.Get<List<string>>();
+        foreach (var directory in Directory.GetDirectories(snapshotDirectory))
+        {
+            snapshotMetaDataFiles.AddRange(Directory.GetFiles(directory, $"*.{_snapshotMetaExtension}"));
+        }
+
+        if (snapshotMetaDataFiles.Count == 0)
         {
             AddLogMessage("Did not find any snapshots (directory was empty or had no matching meta data files).");
             return;
         }
 
-        AddLogMessage($"Loading {snapshotMetaDataFiles.Length} snapshot(s)");
+        AddLogMessage($"Loading {snapshotMetaDataFiles.Count} snapshot(s)");
 
         var retentionDate = DateTime.UtcNow.AddHours(-_config.General.SnapshotRetentionPeriodHours);
         int deletions = 0;
@@ -1014,7 +1019,7 @@ public partial class AutoBuildSnapshot : CarbonPlugin
     /// <returns>The generated id.</returns>
     public static string GetPersistanceID<T>(T entity)
         where T : BaseEntity =>
-        GetPersistanceID(typeof(T), entity.ServerPosition);
+        GetPersistanceID(entity.GetType(), entity.ServerPosition);
 
     /// <summary>
     /// Generates an id for the entity based on prefab and location that should persist between server restarts.
@@ -1043,7 +1048,7 @@ public partial class AutoBuildSnapshot : CarbonPlugin
     /// <param name="z">The z coordinate of the entity.</param>
     /// <returns>The generated id.</returns>
     public static string GetPersistanceID(string typeName, float x, float y, float z) =>
-        $"{typeName}[{x:F2}|{y:F2}|{z:F2}]";
+        $"{typeName}({x:F2},{y:F2},{z:F2})";
 
     /// <summary>
     /// Checks if the entity has a valid id and isn't destroyed.

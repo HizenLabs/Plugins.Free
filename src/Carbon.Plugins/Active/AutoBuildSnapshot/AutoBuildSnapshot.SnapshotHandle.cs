@@ -100,9 +100,11 @@ public partial class AutoBuildSnapshot
             if (player.userID != PlayerUserID)
                 return false;
 
-            // Create a snapshot of the record first
+            // Create a snapshot of any record that "collides" with this snapshot's zones
+            // _instance.GetSnapshotAffectedRecords(snapshotId);
 
             // Then, begin rollback to selected snapshot
+            _instance.ExecuteRollback(player, ID);
 
             return false;
         }

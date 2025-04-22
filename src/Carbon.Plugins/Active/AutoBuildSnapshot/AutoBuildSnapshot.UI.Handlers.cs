@@ -185,12 +185,13 @@ public partial class AutoBuildSnapshot
     {
         if (!UserHasPermission(player, _config.Commands.AdminPermission)) return;
 
-        if (TryGetSelectedSnapshotHandle(player, out var handle))
+        if (TryGetSelectedSnapshotHandle(player, out var handle)
+            && handle.TryConfirmationLock(player, out var confirmationCode))
         {
             NavigateMenu(player, MenuLayer.ConfirmationDialog, true, false,
                 "Confirm Rollback",
                 $"Are you sure you want to rollback to the snapshot from {handle.Meta.TimestampUTC:yyyy-MM-dd HH:mm:ss}?",
-                $"{nameof(AutoBuildSnapshot)}.{nameof(CommandConfirmationRollback)} {handle.ID}"
+                $"{nameof(AutoBuildSnapshot)}.{nameof(CommandConfirmationRollback)} {confirmationCode}"
             );
         }
     }
@@ -212,20 +213,23 @@ public partial class AutoBuildSnapshot
         if (args.Length == 0)
             return;
 
-        // Check admin permission
-        if (!_config.Commands.UserHasPermission(player, _config.Commands.Rollback, this))
+        CloseConfirmationDialog(player);
+
+        if (!UserHasPermission(player, _config.Commands.Rollback)) return;
+
+        if (!Guid.TryParse(args[0], out Guid confirmationCode))
         {
-            player.ChatMessage(_lang.GetMessage(LangKeys.error_no_permission, player));
-            CloseConfirmationDialog(player);
+            player.ChatMessage("Confirmation expired or invalid.");
             return;
         }
 
-        if (Guid.TryParse(args[0], out Guid snapshotId) && _snapshotMetaData.ContainsKey(snapshotId))
+        if (TryGetSelectedSnapshotHandle(player, out var handle))
         {
-            CloseConfirmationDialog(player);
-
-            // Execute rollback (implementation would be in your plugin)
-            ExecuteRollback(player, snapshotId);
+            if (!handle.TryBeginRollback(player, confirmationCode))
+            {
+                player.ChatMessage("Failed to begin rollback.");
+                return;
+            }
         }
     }
 

@@ -1,12 +1,10 @@
 ﻿using Carbon.Components;
 using Facepunch;
 using Oxide.Game.Rust.Cui;
-using Oxide.Plugins;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using static UnityEngine.PlayerLoop.PreUpdate;
 
 namespace Carbon.Plugins;
 
