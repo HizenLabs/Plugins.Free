@@ -110,7 +110,7 @@ public partial class AutoBuildSnapshot
 
             if (recursive)
             {
-                NextFrame(() => ProcessNextSave());
+                NextFrame(() => ProcessNextSave(recursive: true));
             }
         });
 
@@ -402,16 +402,6 @@ public partial class AutoBuildSnapshot
             {
                 _zonesDirty = true;
             }
-        }
-
-        /// <summary>
-        /// Scans 2x building priv area for any other TCs, and if they have 
-        /// any overlapping owners, they will be linked.
-        /// Planning to make this configurable in the future.
-        /// </summary>
-        public IEnumerable<BuildRecord> FindLinkedRecords()
-        {
-            return Array.Empty<BuildRecord>();
         }
 
         /// <summary>
