@@ -569,6 +569,36 @@ public partial class AutoBuildSnapshot
         public required List<Vector4> Zones { get; init; }
 
         /// <summary>
+        /// Loads the snapshot data from the specified file.
+        /// </summary>
+        /// <param name="file">The file to load from.</param>
+        public static SnapshotData Load(string file)
+        {
+            if (!File.Exists(file))
+            {
+                file = Path.Combine(Interface.Oxide.DataDirectory, file);
+                if (!File.Exists(file))
+                {
+                    throw new FileNotFoundException($"Snapshot data file not found: {file}");
+                }
+            }
+
+            using var stream = File.Open(file, FileMode.Open);
+            using var reader = new BinaryReader(stream);
+
+            var version = SerializationHelper.ReadVersionNumber(reader);
+
+            return new SnapshotData
+            {
+                ID = SerializationHelper.ReadGuid(reader),
+                MetaDataFile = reader.ReadString(),
+                Timestamp = SerializationHelper.ReadDateTime(reader),
+                Zones = SerializationHelper.ReadList<Vector4>(reader),
+                Entities = SerializationHelper.ReadDictionary<string, List<PersistantEntity>>(reader)
+            };
+        }
+
+        /// <summary>
         /// Saves the snapshot data to the specified file.
         /// </summary>
         /// <param name="file">The file to save to.</param>
@@ -578,26 +608,13 @@ public partial class AutoBuildSnapshot
             using var writer = new BinaryWriter(stream);
 
             SerializationHelper.Write(writer, _instance.Version);
-            writer.Write(ID.ToByteArray());
+            SerializationHelper.Write(writer, ID);
+
             writer.Write(MetaDataFile);
-            writer.Write(Timestamp.ToBinary());
 
-            writer.Write(Zones.Count);
-            foreach (var zone in Zones)
-            {
-                SerializationHelper.Write(writer, zone);
-            }
-
-            writer.Write(Entities.Count);
-            foreach (var kvp in Entities)
-            {
-                writer.Write(kvp.Key);
-                writer.Write(kvp.Value.Count);
-                foreach (var entity in kvp.Value)
-                {
-                    entity.Write(writer);
-                }
-            }
+            SerializationHelper.Write(writer, Timestamp);
+            SerializationHelper.Write(writer, Zones);
+            SerializationHelper.Write(writer, Entities);
         }
     }
 }

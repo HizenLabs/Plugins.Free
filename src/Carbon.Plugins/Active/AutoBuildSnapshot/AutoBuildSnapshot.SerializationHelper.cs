@@ -51,6 +51,7 @@ public partial class AutoBuildSnapshot
             DateTime = 24,
             TimeSpan = 25,
             Type = 26,
+            Guid = 27,
 
             // Unity specific types (50-99)
             Vector2 = 50,
@@ -115,12 +116,28 @@ public partial class AutoBuildSnapshot
         /// <summary>
         /// Reads a Type from the binary stream
         /// </summary>
-        private static Type ReadType(BinaryReader reader)
+        public static Type ReadType(BinaryReader reader)
         {
             string typeName = reader.ReadString();
             Type type = Type.GetType(typeName);
 
             return type ?? throw new InvalidOperationException($"Could not resolve type: {typeName}");
+        }
+
+        /// <summary>
+        /// Writes a Guid to the binary stream
+        /// </summary>
+        public static void Write(BinaryWriter writer, Guid guid)
+        {
+            writer.Write(guid.ToByteArray());
+        }
+
+        /// <summary>
+        /// Reads a Guid from the binary stream
+        /// </summary>
+        public static Guid ReadGuid(BinaryReader reader)
+        {
+            return new Guid(reader.ReadBytes(16));
         }
 
         #endregion
@@ -342,17 +359,10 @@ public partial class AutoBuildSnapshot
             var type = ReadTypeMarker(reader);
             int count = reader.ReadInt32();
 
-            var cacheKey = (TypeMarker.Array, type);
-            if (!_genericPoolT1.TryGetValue(cacheKey, out var method))
-            {
-                var csType = GetCSharpType(type);
-                var arrayType = typeof(Array).MakeGenericType(csType);
-                method = typeof(Pool).GetMethod(nameof(Pool.Get)).MakeGenericMethod(arrayType);
+            var csType = GetCSharpType(type);
+            var arrayType = csType.MakeArrayType();
 
-                _genericPoolT1[cacheKey] = method;
-            }
-
-            var array = (Array)method.Invoke(null, new object[] { count });
+            var array = Array.CreateInstance(csType, count);
             for (int i = 0; i < count; i++)
             {
                 var item = Read<object>(reader, type);
