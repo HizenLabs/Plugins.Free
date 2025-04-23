@@ -700,6 +700,7 @@
   <ItemGroup>
     <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.BuildingScanner.cs" />
     <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.BuildSnapshot.cs" />
+    <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.SerializationHelper.cs" />
     <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.SnapshotHandle.cs" />
     <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.ChangeManagement.cs" />
     <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.cs" />

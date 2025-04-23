@@ -595,7 +595,7 @@ public partial class AutoBuildSnapshot
                 writer.Write(kvp.Value.Count);
                 foreach (var entity in kvp.Value)
                 {
-                    entity.Save(writer);
+                    entity.Write(writer);
                 }
             }
         }
