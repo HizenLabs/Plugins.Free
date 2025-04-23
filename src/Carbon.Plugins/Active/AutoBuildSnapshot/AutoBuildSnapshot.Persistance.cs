@@ -1,5 +1,6 @@
 ﻿using Facepunch;
 using Newtonsoft.Json;
+using Oxide.Core;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -30,6 +31,7 @@ public partial class AutoBuildSnapshot
         /// <param name="entity">The entity to create the persistent entity from.</param>
         public PersistantEntity(BaseEntity entity)
         {
+            Version = _instance.Version;
             Type = entity.GetType().Name;
             PrefabName = entity.PrefabName;
             PrefabID = entity.prefabID;
@@ -85,6 +87,11 @@ public partial class AutoBuildSnapshot
         /// </summary>
         [JsonIgnore]
         public bool IsNull => PrefabID == 0;
+
+        /// <summary>
+        /// The plugin version when this entity was created.
+        /// </summary>
+        public VersionNumber Version { get; init; }
 
         /// <summary>
         /// The type of this entity.
@@ -147,6 +154,7 @@ public partial class AutoBuildSnapshot
         {
             var entity = new PersistantEntity
             {
+                Version = SerializationHelper.ReadVersionNumber(reader),
                 Type = reader.ReadString(),
                 PrefabName = reader.ReadString(),
                 PrefabID = reader.ReadUInt32(),
@@ -169,6 +177,7 @@ public partial class AutoBuildSnapshot
 
         public void Write(BinaryWriter writer)
         {
+            SerializationHelper.Write(writer, Version);
             writer.Write(Type);
             writer.Write(PrefabName);
             writer.Write(PrefabID);
@@ -186,6 +195,7 @@ public partial class AutoBuildSnapshot
     {
         public PersistantItem(Item item)
         {
+            Version = _instance.Version;
             UID = item.uid.Value;
             ItemID = item.info.itemid;
             Tag = item.info.tag;
@@ -213,6 +223,11 @@ public partial class AutoBuildSnapshot
             }
         }
 
+        /// <summary>
+        /// The plugin version when this item was created.
+        /// </summary>
+        public VersionNumber Version { get; init; }
+
         public ulong UID { get; init; }
 
         public int ItemID { get; init; }
@@ -233,29 +248,25 @@ public partial class AutoBuildSnapshot
             return ReadFrom(reader);
         }
 
-        public static PersistantItem ReadFrom(BinaryReader reader)
+        public static PersistantItem ReadFrom(BinaryReader reader) => new()
         {
-            var item = new PersistantItem
-            {
-                UID = reader.ReadUInt64(),
-                ItemID = reader.ReadInt32(),
-                Tag = reader.ReadString(),
-                Amount = reader.ReadInt32(),
-                Flags = (Item.Flag)reader.ReadInt32(),
-                Properties = SerializationHelper.ReadDictionary<string, object>(reader)
-            };
-
-            return item;
-        }
+            Version = SerializationHelper.ReadVersionNumber(reader),
+            UID = reader.ReadUInt64(),
+            ItemID = reader.ReadInt32(),
+            Tag = reader.ReadString(),
+            Amount = reader.ReadInt32(),
+            Flags = (Item.Flag)reader.ReadInt32(),
+            Properties = SerializationHelper.ReadDictionary<string, object>(reader)
+        };
 
         public void Write(BinaryWriter writer)
         {
+            SerializationHelper.Write(writer, Version);
             writer.Write(UID);
             writer.Write(ItemID);
             writer.Write(Tag);
             writer.Write(Amount);
             writer.Write((int)Flags);
-
             SerializationHelper.Write(writer, Properties);
         }
     }

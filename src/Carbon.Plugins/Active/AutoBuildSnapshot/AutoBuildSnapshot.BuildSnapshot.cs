@@ -1,9 +1,11 @@
 ﻿using Facepunch;
+using Newtonsoft.Json;
 using Oxide.Core;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using UnityEngine;
 
@@ -298,6 +300,7 @@ public partial class AutoBuildSnapshot
 
             var metaData = new BuildSnapshotMetaData
             {
+                Version = _plugin.Version,
                 ID = snapshotId,
                 DataFile = dataFile,
                 TimestampUTC = now,
@@ -341,6 +344,7 @@ public partial class AutoBuildSnapshot
 
                 var snapshotData = new SnapshotData
                 {
+                    Version = _plugin.Version,
                     ID = snapshotId,
                     MetaDataFile = metaFile,
                     Timestamp = now,
@@ -348,8 +352,7 @@ public partial class AutoBuildSnapshot
                     Zones = zones,
                 };
 
-                // Interface.Oxide.DataFileSystem.WriteObject(dataFile, snapshotData);
-                snapshotData.Save(Path.Combine(Interface.Oxide.DataDirectory, dataFile));
+                snapshotData.Save(Path.Combine(Interface.Oxide.DataDirectory, dataFile), _config.Advanced.DataSaveFormat);
             }
             finally
             {
@@ -463,6 +466,11 @@ public partial class AutoBuildSnapshot
     private readonly struct BuildSnapshotMetaData
     {
         /// <summary>
+        /// The version of the plugin when this snapshot was created.
+        /// </summary>
+        public required VersionNumber Version { get; init; }
+
+        /// <summary>
         /// The unique id of the snapshot.
         /// </summary>
         public required Guid ID { get; init; }
@@ -543,6 +551,11 @@ public partial class AutoBuildSnapshot
     private readonly struct SnapshotData
     {
         /// <summary>
+        /// The version of the plugin when this snapshot was created.
+        /// </summary>
+        public required VersionNumber Version { get; init; }
+
+        /// <summary>
         /// The unique id of the snapshot.
         /// </summary>
         public required Guid ID { get; init; }
@@ -574,22 +587,25 @@ public partial class AutoBuildSnapshot
         /// <param name="file">The file to load from.</param>
         public static SnapshotData Load(string file)
         {
-            if (!File.Exists(file))
+            file = FindExistingFile(file);
+
+            if (file.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
             {
-                file = Path.Combine(Interface.Oxide.DataDirectory, file);
-                if (!File.Exists(file))
-                {
-                    throw new FileNotFoundException($"Snapshot data file not found: {file}");
-                }
+                var data = File.ReadAllText(file);
+                return JsonConvert.DeserializeObject<SnapshotData>(data);
             }
 
+            bool compressed = file.EndsWith(".gz", StringComparison.OrdinalIgnoreCase);
+
             using var stream = File.Open(file, FileMode.Open);
-            using var reader = new BinaryReader(stream);
+            using var gzip = compressed ? new GZipStream(stream, CompressionMode.Decompress) : null;
+            using var reader = new BinaryReader(compressed ? gzip : stream);
 
             var version = SerializationHelper.ReadVersionNumber(reader);
 
             return new SnapshotData
             {
+                Version = _instance.Version,
                 ID = SerializationHelper.ReadGuid(reader),
                 MetaDataFile = reader.ReadString(),
                 Timestamp = SerializationHelper.ReadDateTime(reader),
@@ -602,19 +618,74 @@ public partial class AutoBuildSnapshot
         /// Saves the snapshot data to the specified file.
         /// </summary>
         /// <param name="file">The file to save to.</param>
-        public void Save(string file)
+        /// <param name="compress">Whether to compress the data.</param>
+        public void Save(string file, DataFormat saveFormat = DataFormat.Binary)
         {
-            using var stream = File.Open(file, FileMode.Create);
-            using var writer = new BinaryWriter(stream);
+            var format = _config.Advanced.DataSaveFormat;
+            if (format == DataFormat.Json || format == DataFormat.JsonExpanded)
+            {
+                var jsonFormat = format == DataFormat.JsonExpanded
+                    ? Formatting.Indented
+                    : Formatting.None;
 
-            SerializationHelper.Write(writer, _instance.Version);
-            SerializationHelper.Write(writer, ID);
+                var data = JsonConvert.SerializeObject(this, jsonFormat);
+                File.WriteAllText(file + ".json", data);
+            }
+            else if (format == DataFormat.Binary || format == DataFormat.GZip)
+            {
+                file += ".bin";
 
-            writer.Write(MetaDataFile);
+                bool compress = format == DataFormat.GZip;
+                if (compress)
+                {
+                    file += ".gz";
+                }
 
-            SerializationHelper.Write(writer, Timestamp);
-            SerializationHelper.Write(writer, Zones);
-            SerializationHelper.Write(writer, Entities);
+                using var stream = File.Open(file, FileMode.Create);
+                using var gzip = compress ? new GZipStream(stream, CompressionMode.Compress) : null;
+                using var writer = new BinaryWriter(compress ? gzip : stream);
+
+                SerializationHelper.Write(writer, _instance.Version);
+                SerializationHelper.Write(writer, ID);
+                writer.Write(MetaDataFile);
+                SerializationHelper.Write(writer, Timestamp);
+                SerializationHelper.Write(writer, Zones);
+                SerializationHelper.Write(writer, Entities);
+            }
+            else
+            {
+                throw new NotSupportedException($"Unsupported data format: {format}");
+            }
+        }
+
+        private static readonly string[] dataEextensions = { "", ".bin", ".bin.gz", ".json" };
+
+        /// <summary>
+        /// Finds an existing file, checking variants and data directory.
+        /// </summary>
+        /// <param name="filePath">The initial file path to check.</param>
+        /// <returns>The path to the existing file.</returns>
+        /// <exception cref="FileNotFoundException">Thrown when no file is found.</exception>
+        private static string FindExistingFile(string filePath)
+        {
+            // Try original directory
+            foreach (string ext in dataEextensions)
+            {
+                string path = filePath + ext;
+                if (File.Exists(path))
+                    return path;
+            }
+
+            // Try data directory
+            string dataFilePath = Path.Combine(Interface.Oxide.DataDirectory, filePath);
+            foreach (string ext in dataEextensions)
+            {
+                string path = dataFilePath + ext;
+                if (File.Exists(path))
+                    return path;
+            }
+
+            throw new FileNotFoundException($"Snapshot data file not found: {filePath}");
         }
     }
 }

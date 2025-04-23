@@ -64,7 +64,7 @@ public partial class AutoBuildSnapshot : CarbonPlugin
     #region Snapshot Files
 
     private const string _snapshotDataDirectory = "abs/v1";
-    private const string _snapshotDataExtension = "data.bin";
+    private const string _snapshotDataExtension = "data";
     private const string _snapshotMetaExtension = "meta";
 
     #endregion
@@ -433,8 +433,21 @@ public partial class AutoBuildSnapshot : CarbonPlugin
             /// </summary>
             [JsonProperty("Max Zone Scan Radius")]
             public float MaxScanZoneRadius { get; set; } = _defaultMaxZoneScanRadius;
-        }
 
+            /// <summary>
+            /// The type to use when saving the snapshot data.
+            /// </summary>
+            [JsonProperty("Data Save Format")]
+            public DataFormat DataSaveFormat { get; set; } = DataFormat.GZip;
+        }
+    }
+
+    private enum DataFormat
+    {
+        Binary = 0,
+        GZip = 1,
+        Json = 2,
+        JsonExpanded = 3
     }
 
     #endregion
