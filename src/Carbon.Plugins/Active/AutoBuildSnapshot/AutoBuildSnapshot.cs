@@ -435,6 +435,19 @@ public partial class AutoBuildSnapshot : CarbonPlugin
             public float MaxScanZoneRadius { get; set; } = _defaultMaxZoneScanRadius;
 
             /// <summary>
+            /// List of data formats that can be used to save the snapshot data.
+            /// </summary>
+            [JsonProperty("Data Save FormatLegend")]
+            public Dictionary<string, DataFormat> DataSaveFormatLegend => _dataFormatLegend;
+            private static readonly Dictionary<string, DataFormat> _dataFormatLegend = new()
+            {
+                ["Binary"] = DataFormat.Binary,
+                ["Binary (GZip Compressed)"] = DataFormat.GZip,
+                ["Json"] = DataFormat.Json,
+                ["Json (Expanded)"] = DataFormat.JsonExpanded
+            };
+
+            /// <summary>
             /// The type to use when saving the snapshot data.
             /// </summary>
             [JsonProperty("Data Save Format")]
