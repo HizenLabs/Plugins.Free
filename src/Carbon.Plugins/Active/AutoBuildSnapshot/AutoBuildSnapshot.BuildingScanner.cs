@@ -199,52 +199,56 @@ public partial class AutoBuildSnapshot
         /// <summary>
         /// Checks if a sphere is completely covered by other spheres.
         /// </summary>
-        /// <param name="targetSphere">The sphere to check.</param>
-        /// <param name="allSpheres">The list of all spheres.</param>
-        /// <param name="targetIndex">The index of the target sphere in the list.</param>
-        /// <returns>True if the sphere is completely covered, false otherwise.</returns>
         private static bool IsCompletelyCovered(Vector4 targetSphere, List<Vector4> allSpheres, int targetIndex)
         {
             Vector3 center = new(targetSphere.x, targetSphere.y, targetSphere.z);
             float radius = targetSphere.w;
 
-            // Generate sample points on the surface of the sphere
+            // Generate sample points
             var surfacePoints = GenerateSurfacePoints(center, radius);
 
-            // Check if all surface points are contained in at least one other sphere
-            bool isFullyCovered = true;
-            for (int i = 0; i < surfacePoints.Count; i++)
-            {
-                var point = surfacePoints[i];
-                bool pointIsCovered = false;
-
-                for (int j = 0; j < allSpheres.Count; j++)
-                {
-                    // Skip comparing to itself
-                    if (j == targetIndex)
-                        continue;
-
-                    Vector4 otherSphere = allSpheres[j];
-                    Vector3 otherCenter = new(otherSphere.x, otherSphere.y, otherSphere.z);
-                    float otherRadius = otherSphere.w;
-
-                    if (Vector3.Distance(point, otherCenter) <= otherRadius)
-                    {
-                        pointIsCovered = true;
-                        break;
-                    }
-                }
-
-                // If any point is not covered by other spheres, the sphere is not completely contained
-                if (!pointIsCovered)
-                {
-                    isFullyCovered = false;
-                    break;
-                }
-            }
+            // Check coverage for each point
+            bool isFullyCovered = CheckAllPointsCovered(surfacePoints, allSpheres, targetIndex);
 
             Pool.FreeUnmanaged(ref surfacePoints);
             return isFullyCovered;
+        }
+
+        /// <summary>
+        /// Checks if all points are covered by at least one sphere in the collection
+        /// </summary>
+        private static bool CheckAllPointsCovered(List<Vector3> points, List<Vector4> spheres, int targetIndex)
+        {
+            foreach (var point in points)
+            {
+                if (!IsPointCoveredByAnySphere(point, spheres, targetIndex))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Checks if a point is covered by any sphere except the target
+        /// </summary>
+        private static bool IsPointCoveredByAnySphere(Vector3 point, List<Vector4> spheres, int targetIndex)
+        {
+            for (int j = 0; j < spheres.Count; j++)
+            {
+                if (j == targetIndex)
+                    continue;
+
+                Vector4 sphere = spheres[j];
+                Vector3 sphereCenter = new(sphere.x, sphere.y, sphere.z);
+                float sphereRadius = sphere.w;
+
+                if (Vector3.Distance(point, sphereCenter) <= sphereRadius)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         /// <summary>
