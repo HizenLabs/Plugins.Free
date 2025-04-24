@@ -1439,7 +1439,9 @@ public partial class AutoBuildSnapshot : CarbonPlugin
     /// <param name="right">The second zone.</param>
     /// <returns>True if the zones collide, false otherwise.</returns>
     private bool ZonesCollide(Vector4 left, Vector4 right) =>
-        (left.x - right.x) * (left.x - right.x) + (left.y - right.y) * (left.y - right.y) <=
+        (left.x - right.x) * (left.x - right.x) +
+        (left.y - right.y) * (left.y - right.y) +
+        (left.z - right.z) * (left.z - right.z) <=
         (left.w + right.w) * (left.w + right.w);
 
     #endregion
