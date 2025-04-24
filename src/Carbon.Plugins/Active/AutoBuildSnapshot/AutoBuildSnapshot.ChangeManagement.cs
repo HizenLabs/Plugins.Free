@@ -117,6 +117,46 @@ public partial class AutoBuildSnapshot
         snapshot.BeginSave();
     }
 
+    /// <summary>
+    /// Processes multiple build records in a queue, while ensuring that no duplicates are processed.
+    /// </summary>
+    /// <param name="records">The queue of build records to process.</param>
+    /// <param name="callback">The callback to invoke when the processing is complete.</param>
+    /// <param name="list">Used to recursively store snapshot results.</param>
+    private void ProcessNextSave(Queue<BuildRecord> records, System.Action<bool, List<BuildSnapshot>> callback, List<BuildSnapshot> list = null)
+    {
+        if (records.Count == 0)
+        {
+            Pool.FreeUnmanaged(ref records);
+
+            callback(list != null && list.Count > 0, list);
+            return;
+        }
+
+        list ??= Pool.Get<List<BuildSnapshot>>();
+
+        var next = records.Dequeue();
+        if (list.SelectMany(x => x.LinkedRecords).Any(x => x == next))
+        {
+            ProcessNextSave(records, callback, list);
+            return;
+        }
+
+        ProcessNextSave(next, (success, snapshot) =>
+        {
+            list.Add(snapshot);
+
+            if (success)
+            {
+                ProcessNextSave(records, callback);
+            }
+            else
+            {
+                callback(false, list);
+            }
+        });
+    }
+
     #endregion
 
     #region Recording

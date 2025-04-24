@@ -14,7 +14,7 @@ namespace Carbon.Plugins;
 #pragma warning disable IDE0001 // Simplification warning ignore
 #pragma warning disable IDE1006 // Naming Styles
 
-[Info("AutoBuildSnapshot", "hizenxyz", "0.0.19")]
+[Info("AutoBuildSnapshot", "hizenxyz", "0.0.20")]
 [Description("Automatically backs up a player's base when they build to it, allowing it to be restored later.")]
 public partial class AutoBuildSnapshot : CarbonPlugin
 {
@@ -1304,6 +1304,143 @@ public partial class AutoBuildSnapshot : CarbonPlugin
 
         return result;
     }
+
+    /// <summary>
+    /// Executes the rollback operation for the specified snapshot.
+    /// </summary>
+    /// <param name="handle">The snapshot handle to rollback.</param>
+    private void BeginRollback(SnapshotHandle handle)
+    {
+        var player = handle.Player;
+        var snapshotId = handle.ID;
+
+        AddLogMessage($"Player {player.displayName} initiated rollback to snapshot {snapshotId}");
+        player.ChatMessage($"Rollback to snapshot {snapshotId} initiated...");
+
+        // Get the snapshot data
+        var snapshotData = handle.Meta.GetData();
+
+        // Get any records that collide with this snapshot's zones
+        var records = GetCollidingRecords(snapshotData.Zones);
+        AddLogMessage(player, $"Found {records.Count} records that collide, creating backup...");
+
+        // Perform backup
+        ProcessNextSave(records, (success, snapshots) =>
+        {
+            if (success)
+            {
+                // Perform rollback
+                AddLogMessage(player, $"Backup completed in {snapshots.Sum(x => x.Duration)} ms");
+                if (TryExecuteRollback(player, snapshotData))
+                {
+                    AddLogMessage(player, $"Rollback to snapshot {snapshotId} completed.");
+                }
+                else
+                {
+                    AddLogMessage(player, "The rollback process was aborted.");
+                }
+            }
+            else
+            {
+                AddLogMessage(player, "Failed to create backup, rollback aborted.");
+            }
+
+            Pool.FreeUnmanaged(ref snapshots);
+            SnapshotHandle.Release(player);
+        });
+
+    }
+
+    /// <summary>
+    /// Executes the rollback operation for the specified snapshot data.
+    /// </summary>
+    /// <param name="player">The player performing the rollback.</param>
+    /// <param name="data">The snapshot data to rollback.</param>
+    /// <returns>True if the rollback was successful, false otherwise.</returns>
+    private bool TryExecuteRollback(BasePlayer player, SnapshotData data)
+    {
+        if (UserHasPermission(player, _config.Commands.Rollback)) return false;
+
+        AddLogMessage(player, "Begin rolling back base...");
+
+        var dict = Pool.Get<Dictionary<string, PersistantEntity>>();
+        foreach (var entity in data.Entities.Values.SelectMany(_ => _))
+        {
+            dict[entity.ID] = entity;
+        }
+
+        foreach (var entity in dict)
+        {
+            if (!EntityExists(entity.Value, out var collisions))
+            {
+
+            }
+        }
+
+        Pool.FreeUnmanaged(ref dict);
+
+        return true;
+    }
+
+    /// <summary>
+    /// Scans the entity location for any collisions and returns true if it was found in the list.
+    /// </summary>
+    /// <param name="entity">The entity to check.</param>
+    /// <param name="collisions">The list of collisions found.</param>
+    private bool EntityExists(PersistantEntity entity, out List<BaseEntity> collisions)
+    {
+        // create sphere around entity and raycast baselayer mask in 6m radius
+
+        collisions = null;
+        return false;
+    }
+
+    /// <summary>
+    /// Gets the colliding build records for the specified zones.
+    /// </summary>
+    /// <param name="zones">The zones to check for collisions.</param>
+    /// <returns>A queue of colliding records.</returns>
+    private Queue<BuildRecord> GetCollidingRecords(List<Vector4> zones)
+    {
+        var records = Pool.Get<Queue<BuildRecord>>();
+
+        foreach (var record in _buildRecords.Values)
+        {
+            if (AnyZoneContainsRecordZones(record, zones))
+            {
+                records.Enqueue(record);
+            }
+        }
+
+        return records;
+    }
+
+    /// <summary>
+    /// Checks if any of the zones in the record intersect with the specified zones.
+    /// </summary>
+    /// <param name="record">The build record to check.</param>
+    /// <param name="zones">The zones to check against.</param>
+    /// <returns>True if any zone contains the record zones, false otherwise.</returns>
+    private bool AnyZoneContainsRecordZones(BuildRecord record, List<Vector4> zones)
+    {
+        foreach (var zone in zones)
+        {
+            if (record.EntityZones.Any(z => ZonesCollide(z, zone)))
+                return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Checks if two zones collide.
+    /// </summary>
+    /// <param name="left">The first zone.</param>
+    /// <param name="right">The second zone.</param>
+    /// <returns>True if the zones collide, false otherwise.</returns>
+    private bool ZonesCollide(Vector4 left, Vector4 right) =>
+        (left.x - right.x) * (left.x - right.x) + (left.y - right.y) * (left.y - right.y) <=
+        (left.w + right.w) * (left.w + right.w);
 
     #endregion
 }

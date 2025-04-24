@@ -508,7 +508,11 @@ public partial class AutoBuildSnapshot
             .SelectMany(b => b.Zones)
             .Distinct();
 
-        public SnapshotData GetData() => Interface.Oxide.DataFileSystem.ReadObject<SnapshotData>(DataFile);
+        /// <summary>
+        /// Gets the associated snapshot data from the file.
+        /// </summary>
+        /// <returns>The snapshot data.</returns>
+        public SnapshotData GetData() => SnapshotData.Load(DataFile);
     }
 
     /// <summary>

@@ -243,25 +243,6 @@ public partial class AutoBuildSnapshot
         _playerMenuStates[player.userID] = targetLayer;
     }
 
-    /// <summary>
-    /// Executes the rollback operation for the specified snapshot.
-    /// </summary>
-    /// <param name="player">The player who initiated the rollback.</param>
-    /// <param name="snapshotId">The ID of the snapshot to rollback to.</param>
-    private void ExecuteRollback(BasePlayer player, System.Guid snapshotId)
-    {
-        // This method would contain your implementation of the rollback process
-        // For now, it just logs the action and notifies the player
-        AddLogMessage($"Player {player.displayName} initiated rollback to snapshot {snapshotId}");
-        player.ChatMessage($"Rollback to snapshot {snapshotId} initiated. This feature is not yet fully implemented.");
-
-        // In a complete implementation, you would:
-        // 1. Load the snapshot data
-        // 2. Create a backup of the current state as an "undo" point
-        // 3. Perform the rollback by removing/adding entities according to the snapshot
-        // 4. Update all relevant tracking information
-    }
-
     private List<string> GetRecentLogs(int count)
     {
         return _logMessages.Take(Mathf.Min(count, _logMessages.Count)).ToList();
@@ -271,6 +252,15 @@ public partial class AutoBuildSnapshot
     {
         _logMessages.Clear();
         AddLogMessage("Log cleared");
+    }
+
+    /// <summary>
+    /// Adds a log message but also sends it to the player.
+    /// </summary>
+    private void AddLogMessage(BasePlayer player, string message)
+    {
+        player.ChatMessage(message);
+        AddLogMessage(message);
     }
 
     // Helper methods to manage logs
