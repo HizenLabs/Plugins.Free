@@ -49,7 +49,7 @@ public partial class AutoBuildSnapshot
                 Pool.FreeUnmanaged(ref coordinates);
             }
 
-            var findZone = FindZone(coordinates, zoneRadius, maxRadius);
+            var findZone = FindSplitZones(coordinates, zoneRadius, maxRadius);
             results.AddRange(findZone);
 
             Pool.FreeUnmanaged(ref coordinates);
@@ -57,56 +57,91 @@ public partial class AutoBuildSnapshot
         }
 
         /// <summary>
-        /// Finds the zone(s) for the given coordinates.
+        /// Finds the zone(s) for the given coordinates using an iterative approach
         /// </summary>
-        /// <param name="coordinates">The set of foundation coordinates to get the overall zone for.</param>
-        /// <param name="zoneRadius">The radius to use for the zone (from a 1x1 foundation).</param>
-        /// <param name="maxRadius">The maximum radius to split the zones into.</param>
-        private static List<Vector4> FindZone(List<Vector3> coordinates, float zoneRadius, float maxRadius)
+        private static List<Vector4> FindSplitZones(List<Vector3> coordinates, float zoneRadius, float maxRadius)
         {
-            // Find the center point from all input Vector3s
-            Vector3 center = CalculateCenter(coordinates);
+            // Create results list
+            var result = Pool.Get<List<Vector4>>();
 
-            // Find the maximum distance from the center point to any of the inputs
+            // Create a queue for zones that need processing
+            var zoneQueue = Pool.Get<Queue<List<Vector3>>>();
+            zoneQueue.Enqueue(coordinates);
+
+            // Process each zone in the queue
+            while (zoneQueue.Count > 0)
+            {
+                var currentCoordinates = zoneQueue.Dequeue();
+
+                // Skip empty coordinate sets
+                if (currentCoordinates.Count == 0)
+                {
+                    Pool.FreeUnmanaged(ref currentCoordinates);
+                    continue;
+                }
+
+                // Calculate zone parameters
+                Vector3 center = CalculateCenter(currentCoordinates);
+                float maxDistance = CalculateMaxDistance(currentCoordinates, center);
+                float radius = maxDistance * 2 + zoneRadius;
+
+                // Check if we need to split the zone
+                if (radius > maxRadius)
+                {
+                    // Split into smaller zones and add to queue
+                    SplitAndEnqueueZones(currentCoordinates, center, zoneQueue);
+                }
+                else
+                {
+                    // Add this zone to results
+                    result.Add(new Vector4(center.x, center.y, center.z, radius));
+                }
+
+                // Free the current coordinates
+                Pool.FreeUnmanaged(ref currentCoordinates);
+            }
+
+            // Free the queue
+            Pool.FreeUnmanaged(ref zoneQueue);
+
+            return result;
+        }
+
+        /// <summary>
+        /// Calculates the maximum distance from the center to any coordinate
+        /// </summary>
+        private static float CalculateMaxDistance(List<Vector3> coordinates, Vector3 center)
+        {
             float maxDistance = 0f;
             foreach (var coord in coordinates)
             {
                 float distance = Vector3.Distance(center, coord);
-                if (distance > maxDistance)
-                    maxDistance = distance;
+                maxDistance = Mathf.Max(maxDistance, distance);
             }
+            return maxDistance;
+        }
 
-            // Add the input blockRadius to the max distance to get radius
-            float radius = maxDistance * 2 + zoneRadius;
+        /// <summary>
+        /// Splits coordinates and adds them to the queue
+        /// </summary>
+        private static void SplitAndEnqueueZones(List<Vector3> coordinates, Vector3 center, Queue<List<Vector3>> zoneQueue)
+        {
+            var groups = SplitCoordinates(coordinates, center);
 
-            if (radius > maxRadius)
+            for (int i = 0; i < groups.Count; i++)
             {
-                // Split the coordinates into groups
-                var groups = SplitCoordinates(coordinates, center);
-
-                // Recursively process each group
-                var results = Pool.Get<List<Vector4>>();
-                for (int i = 0; i < groups.Count; i++)
+                var group = groups[i];
+                if (group.Count > 0)
                 {
-                    var group = groups[i];
-                    if (group.Count > 0)
-                    {
-                        var subResults = FindZone(group, zoneRadius, maxRadius);
-                        results.AddRange(subResults);
-                        Pool.FreeUnmanaged(ref subResults);
-                    }
+                    zoneQueue.Enqueue(group);
+                }
+                else
+                {
                     Pool.FreeUnmanaged(ref group);
                 }
-                Pool.FreeUnmanaged(ref groups);
-                return results;
             }
-            else
-            {
-                // Return the center point and radius as a Vector4
-                var result = Pool.Get<List<Vector4>>();
-                result.Add(new Vector4(center.x, center.y, center.z, radius));
-                return result;
-            }
+
+            Pool.FreeUnmanaged(ref groups);
         }
 
         /// <summary>
