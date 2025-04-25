@@ -860,7 +860,7 @@ public partial class AutoBuildSnapshot : CarbonPlugin
         _playerSnapshotHandles = Pool.Get<Dictionary<ulong, Guid>>();
         _buildingIDToSnapshotIndex = Pool.Get<Dictionary<string, List<Guid>>>();
         _zoneSnapshotIndex = Pool.Get<Dictionary<Vector4, List<Guid>>>();
-        _tempEntities = Pool.Get<Dictionary<ulong, List<Components.ClientEntity>>>();
+        _tempEntities = Pool.Get<Dictionary<ulong, List<ClientEntity>>>();
         _logMessages = Pool.Get<List<string>>();
         _connectedPlayers = Pool.Get<Dictionary<ulong, BasePlayer>>();
 

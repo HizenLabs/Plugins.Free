@@ -83,7 +83,7 @@ public partial class AutoBuildSnapshot
         int skipped = 0;
 
         // Phase 1: Handle existing entities - destroy conflicting and update existing
-        var entitiesToDestroy = Pool.Get<List<BaseEntity>>();
+        using var entitiesToDestroy = Pool.Get<PooledList<BaseEntity>>();
 
         foreach (var entityKvp in entitiesLookup)
         {
@@ -160,7 +160,6 @@ public partial class AutoBuildSnapshot
         }
 
         // Free resources
-        Pool.FreeUnmanaged(ref entitiesToDestroy);
         Pool.FreeUnmanaged(ref entitiesLookup);
 
         AddLogMessage(player, $"Rollback complete! Created: {created}, Updated: {updated}, Removed: {removed}, Skipped: {skipped}");
