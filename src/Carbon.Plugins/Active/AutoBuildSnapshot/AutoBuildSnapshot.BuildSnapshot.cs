@@ -157,7 +157,7 @@ public partial class AutoBuildSnapshot
 
                     foreach (var zone in next.LinkedZones)
                     {
-                        var links = BuildingScanner.GetEntities<BuildingPrivlidge>(next.BaseTC, zone, _maskBaseEntities);
+                        using var links = BuildingScanner.GetEntities<BuildingPrivlidge>(next.BaseTC, zone, _maskBaseEntities);
                         foreach (var link in links)
                         {
                             var recordId = link.net.ID.Value;
@@ -206,7 +206,7 @@ public partial class AutoBuildSnapshot
                     _buildingEntities.Add(_stepRecord, Pool.Get<List<BaseEntity>>());
                     foreach (var zone in _stepRecord.EntityZones)
                     {
-                        var entities = BuildingScanner.GetEntities<BaseEntity>(_stepRecord.BaseTC, zone, _maskBaseEntities);
+                        using var entities = BuildingScanner.GetEntities<BaseEntity>(_stepRecord.BaseTC, zone, _maskBaseEntities);
                         foreach (var entity in entities)
                         {
                             if (!_config.General.IncludeGroundResources && entity.OwnerID == 0 && entity is CollectibleEntity)

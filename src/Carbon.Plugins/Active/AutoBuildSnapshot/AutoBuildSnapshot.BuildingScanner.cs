@@ -19,10 +19,10 @@ public partial class AutoBuildSnapshot
         /// <param name="zone">The zone to search in.</param>
         /// <param name="layerMask">The layer mask to use for the search.</param>
         /// <returns>A list of entities found in the zone.</returns>
-        public static List<T> GetEntities<T>(BuildingPrivlidge tc, Vector4 zone, int layerMask)
+        public static PooledList<T> GetEntities<T>(BuildingPrivlidge tc, Vector4 zone, int layerMask)
             where T : BaseEntity
         {
-            var found = Pool.Get<List<T>>();
+            var found = Pool.Get<PooledList<T>>();
             Vis.Entities(new(zone.x, zone.y, zone.z), zone.w, found, layerMask);
             return found;
         }
@@ -34,41 +34,37 @@ public partial class AutoBuildSnapshot
         /// <param name="tc">The building privilege to get the entities from.</param>
         /// <param name="zoneRadius">The radius to use for the zone (from a 1x1 foundation).</param>
         /// <param name="maxRadius">The maximum radius split up the zones into.</param>
-        public static void GetZones(List<Vector4> results, BuildingPrivlidge tc, float zoneRadius, float maxRadius)
+        public static PooledList<Vector4> GetZones(BuildingPrivlidge tc, float zoneRadius, float maxRadius)
         {
-            var building = tc.GetBuilding();
-            var coordinates = Pool.Get<List<Vector3>>();
+            using var coordinates = Pool.Get<PooledList<Vector3>>();
 
+            var building = tc.GetBuilding();
             foreach (var block in building.buildingBlocks)
             {
                 coordinates.Add(block.ServerPosition);
             }
 
+            var results = Pool.Get<PooledList<Vector4>>();
             if (coordinates.Count == 0)
             {
-                Pool.FreeUnmanaged(ref coordinates);
+                return results;
             }
 
-            var findZone = FindSplitZones(coordinates, zoneRadius, maxRadius);
+            using var findZone = FindSplitZones(coordinates, zoneRadius, maxRadius);
             results.AddRange(findZone);
 
-            Pool.FreeUnmanaged(ref coordinates);
-            Pool.FreeUnmanaged(ref findZone);
+            return results;
         }
 
         /// <summary>
         /// Finds the zone(s) for the given coordinates using an iterative approach
         /// </summary>
-        private static List<Vector4> FindSplitZones(List<Vector3> coordinates, float zoneRadius, float maxRadius)
+        private static PooledList<Vector4> FindSplitZones(List<Vector3> coordinates, float zoneRadius, float maxRadius)
         {
-            // Create results list
-            var result = Pool.Get<List<Vector4>>();
-
-            // Create a queue for zones that need processing
             var zoneQueue = Pool.Get<Queue<List<Vector3>>>();
             zoneQueue.Enqueue(coordinates);
 
-            // Process each zone in the queue
+            var results = Pool.Get<PooledList<Vector4>>();
             while (zoneQueue.Count > 0)
             {
                 var currentCoordinates = zoneQueue.Dequeue();
@@ -94,7 +90,7 @@ public partial class AutoBuildSnapshot
                 else
                 {
                     // Add this zone to results
-                    result.Add(new Vector4(center.x, center.y, center.z, radius));
+                    results.Add(new Vector4(center.x, center.y, center.z, radius));
                 }
 
                 // Free the current coordinates
@@ -104,7 +100,7 @@ public partial class AutoBuildSnapshot
             // Free the queue
             Pool.FreeUnmanaged(ref zoneQueue);
 
-            return result;
+            return results;
         }
 
         /// <summary>
@@ -126,8 +122,7 @@ public partial class AutoBuildSnapshot
         /// </summary>
         private static void SplitAndEnqueueZones(List<Vector3> coordinates, Vector3 center, Queue<List<Vector3>> zoneQueue)
         {
-            var groups = SplitCoordinates(coordinates, center);
-
+            using var groups = SplitCoordinates(coordinates, center);\
             for (int i = 0; i < groups.Count; i++)
             {
                 var group = groups[i];
@@ -140,8 +135,6 @@ public partial class AutoBuildSnapshot
                     Pool.FreeUnmanaged(ref group);
                 }
             }
-
-            Pool.FreeUnmanaged(ref groups);
         }
 
         /// <summary>
@@ -165,10 +158,10 @@ public partial class AutoBuildSnapshot
         /// <param name="coordinates">The list of coordinates to split.</param>
         /// <param name="center">The center point to use for splitting.</param>
         /// <returns>A list of groups of coordinates.</returns>
-        private static List<List<Vector3>> SplitCoordinates(List<Vector3> coordinates, Vector3 center)
+        private static PooledList<List<Vector3>> SplitCoordinates(List<Vector3> coordinates, Vector3 center)
         {
             // Splitting into octants (8 groups) based on position relative to center
-            var groups = Pool.Get<List<List<Vector3>>>();
+            using var groups = Pool.Get<PooledList<List<Vector3>>>();
             for (int i = 0; i < 8; i++)
             {
                 groups.Add(Pool.Get<List<Vector3>>());
@@ -187,7 +180,7 @@ public partial class AutoBuildSnapshot
             }
 
             // Filter out empty groups
-            var filteredGroups = Pool.Get<List<List<Vector3>>>();
+            var filteredGroups = Pool.Get<PooledList<List<Vector3>>>();
             for (int i = 0; i < groups.Count; i++)
             {
                 var group = groups[i];
@@ -201,118 +194,7 @@ public partial class AutoBuildSnapshot
                     groups[i] = null; // Mark as freed
                 }
             }
-            Pool.FreeUnmanaged(ref groups);
             return filteredGroups;
-        }
-
-        /// <summary>
-        /// Filters out spheres that are completely contained within other spheres.
-        /// </summary>
-        /// <param name="spheres">The list of spheres to filter.</param>
-        /// <returns>A list of spheres that were removed.</returns>
-        public static List<Vector4> FilterContainedSpheres(List<Vector4> spheres)
-        {
-            if (spheres == null || spheres.Count <= 1)
-                return Pool.Get<List<Vector4>>();
-
-            var removedSpheres = Pool.Get<List<Vector4>>();
-
-            // We'll use indices in reverse order to safely remove items during iteration
-            for (int i = spheres.Count - 1; i >= 0; i--)
-            {
-                Vector4 targetSphere = spheres[i];
-                if (IsCompletelyCovered(targetSphere, spheres, i))
-                {
-                    removedSpheres.Add(targetSphere);
-                    spheres.RemoveAt(i);
-                }
-            }
-
-            return removedSpheres;
-        }
-
-        /// <summary>
-        /// Checks if a sphere is completely covered by other spheres.
-        /// </summary>
-        private static bool IsCompletelyCovered(Vector4 targetSphere, List<Vector4> allSpheres, int targetIndex)
-        {
-            Vector3 center = new(targetSphere.x, targetSphere.y, targetSphere.z);
-            float radius = targetSphere.w;
-
-            // Generate sample points
-            var surfacePoints = GenerateSurfacePoints(center, radius);
-
-            // Check coverage for each point
-            bool isFullyCovered = CheckAllPointsCovered(surfacePoints, allSpheres, targetIndex);
-
-            Pool.FreeUnmanaged(ref surfacePoints);
-            return isFullyCovered;
-        }
-
-        /// <summary>
-        /// Checks if all points are covered by at least one sphere in the collection
-        /// </summary>
-        private static bool CheckAllPointsCovered(List<Vector3> points, List<Vector4> spheres, int targetIndex)
-        {
-            foreach (var point in points)
-            {
-                if (!IsPointCoveredByAnySphere(point, spheres, targetIndex))
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        /// <summary>
-        /// Checks if a point is covered by any sphere except the target
-        /// </summary>
-        private static bool IsPointCoveredByAnySphere(Vector3 point, List<Vector4> spheres, int targetIndex)
-        {
-            for (int j = 0; j < spheres.Count; j++)
-            {
-                if (j == targetIndex)
-                    continue;
-
-                Vector4 sphere = spheres[j];
-                Vector3 sphereCenter = new(sphere.x, sphere.y, sphere.z);
-                float sphereRadius = sphere.w;
-
-                if (Vector3.Distance(point, sphereCenter) <= sphereRadius)
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        /// <summary>
-        /// Generates points on the surface of a sphere using the Fibonacci lattice method.
-        /// </summary>
-        /// <param name="center">The center of the sphere.</param>
-        /// <param name="radius">The radius of the sphere.</param>
-        /// <returns>A list of points on the surface of the sphere.</returns>
-        private static List<Vector3> GenerateSurfacePoints(Vector3 center, float radius)
-        {
-            var points = Pool.Get<List<Vector3>>();
-            int numPoints = 100; // Increase for better accuracy
-
-            // Fibonacci lattice method for uniform distribution on a sphere
-            float goldenRatio = (1 + Mathf.Sqrt(5)) / 2;
-
-            for (int i = 0; i < numPoints; i++)
-            {
-                float theta = 2 * Mathf.PI * i / goldenRatio;
-                float phi = Mathf.Acos(1 - 2 * (i + 0.5f) / numPoints);
-
-                float x = radius * Mathf.Sin(phi) * Mathf.Cos(theta);
-                float y = radius * Mathf.Sin(phi) * Mathf.Sin(theta);
-                float z = radius * Mathf.Cos(phi);
-
-                points.Add(center + new Vector3(x, y, z));
-            }
-
-            return points;
         }
     }
 }
