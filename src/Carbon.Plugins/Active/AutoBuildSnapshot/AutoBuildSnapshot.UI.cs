@@ -207,6 +207,14 @@ public partial class AutoBuildSnapshot
                 throw new NotSupportedException($"Unsupported menu layer: {targetLayer}");
         }
 
+        // some edge cases happen where menus are already open
+        // e.g; when a player selects snapshot and presses enter
+        // this will re-select the snapshot. in this case, just refresh.
+        if (previousLayer.HasFlag(targetLayer))
+        {
+            hasUpdate = true;
+        }
+
         if (hasUpdate)
         {
             container.SetDestroy(_menuLayerIdLookup[targetLayer]);

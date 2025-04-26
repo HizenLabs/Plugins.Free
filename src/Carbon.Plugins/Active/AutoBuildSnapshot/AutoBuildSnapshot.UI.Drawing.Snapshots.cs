@@ -511,39 +511,12 @@ public partial class AutoBuildSnapshot
                 color: "0.2 0.2 0.2 1"
             );
 
+        var rollbackEnabled = handle.PlayerUserID == player.userID
+            && UserHasPermission(player, _config.Commands.Rollback);
+
         // LUI.LuiContainer previewZonesButton, previewRollbackButton;
         LUI.LuiContainer rollbackButton;
-        if (handle.PlayerUserID != player.userID)
-        {
-            /*
-             * Disable previews
-             * 
-            previewZonesButton = cui.v2
-                .CreatePanel(
-                    container: buttonPanel,
-                    position: new(0 + offX, .2f, .18f + offX, .8f),
-                    offset: new(10, 0, -5, 0),
-                    color: rgbDisabled
-                );
-
-            previewRollbackButton = cui.v2
-                .CreatePanel(
-                    container: buttonPanel,
-                    position: new(.2f + offX, .2f, .38f + offX, .8f),
-                    offset: new(10, 0, -5, 0),
-                    color: rgbDisabled
-                );
-            */
-
-            rollbackButton = cui.v2
-                .CreatePanel(
-                    container: buttonPanel,
-                    position: new(.4f + offX, .2f, .58f + offX, .8f),
-                    offset: new(5, 0, -5, 0),
-                    color: rgbDisabled
-                );
-        }
-        else
+        if (rollbackEnabled)
         {
             /*
              * Disable previews
@@ -580,6 +553,36 @@ public partial class AutoBuildSnapshot
                     color: handle.State.HasFlag(SnapshotState.ProcessRollback)
                         ? rgbRollbackActive
                         : rgbRollback
+                );
+        }
+        else
+        {
+            /*
+             * Disable previews
+             * 
+            previewZonesButton = cui.v2
+                .CreatePanel(
+                    container: buttonPanel,
+                    position: new(0 + offX, .2f, .18f + offX, .8f),
+                    offset: new(10, 0, -5, 0),
+                    color: rgbDisabled
+                );
+
+            previewRollbackButton = cui.v2
+                .CreatePanel(
+                    container: buttonPanel,
+                    position: new(.2f + offX, .2f, .38f + offX, .8f),
+                    offset: new(10, 0, -5, 0),
+                    color: rgbDisabled
+                );
+            */
+
+            rollbackButton = cui.v2
+                .CreatePanel(
+                    container: buttonPanel,
+                    position: new(.4f + offX, .2f, .58f + offX, .8f),
+                    offset: new(5, 0, -5, 0),
+                    color: rgbDisabled
                 );
         }
 

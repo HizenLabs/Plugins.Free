@@ -762,11 +762,7 @@ public partial class AutoBuildSnapshot : CarbonPlugin
             return;
         }
 
-        if (!_config.Commands.UserHasPermission(player, _config.Commands.ToggleMenu, this))
-        {
-            player.ChatMessage(_lang.GetMessage(LangKeys.error_no_permission, player));
-            return;
-        }
+        if (!UserHasPermission(player, _config.Commands.ToggleMenu.Permission)) return;
 
         NavigateMenu(player, MenuLayer.MainMenu);
     }
@@ -780,11 +776,9 @@ public partial class AutoBuildSnapshot : CarbonPlugin
     /// <param name="args">The arguments.</param>
     private void CommandBackup(BasePlayer player, string command, string[] args)
     {
-        if (!_config.Commands.UserHasPermission(player, _config.Commands.Backup, this))
-        {
-            player.ChatMessage(_lang.GetMessage(LangKeys.error_no_permission, player));
-            return;
-        }
+        if (!UserHasPermission(player, _config.Commands.Backup)) return;
+
+        // TODO: Implement backup logic
     }
 
     /// <summary>
@@ -796,11 +790,9 @@ public partial class AutoBuildSnapshot : CarbonPlugin
     /// <param name="args">The arguments (init or confirm)</param>
     private void CommandRollback(BasePlayer player, string command, string[] args)
     {
-        if (!_config.Commands.UserHasPermission(player, _config.Commands.Rollback, this))
-        {
-            player.ChatMessage(_lang.GetMessage(LangKeys.error_no_permission, player));
-            return;
-        }
+        if (!UserHasPermission(player, _config.Commands.Rollback)) return;
+
+        // TODO: Implement rollback logic
     }
 
     /// <summary>
@@ -931,10 +923,10 @@ public partial class AutoBuildSnapshot : CarbonPlugin
             return;
         }
 
-        var snapshotMetaDataFiles = Pool.Get<List<string>>();
+        using var snapshotMetaDataFiles = Pool.Get<PooledList<string>>();
         foreach (var directory in Directory.GetDirectories(snapshotDirectory))
         {
-            snapshotMetaDataFiles.AddRange(Directory.GetFiles(directory, $"*.{_snapshotMetaExtension}"));
+            snapshotMetaDataFiles.AddRange(Directory.GetFiles(directory, $"*.{_snapshotMetaExtension}.json"));
         }
 
         if (snapshotMetaDataFiles.Count == 0)
@@ -950,7 +942,8 @@ public partial class AutoBuildSnapshot : CarbonPlugin
         foreach (var filePath in snapshotMetaDataFiles)
         {
             var fileName = Path.GetFileNameWithoutExtension(filePath);
-            var metaFile = Interface.Oxide.DataFileSystem.GetDatafile(Path.Combine(snapshotDirectory, fileName));
+            var directory = Path.GetDirectoryName(filePath);
+            var metaFile = Interface.Oxide.DataFileSystem.GetDatafile(Path.Combine(directory, fileName));
             var metaData = metaFile.ReadObject<BuildSnapshotMetaData>();
 
             // Check for retention and delete

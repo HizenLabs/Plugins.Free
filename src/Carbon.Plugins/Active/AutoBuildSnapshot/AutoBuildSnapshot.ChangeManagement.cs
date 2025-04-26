@@ -402,11 +402,15 @@ public partial class AutoBuildSnapshot
         {
             if (_zonesDirty)
             {
-                BuildingScanner.GetZones(_entityZones, BaseTC, _config.Advanced.FoundationPrivilegeRadius, _config.Advanced.MaxScanZoneRadius);
+                using var zones = BuildingScanner.GetZones(BaseTC, _config.Advanced.FoundationPrivilegeRadius, _config.Advanced.MaxScanZoneRadius);
+                _entityZones.Clear();
+                _entityZones.AddRange(zones);
 
                 if (_config.MultiTC.Enabled)
                 {
-                    BuildingScanner.GetZones(_linkedZones, BaseTC, _config.MultiTC.ScanRadius, _config.Advanced.MaxScanZoneRadius);
+                    using var linkedZones = BuildingScanner.GetZones(BaseTC, _config.MultiTC.ScanRadius, _config.Advanced.MaxScanZoneRadius);
+                    _linkedZones.Clear();
+                    _linkedZones.AddRange(linkedZones);
                 }
             }
 

@@ -37,7 +37,11 @@ public partial class AutoBuildSnapshot
         FreeDictionaryList(ref _snapshotGuids);
     }
 
-    private LUI.LuiContainer RenderBasicLayout(Components.CUI cui, string menuId, string title, out LUI.LuiContainer main, out LUI.LuiContainer header)
+    private LUI.LuiContainer RenderBasicLayout(
+        Components.CUI cui, 
+        string menuId, string 
+        title, out LUI.LuiContainer main, 
+        out LUI.LuiContainer header)
     {
         // Create the base container with cursor
         var container = cui.v2

@@ -63,7 +63,6 @@ public partial class AutoBuildSnapshot
 
         if (ulong.TryParse(args[0], out ulong recordId) && _buildRecords.TryGetValue(recordId, out var record))
         {
-            // Switch to snapshots mode
             OpenSnapshotsMenu(player, record);
         }
     }
@@ -250,7 +249,7 @@ public partial class AutoBuildSnapshot
 
     private bool UserHasPermission(BasePlayer player, AutoBuildSnapshotConfig.CommandSetting command)
     {
-        if (_config.Commands.UserHasPermission(player, command, this))
+        if (!_config.Commands.UserHasPermission(player, command, this))
         {
             player.ChatMessage(_lang.GetMessage(LangKeys.error_no_permission, player));
             return false;

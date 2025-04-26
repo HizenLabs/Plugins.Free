@@ -122,7 +122,7 @@ public partial class AutoBuildSnapshot
         /// </summary>
         private static void SplitAndEnqueueZones(List<Vector3> coordinates, Vector3 center, Queue<List<Vector3>> zoneQueue)
         {
-            using var groups = SplitCoordinates(coordinates, center);\
+            using var groups = SplitCoordinates(coordinates, center);
             for (int i = 0; i < groups.Count; i++)
             {
                 var group = groups[i];
