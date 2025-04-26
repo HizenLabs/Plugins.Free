@@ -106,7 +106,14 @@ public partial class AutoBuildSnapshot
                 }
             }
 
-            callback?.Invoke(success, record);
+            if (callback == null)
+            {
+                Pool.Free(ref record);
+            }
+            else
+            {
+                callback(success, record);
+            }
 
             if (recursive)
             {
