@@ -134,17 +134,12 @@ public partial class AutoBuildSnapshot
     /// <param name="dict">The dictionary to free.</param>
     private static void FreeDictionaryList<TKey, TValue>(ref Dictionary<TKey, List<TValue>> dict)
     {
-        var keys = Pool.Get<List<TKey>>();
-        keys.AddRange(dict.Keys);
-
-        foreach (var key in keys)
+        foreach (var key in dict.Keys)
         {
-            var index = dict[key];
-            Pool.FreeUnmanaged(ref index);
-            dict[key] = null;
+            var list = dict[key];
+            Pool.FreeUnmanaged(ref list);
         }
 
-        Pool.FreeUnmanaged(ref keys);
         Pool.FreeUnmanaged(ref dict);
     }
 
