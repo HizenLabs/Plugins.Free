@@ -161,8 +161,8 @@ public partial class AutoBuildSnapshot
 
     #region Snapshot Actions
 
-    [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsShowZones)}")]
-    private void CommandSnapshotsShowZones(BasePlayer player)
+    [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsPreviewZones)}")]
+    private void CommandSnapshotsPreviewZones(BasePlayer player)
     {
         if (!UserHasPermission(player, _config.Commands.AdminPermission)) return;
 
@@ -235,13 +235,11 @@ public partial class AutoBuildSnapshot
             return;
         }
 
-        if (TryGetSelectedSnapshotHandle(player, out var handle))
+        if (!TryGetSelectedSnapshotHandle(player, out var handle)
+            || !handle.TryBeginRollback(player, confirmationCode))
         {
-            if (!handle.TryBeginRollback(player, confirmationCode))
-            {
-                player.ChatMessage("Failed to begin rollback.");
-                return;
-            }
+            player.ChatMessage("Failed to begin rollback.");
+            return;
         }
     }
 

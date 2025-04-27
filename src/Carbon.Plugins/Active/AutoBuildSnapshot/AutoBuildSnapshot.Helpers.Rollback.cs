@@ -56,6 +56,11 @@ public partial class AutoBuildSnapshot
         }
     }
 
+    /// <summary>
+    /// Attempts to execute the rollback operation.
+    /// </summary>
+    /// <param name="player">The player initiating the rollback.</param>
+    /// <param name="data">The snapshot data to rollback to.</param>
     private void ExecuteRollback(BasePlayer player, SnapshotData data)
     {
         if (TryExecuteRollback(player, data))
@@ -78,11 +83,6 @@ public partial class AutoBuildSnapshot
     /// <returns>True if the rollback was successful; otherwise, false.</returns>
     private bool TryExecuteRollback(BasePlayer player, SnapshotData data)
     {
-        // Check if the player has permission - note there's a logic error here
-        // it should be: if(!UserHasPermission(player, _config.Commands.Rollback)) return false;
-        // Currently it returns false if they DO have permission
-        if (!UserHasPermission(player, _config.Commands.Rollback)) return false;
-
         AddLogMessage(player, "Begin rolling back base...");
 
         using var entitiesToKill = Pool.Get<PooledList<BaseEntity>>();
@@ -99,19 +99,25 @@ public partial class AutoBuildSnapshot
         // Destroy all entitiesToKill
         foreach (var entity in entitiesToKill)
         {
+            var id = GetPersistanceID(entity);
+            AddLogMessage($" Destroying entity: {entity.GetType()} ({entity.PrefabName} | ID: {id})");
+
             // entity.Kill();
         }
 
         // Spawn all entitiesToSpawn, then add them to entitesToUpdate
         foreach (var entity in entitiesToCreate)
         {
+            AddLogMessage($" Spawning entity: {entity.Type} ({entity.PrefabName} | ID: {entity.ID})");
+
             // GameManager.server.CreateEntity(entity.PrefabName, entity.Position, entity.Rotation);
         }
 
         // Update all entitiesToUpdate
         foreach (var entity in outEntitiesToUpdate)
         {
-
+            var id = GetPersistanceID(entity);
+            AddLogMessage($" Updating entity: {entity.GetType()} ({entity.PrefabName} | ID: {id})");
         }
 
         AddLogMessage(player, "Rollback complete.");

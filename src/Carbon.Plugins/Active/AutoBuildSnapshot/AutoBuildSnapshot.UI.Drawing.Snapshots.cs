@@ -526,6 +526,7 @@ public partial class AutoBuildSnapshot
         }
     }
 
+
     private void CreateActionButtons(
         Components.CUI cui,
         BasePlayer player,
@@ -533,15 +534,6 @@ public partial class AutoBuildSnapshot
         SnapshotHandle handle
     )
     {
-        const float offX = 0.38f;
-        //const string rgbZones = "0.408 0.435 0.706 1.0";
-        //const string rgbZonesActive = "0.475 0.506 0.824 1.0";
-        //const string rgbPreview = "0.275 0.514 0.651 1.0";
-        //const string rgbPreviewActive = "0.322 0.600 0.761 1.0"; ;
-        const string rgbRollback = "0.6 0.3 0.3 1";
-        const string rgbRollbackActive = "0.75 0.35 0.35 1";
-        const string rgbDisabled = ".5 .5 .5 1";
-
         // Bottom buttons panel
         var buttonPanel = cui.v2
             .CreatePanel(
@@ -551,112 +543,81 @@ public partial class AutoBuildSnapshot
                 color: "0.2 0.2 0.2 1"
             );
 
-        var rollbackEnabled = handle.PlayerUserID == player.userID
-            && UserHasPermission(player, _config.Commands.Rollback);
+        CreateActionButton(cui, player, handle, "Rollback", 0,
+            buttonPanel,
+            nameof(CommandSnapshotsRollback),
+            _config.Commands.Rollback,
+            SnapshotState.ProcessRollback,
+            "0.6 0.3 0.3 1"
+        );
 
-        // LUI.LuiContainer previewZonesButton, previewRollbackButton;
-        LUI.LuiContainer rollbackButton;
-        if (rollbackEnabled)
+        /*
+        CreateActionButton(cui, player, handle, "Preview Zones", 1,
+            buttonPanel,
+            nameof(CommandSnapshotsPreviewZones),
+            _config.Commands.PreviewZones,
+            SnapshotState.PreviewZones,
+            "0.408 0.435 0.706 1.0"
+        );
+
+        CreateActionButton(cui, player, handle, "Preview Rollback", 2,
+            buttonPanel,
+            nameof(CommandSnapshotsPreviewRollback),
+            _config.Commands.PreviewRollback,
+            SnapshotState.PreviewRollback,
+            "0.275 0.514 0.651 1.0"
+        );
+        */
+    }
+
+    private void CreateActionButton(
+        Components.CUI cui,
+        BasePlayer player,
+        SnapshotHandle handle,
+        string title,
+        int index,
+        Components.LUI.LuiContainer buttonPanel,
+        string commandName,
+        AutoBuildSnapshotConfig.CommandSetting commandSetting,
+        SnapshotState state,
+        string color
+    )
+    {
+        float offX = -.2f * index;
+        LuiPosition position = new(.8f + offX + .005f, .2f, 1 + offX - .005f, .8f);
+
+        LUI.LuiContainer button;
+        if (handle.PlayerUserID == player.userID
+            && UserHasPermission(player, commandSetting)
+            && !handle.State.HasFlag(state))
         {
-            /*
-             * Disable previews
-             * 
-            previewZonesButton = cui.v2
+            button = cui.v2
                 .CreateButton(
                     container: buttonPanel,
-                    position: new(0 + offX, .2f, .18f + offX, .8f),
-                    offset: new(10, 0, -5, 0),
-                    command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsShowZones)} {handle.Meta.ID}",
-                    color: handle.State.HasFlag(SnapshotState.PreviewZones)
-                        ? rgbZonesActive
-                        : rgbZones
-                );
-
-            previewRollbackButton = cui.v2
-                .CreateButton(
-                    container: buttonPanel,
-                    position: new(.2f + offX, .2f, .38f + offX, .8f),
-                    offset: new(10, 0, -5, 0),
-                    command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsPreviewRollback)} {handle.Meta.ID}",
-                    color: handle.State.HasFlag(SnapshotState.PreviewRollback)
-                        ? rgbPreviewActive
-                        : rgbPreview
-                );
-            */
-
-            rollbackButton = cui.v2
-                .CreateButton(
-                    container: buttonPanel,
-                    position: new(.4f + offX, .2f, .58f + offX, .8f),
-                    offset: new(5, 0, -5, 0),
-                    command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsRollback)} {handle.Meta.ID}",
-                    color: handle.State.HasFlag(SnapshotState.ProcessRollback)
-                        ? rgbRollbackActive
-                        : rgbRollback
+                    position: position,
+                    offset: LuiOffset.None,
+                    command: $"{nameof(AutoBuildSnapshot)}.{commandName} {handle.Meta.ID}",
+                    color: color
                 );
         }
         else
         {
-            /*
-             * Disable previews
-             * 
-            previewZonesButton = cui.v2
+            button = cui.v2
                 .CreatePanel(
                     container: buttonPanel,
-                    position: new(0 + offX, .2f, .18f + offX, .8f),
-                    offset: new(10, 0, -5, 0),
-                    color: rgbDisabled
-                );
-
-            previewRollbackButton = cui.v2
-                .CreatePanel(
-                    container: buttonPanel,
-                    position: new(.2f + offX, .2f, .38f + offX, .8f),
-                    offset: new(10, 0, -5, 0),
-                    color: rgbDisabled
-                );
-            */
-
-            rollbackButton = cui.v2
-                .CreatePanel(
-                    container: buttonPanel,
-                    position: new(.4f + offX, .2f, .58f + offX, .8f),
-                    offset: new(5, 0, -5, 0),
-                    color: rgbDisabled
+                    position: position,
+                    offset: LuiOffset.None,
+                    color: ".5 .5 .5 1"
                 );
         }
 
-        /*
-         * Disable previews
-         * 
         cui.v2.CreateText(
-            container: previewZonesButton,
+            container: button,
             position: LuiPosition.Full,
             offset: LuiOffset.None,
             color: "1 1 1 1",
             fontSize: 14,
-            text: "Show Zones",
-            alignment: TextAnchor.MiddleCenter
-        );
-
-        cui.v2.CreateText(
-            container: previewRollbackButton,
-            position: LuiPosition.Full,
-            offset: LuiOffset.None,
-            color: "1 1 1 1",
-            fontSize: 14,
-            text: "Preview (30s)",
-            alignment: TextAnchor.MiddleCenter
-        );
-        */
-
-        cui.v2.CreateText(
-            container: rollbackButton,
-            position: LuiPosition.Full,
-            offset: LuiOffset.None,
-            color: "1 1 1 1",
-            fontSize: 14,
-            text: "Rollback",
+            text: title,
             alignment: TextAnchor.MiddleCenter
         );
     }
