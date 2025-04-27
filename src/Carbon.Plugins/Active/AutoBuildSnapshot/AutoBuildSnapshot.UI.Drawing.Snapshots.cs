@@ -19,16 +19,34 @@ public partial class AutoBuildSnapshot
     /// <param name="snapshots">The list of snapshots for the record.</param>
     private LUI.LuiContainer RenderSnapshotsMenu(Components.CUI cui, BasePlayer player, BuildRecord record, List<System.Guid> snapshots)
     {
-        snapshots ??= Pool.Get<List<System.Guid>>();
-
-        if (_snapshotGuids.TryGetValue(player.userID, out var existingList))
+        // Check if we need to create a new snapshots list
+        if (snapshots == null)
         {
-            if (snapshots.Count == 0)
-                snapshots.AddRange(existingList.AsEnumerable());
+            // Create a new list
+            snapshots = Pool.Get<List<System.Guid>>();
 
-            Pool.FreeUnmanaged(ref existingList);
+            // Try to get existing list from player cache
+            if (_snapshotGuids.TryGetValue(player.userID, out var existingList))
+            {
+                // Copy items from existing list
+                snapshots.AddRange(existingList);
+
+                // Free the existing list
+                Pool.FreeUnmanaged(ref existingList);
+            }
+        }
+        else
+        {
+            // We already have a snapshots list to use
+            // Check if it's different from what's stored
+            if (_snapshotGuids.TryGetValue(player.userID, out var existingList) && existingList != snapshots)
+            {
+                // Free the existing list since we're replacing it
+                Pool.FreeUnmanaged(ref existingList);
+            }
         }
 
+        // Store our list (either the one that was passed in, or our new one)
         _snapshotGuids[player.userID] = snapshots;
 
         var container = RenderBasicLayout(cui, _snapshotMenuId, "Snapshot results", out var main, out var header);
@@ -86,7 +104,7 @@ public partial class AutoBuildSnapshot
         ).SetTextFont(CUI.Handler.FontTypes.RobotoCondensedBold);
 
         // Create the snapshot list
-        CreateSnapshotsList(cui, leftPanel, player, snapshots, out var defaultId);
+        CreateSnapshotsList(cui, leftPanel, player, snapshots);
 
         // Right panel (snapshot details)
         var rightPanel = cui.v2
@@ -99,37 +117,43 @@ public partial class AutoBuildSnapshot
 
         if (snapshots.Count > 0)
         {
-            if (!_currentSelectedSnapshot.TryGetValue(player.userID, out var selectedSnapshot)
-                || !_snapshotMetaData.TryGetValue(selectedSnapshot, out var snapshotData))
+            if (_currentSelectedSnapshot.TryGetValue(player.userID, out var selectedSnapshot))
             {
-                selectedSnapshot = defaultId;
-            }
+                TryGetSelectedSnapshotHandle(player, out var handle);
+                if (handle != null)
+                {
+                    CreateSnapshotsDetail(cui, player, rightPanel, handle);
 
-            TryGetSelectedSnapshotHandle(player, out var handle);
-            if (_snapshotMetaData.TryGetValue(selectedSnapshot, out snapshotData)
-                && handle != null)
-            {
-                CreateSnapshotsDetail(cui, player, rightPanel, handle);
-
-                CreateActionButtons(cui, player, main, handle);
+                    CreateActionButtons(cui, player, main, handle);
+                }
+                else
+                {
+                    cui.v2.CreateText(
+                        container: rightPanel,
+                        position: LuiPosition.Full,
+                        offset: LuiOffset.None,
+                        color: "1 1 1 .5",
+                        fontSize: 14,
+                        text: "Failed to load snapshot data.",
+                        alignment: TextAnchor.MiddleCenter
+                    );
+                }
             }
             else
             {
-                // No snapshot selected message
                 cui.v2.CreateText(
                     container: rightPanel,
                     position: LuiPosition.Full,
                     offset: LuiOffset.None,
                     color: "1 1 1 .5",
                     fontSize: 14,
-                    text: "Failed to load snapshot data.",
+                    text: "No snapshot selected.",
                     alignment: TextAnchor.MiddleCenter
                 );
             }
         }
         else
         {
-            // No snapshot selected message
             cui.v2.CreateText(
                 container: rightPanel,
                 position: LuiPosition.Full,
@@ -144,7 +168,7 @@ public partial class AutoBuildSnapshot
         return container;
     }
 
-    private void CreateSnapshotsList(Components.CUI cui, Components.LUI.LuiContainer leftPanel, BasePlayer player, List<System.Guid> snapshotIds, out Guid defaultId)
+    private void CreateSnapshotsList(Components.CUI cui, Components.LUI.LuiContainer leftPanel, BasePlayer player, List<System.Guid> snapshotIds)
     {
         const int maxVisibleScrollItems = 12;
 
@@ -170,7 +194,6 @@ public partial class AutoBuildSnapshot
                 alignment: TextAnchor.MiddleCenter
             );
 
-            defaultId = Guid.Empty;
             return;
         }
 
@@ -199,16 +222,18 @@ public partial class AutoBuildSnapshot
         scrollIndex = Mathf.Clamp(scrollIndex, 0, maxScroll);
         _snapshotScrollIndex[player.userID] = scrollIndex;
 
+        Puts($"Max scroll: {maxScroll} | Scroll index: {scrollIndex}");
+
         // Get current selection
         Guid selectedId = Guid.Empty;
         _currentSelectedSnapshot.TryGetValue(player.userID, out selectedId);
         
         if (!snapshotIds.Contains(selectedId))
         {
-            _currentSelectedSnapshot[player.userID] = Guid.Empty;
+            selectedId = snapshots[scrollIndex].ID;
+            _currentSelectedSnapshot[player.userID] = selectedId;
         }
 
-        defaultId = snapshots[scrollIndex].ID;
         for (int i = scrollIndex; i < scrollIndex + visibleCount && i < snapshots.Count; i++)
         {
             // Get metadata
