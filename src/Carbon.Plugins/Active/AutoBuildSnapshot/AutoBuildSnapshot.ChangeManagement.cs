@@ -155,7 +155,7 @@ public partial class AutoBuildSnapshot
 
             if (success)
             {
-                ProcessNextSave(records, callback);
+                ProcessNextSave(records, callback, list);
             }
             else
             {
