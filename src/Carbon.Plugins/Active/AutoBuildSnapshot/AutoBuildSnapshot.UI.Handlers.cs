@@ -211,6 +211,11 @@ public partial class AutoBuildSnapshot
     [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.{nameof(CommandConfirmationCancel)}")]
     private void CommandConfirmationCancel(BasePlayer player)
     {
+        if (TryGetSelectedSnapshotHandle(player, out var handle))
+        {
+            handle.TryConfirmationCancel(player);
+        }
+
         CloseConfirmationDialog(player);
     }
 

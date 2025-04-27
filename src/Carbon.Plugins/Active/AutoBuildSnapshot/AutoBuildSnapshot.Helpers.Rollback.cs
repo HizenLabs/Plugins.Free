@@ -4,6 +4,7 @@ using System.Linq;
 using System;
 using UnityEngine;
 using Facepunch;
+using static Carbon.Components.ConVarSnapshots;
 
 namespace Carbon.Plugins;
 
@@ -26,33 +27,47 @@ public partial class AutoBuildSnapshot
 
         // Get any records that collide with this snapshot's zones
         var records = GetCollidingRecords(snapshotData.Zones);
-        AddLogMessage(player, $"Found {records.Count} records that collide, creating backup...");
 
-        // Perform backup
-        ProcessNextSave(records, (success, snapshots) =>
+        if (records.Count > 0)
         {
-            if (success)
+            AddLogMessage(player, $"Found {records.Count} record(s) that collide, creating backup...");
+
+            // Perform backup
+            ProcessNextSave(records, (success, snapshots) =>
             {
-                // Perform rollback
-                AddLogMessage(player, $"Backup completed in {snapshots.Sum(x => x.Duration)} ms");
-                if (TryExecuteRollback(player, snapshotData))
+                if (success)
                 {
-                    AddLogMessage(player, $"Rollback to snapshot {snapshotId} completed.");
+                    AddLogMessage(player, $"Backup completed in {snapshots.Sum(x => x.Duration)} ms");
+                    ExecuteRollback(player, snapshotData);
                 }
                 else
                 {
-                    AddLogMessage(player, "The rollback process was aborted.");
+                    AddLogMessage(player, "Failed to create backup, rollback aborted.");
+                    SnapshotHandle.Release(player);
                 }
-            }
-            else
-            {
-                AddLogMessage(player, "Failed to create backup, rollback aborted.");
-            }
 
-            Pool.Free(ref snapshots, true);
-            SnapshotHandle.Release(player);
-        });
+                Pool.Free(ref snapshots, true);
+            });
+        }
+        else
+        {
+            AddLogMessage(player, "No colliding records found, skipping backup.");
+            ExecuteRollback(player, snapshotData);
+        }
+    }
 
+    private void ExecuteRollback(BasePlayer player, SnapshotData data)
+    {
+        if (TryExecuteRollback(player, data))
+        {
+            AddLogMessage(player, $"Rollback to snapshot {data.ID} completed.");
+        }
+        else
+        {
+            AddLogMessage(player, "The rollback process was aborted.");
+        }
+
+        SnapshotHandle.Release(player);
     }
 
     /// <summary>

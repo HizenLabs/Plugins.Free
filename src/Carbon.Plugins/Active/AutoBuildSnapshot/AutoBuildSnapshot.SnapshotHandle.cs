@@ -70,15 +70,42 @@ public partial class AutoBuildSnapshot
         {
             confirmationCode = Guid.NewGuid();
 
-            if (State != SnapshotState.Idle)
-                return false;
-
             if (player.userID != PlayerUserID)
+            {
+                player.ChatMessage($"Snapshot handle currently belongs to another player: '{Player.displayName}'");
                 return false;
+            }
+
+            if (State != SnapshotState.Idle)
+            {
+                player.ChatMessage($"Snapshot state is not idle (State: {State})");
+                return false;
+            }
 
             Update(SnapshotState.Locked);
 
             _confirmationCode = confirmationCode;
+
+            return true;
+        }
+
+        public bool TryConfirmationCancel(BasePlayer player)
+        {
+            if (player.userID != PlayerUserID)
+            {
+                player.ChatMessage($"Snapshot handle currently belongs to another player: '{Player.displayName}'");
+                return false;
+            }
+
+            if (State != SnapshotState.Locked)
+            {
+                player.ChatMessage($"Snapshot state is not locked (State: {State})");
+                return false;
+            }
+
+            Update(SnapshotState.Idle);
+
+            _confirmationCode = Guid.Empty;
 
             return true;
         }
@@ -102,7 +129,7 @@ public partial class AutoBuildSnapshot
 
             _instance.BeginRollback(this);
 
-            return false;
+            return true;
         }
 
         private void Update(SnapshotState state)
