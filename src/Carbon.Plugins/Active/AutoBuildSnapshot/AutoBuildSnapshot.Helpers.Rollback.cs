@@ -70,9 +70,97 @@ public partial class AutoBuildSnapshot
 
         AddLogMessage(player, "Begin rolling back base...");
 
+        using var entitiesToKill = Pool.Get<PooledList<BaseEntity>>();
+        using var entitiesToCreate = Pool.Get<PooledList<PersistantEntity>>();
+        using var outEntitiesToUpdate = Pool.Get<PooledList<BaseEntity>>();
+        if (!TryPrepareEntities(data.Entities.Values.SelectMany(_ => _), entitiesToKill, entitiesToCreate, outEntitiesToUpdate))
+        {
+            AddLogMessage(player, "Failed to find target entities to cleanup.");
+            return false;
+        }
 
+        AddLogMessage(player, $"Found {entitiesToKill.Count} entities to destroy, {entitiesToCreate.Count} entities to create, and {outEntitiesToUpdate.Count} entities to update.");
+
+        // Destroy all entitiesToKill
+        foreach (var entity in entitiesToKill)
+        {
+            // entity.Kill();
+        }
+
+        // Spawn all entitiesToSpawn, then add them to entitesToUpdate
+        foreach (var entity in entitiesToCreate)
+        {
+            // GameManager.server.CreateEntity(entity.PrefabName, entity.Position, entity.Rotation);
+        }
+
+        // Update all entitiesToUpdate
+        foreach (var entity in outEntitiesToUpdate)
+        {
+
+        }
 
         AddLogMessage(player, "Rollback complete.");
+
+        return true;
+    }
+
+    /// <summary>
+    /// Prepares the entities for rollback by determining which entities to kill, create, and update.
+    /// </summary>
+    /// <param name="input">The input entities to prepare.</param>
+    /// <param name="outEntitiesToKill">The list to populate of entities to kill.</param>
+    /// <param name="outEntitiesToCreate">The list to populate of entities to create.</param>
+    /// <param name="outEntitiesToUpdate">The list to populate of entities to update.</param>
+    /// <returns>True if the preparation was successful; otherwise, false.</returns>
+    private bool TryPrepareEntities(IEnumerable<PersistantEntity> input, List<BaseEntity> outEntitiesToKill, List<PersistantEntity> outEntitiesToCreate, List<BaseEntity> outEntitiesToUpdate)
+    {
+        var trackingIds = Pool.Get<HashSet<string>>();
+        foreach (var entity in input)
+        {
+            trackingIds.Add(entity.ID);
+        }
+
+        foreach (var entity in input)
+        {
+            if (!TryFindEntity(entity, trackingIds, outEntitiesToKill, out var currentEntity))
+            {
+                return false;
+            }
+
+            if (currentEntity == null)
+            {
+                outEntitiesToCreate.Add(entity);
+            }
+            else
+            {
+                outEntitiesToUpdate.Add(currentEntity);
+            }
+        }
+
+        Pool.FreeUnmanaged(ref trackingIds);
+
+        return true;
+    }
+
+    private bool TryFindEntity(PersistantEntity entity, HashSet<string> trackingIds, List<BaseEntity> outEntitiesToKill, out BaseEntity currentEntity)
+    {
+        const float checkRadius = 6;
+        using var foundEntities = Pool.Get<PooledList<BaseEntity>>();
+        Vis.Entities(entity.Position, checkRadius, foundEntities, _maskBaseEntities);
+
+        currentEntity = null;
+        foreach (var found in foundEntities)
+        {
+            var foundID = GetPersistanceID(found);
+            if (entity.ID == foundID)
+            {
+                currentEntity = found;
+            }
+            else if (!trackingIds.Contains(foundID))
+            {
+                outEntitiesToKill.Add(found);
+            }
+        }
 
         return true;
     }
