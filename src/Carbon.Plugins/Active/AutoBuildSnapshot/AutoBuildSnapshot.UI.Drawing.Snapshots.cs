@@ -19,22 +19,17 @@ public partial class AutoBuildSnapshot
     /// <param name="snapshots">The list of snapshots for the record.</param>
     private LUI.LuiContainer RenderSnapshotsMenu(Components.CUI cui, BasePlayer player, BuildRecord record, List<System.Guid> snapshots)
     {
-        if (!_snapshotGuids.TryGetValue(player.userID, out var existingList))
+        snapshots ??= Pool.Get<List<System.Guid>>();
+
+        if (_snapshotGuids.TryGetValue(player.userID, out var existingList))
         {
-            existingList = Pool.Get<List<Guid>>();
-            _snapshotGuids[player.userID] = existingList;
+            if (snapshots.Count == 0)
+                snapshots.AddRange(existingList.AsEnumerable());
+
+            Pool.FreeUnmanaged(ref existingList);
         }
 
-        if (snapshots == null)
-        {
-            snapshots = Pool.Get<List<Guid>>();
-            snapshots.AddRange(existingList);
-        }
-        else
-        {
-            existingList.Clear();
-            existingList.AddRange(snapshots);
-        }
+        _snapshotGuids[player.userID] = snapshots;
 
         var container = RenderBasicLayout(cui, _snapshotMenuId, "Snapshot results", out var main, out var header);
 
@@ -91,7 +86,7 @@ public partial class AutoBuildSnapshot
         ).SetTextFont(CUI.Handler.FontTypes.RobotoCondensedBold);
 
         // Create the snapshot list
-        CreateSnapshotsList(cui, leftPanel, player, snapshots);
+        CreateSnapshotsList(cui, leftPanel, player, snapshots, out var defaultId);
 
         // Right panel (snapshot details)
         var rightPanel = cui.v2
@@ -102,15 +97,35 @@ public partial class AutoBuildSnapshot
                 color: "0.15 0.15 0.15 1"
             );
 
-        if (snapshots.Count > 0
-            && _currentSelectedSnapshot.TryGetValue(player.userID, out var selectedSnapshot)
-            && _snapshotMetaData.TryGetValue(selectedSnapshot, out var snapshotData))
+        if (snapshots.Count > 0)
         {
+            if (!_currentSelectedSnapshot.TryGetValue(player.userID, out var selectedSnapshot)
+                || !_snapshotMetaData.TryGetValue(selectedSnapshot, out var snapshotData))
+            {
+                selectedSnapshot = defaultId;
+            }
+
             TryGetSelectedSnapshotHandle(player, out var handle);
+            if (_snapshotMetaData.TryGetValue(selectedSnapshot, out snapshotData)
+                && handle != null)
+            {
+                CreateSnapshotsDetail(cui, player, rightPanel, handle);
 
-            CreateSnapshotsDetail(cui, player, rightPanel, handle);
-
-            CreateActionButtons(cui, player, main, handle);
+                CreateActionButtons(cui, player, main, handle);
+            }
+            else
+            {
+                // No snapshot selected message
+                cui.v2.CreateText(
+                    container: rightPanel,
+                    position: LuiPosition.Full,
+                    offset: LuiOffset.None,
+                    color: "1 1 1 .5",
+                    fontSize: 14,
+                    text: "Failed to load snapshot data.",
+                    alignment: TextAnchor.MiddleCenter
+                );
+            }
         }
         else
         {
@@ -121,17 +136,15 @@ public partial class AutoBuildSnapshot
                 offset: LuiOffset.None,
                 color: "1 1 1 .5",
                 fontSize: 14,
-                text: "Select a snapshot to view details.",
+                text: "Could not find any snapshots.",
                 alignment: TextAnchor.MiddleCenter
             );
         }
 
-        Pool.FreeUnmanaged(ref snapshots);
-
         return container;
     }
 
-    private void CreateSnapshotsList(Components.CUI cui, Components.LUI.LuiContainer leftPanel, BasePlayer player, List<System.Guid> snapshotIds)
+    private void CreateSnapshotsList(Components.CUI cui, Components.LUI.LuiContainer leftPanel, BasePlayer player, List<System.Guid> snapshotIds, out Guid defaultId)
     {
         const int maxVisibleScrollItems = 12;
 
@@ -157,6 +170,7 @@ public partial class AutoBuildSnapshot
                 alignment: TextAnchor.MiddleCenter
             );
 
+            defaultId = Guid.Empty;
             return;
         }
 
@@ -194,6 +208,7 @@ public partial class AutoBuildSnapshot
             _currentSelectedSnapshot[player.userID] = Guid.Empty;
         }
 
+        defaultId = snapshots[scrollIndex].ID;
         for (int i = scrollIndex; i < scrollIndex + visibleCount && i < snapshots.Count; i++)
         {
             // Get metadata

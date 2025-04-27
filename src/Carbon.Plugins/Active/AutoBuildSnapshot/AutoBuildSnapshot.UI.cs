@@ -33,13 +33,12 @@ public partial class AutoBuildSnapshot
     /// <param name="record">The building record to show snapshots for.</param>
     private void OpenSnapshotsMenu(BasePlayer player, BuildRecord record, bool isRefresh = false)
     {
-        _currentBuildRecord[player.userID] = record.NetworkID;
-
-        var snapshots = GetSnapshotsForRecord(record);
-
-        if (snapshots.Count > 0 && !_currentSelectedSnapshot.ContainsKey(player.userID))
+        List<Guid> snapshots = null;
+        if (record != null)
         {
-            _currentSelectedSnapshot[player.userID] = snapshots[0];
+            _currentBuildRecord[player.userID] = record.NetworkID;
+
+            snapshots = GetSnapshotsForRecord(record);
         }
 
         NavigateMenu(player, MenuLayer.Snapshots, !isRefresh, isRefresh, record, snapshots);
@@ -343,8 +342,6 @@ public partial class AutoBuildSnapshot
         }
 
         NavigateMenu(player, MenuLayer.Snapshots, false, false, null, snapshotIds);
-
-        Pool.FreeUnmanaged(ref snapshotIds);
     }
 
     #endregion

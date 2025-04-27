@@ -122,6 +122,10 @@ public partial class AutoBuildSnapshot
             {
                 OpenSnapshotsMenu(player, record, true);
             }
+            else
+            {
+                OpenSnapshotsMenu(player, null, true);
+            }
         }
     }
 
@@ -145,6 +149,10 @@ public partial class AutoBuildSnapshot
                 _buildRecords.TryGetValue(recordId, out var record))
             {
                 OpenSnapshotsMenu(player, record, true);
+            }
+            else
+            {
+                OpenSnapshotsMenu(player, null, true);
             }
         }
     }
