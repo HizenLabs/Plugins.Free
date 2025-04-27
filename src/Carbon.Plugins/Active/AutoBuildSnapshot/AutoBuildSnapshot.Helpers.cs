@@ -25,7 +25,7 @@ public partial class AutoBuildSnapshot
     /// <param name="position">The position of the entity.</param>
     /// <returns>The generated id.</returns>
     public static string GetPersistanceID(Type type, Vector3 position) =>
-        GetPersistanceID(type.Name, position.x, position.y, position.z);
+        GetPersistanceID(type.Name, position);
 
     /// <summary>
     /// Generates an id for the entity based on prefab and location that should persist between server restarts.
@@ -34,7 +34,7 @@ public partial class AutoBuildSnapshot
     /// <param name="position">The position of the entity.</param>
     /// <returns>The generated id.</returns>
     public static string GetPersistanceID(string typeName, Vector3 position) =>
-        GetPersistanceID(typeName, position);
+        GetPersistanceID(typeName, position.x, position.y, position.z);
 
     /// <summary>
     /// Generates an id for the entity based on prefab and location that should persist between server restarts.
