@@ -1,5 +1,4 @@
-﻿using Carbon.Components;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System;
 using UnityEngine;
@@ -298,5 +297,25 @@ public partial class AutoBuildSnapshot
         Pool.FreeUnmanaged(ref parts);
 
         return result;
+    }
+
+    /// <summary>
+    /// Gets the colliding build records for the specified zones.
+    /// </summary>
+    /// <param name="zones">The zones to check for collisions.</param>
+    /// <returns>A queue of colliding records.</returns>
+    private Queue<BuildRecord> GetCollidingRecords(List<Vector4> zones)
+    {
+        var records = Pool.Get<Queue<BuildRecord>>();
+
+        foreach (var record in _buildRecords.Values)
+        {
+            if (AnyZoneContainsRecordZones(record, zones))
+            {
+                records.Enqueue(record);
+            }
+        }
+
+        return records;
     }
 }

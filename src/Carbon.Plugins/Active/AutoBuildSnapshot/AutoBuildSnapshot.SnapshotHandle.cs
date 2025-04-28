@@ -127,7 +127,7 @@ public partial class AutoBuildSnapshot
             if (player.userID != PlayerUserID)
                 return false;
 
-            _instance.BeginRollback(this);
+            _instance.BeginRollbackTask(this).Forget();
 
             return true;
         }

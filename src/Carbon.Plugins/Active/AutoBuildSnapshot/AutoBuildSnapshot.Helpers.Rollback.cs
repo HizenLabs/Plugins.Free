@@ -2,6 +2,7 @@
 using System.Linq;
 using UnityEngine;
 using Facepunch;
+using Cysharp.Threading.Tasks;
 
 namespace Carbon.Plugins;
 
@@ -11,7 +12,7 @@ public partial class AutoBuildSnapshot
     /// Executes the rollback operation for the specified snapshot.
     /// </summary>
     /// <param name="handle">The snapshot handle to rollback.</param>
-    private void BeginRollback(SnapshotHandle handle)
+    private async UniTaskVoid BeginRollbackTask(SnapshotHandle handle)
     {
         var player = handle.Player;
         var snapshotId = handle.ID;
@@ -20,7 +21,7 @@ public partial class AutoBuildSnapshot
         player.ChatMessage($"Rollback to snapshot {snapshotId} initiated...");
 
         // Get the snapshot data
-        var snapshotData = handle.Meta.GetData();
+        var snapshotData = await handle.Meta.GetDataAsync();
 
         // Get any records that collide with this snapshot's zones
         var records = GetCollidingRecords(snapshotData.Zones);
@@ -35,7 +36,7 @@ public partial class AutoBuildSnapshot
                 if (success)
                 {
                     AddLogMessage(player, $"Backup completed in {snapshots.Sum(x => x.Duration)} ms");
-                    ExecuteRollback(player, snapshotData);
+                    ExecuteRollbackAsync(player, snapshotData).Forget();
                 }
                 else
                 {
@@ -47,7 +48,7 @@ public partial class AutoBuildSnapshot
         else
         {
             AddLogMessage(player, "No colliding records found, skipping backup.");
-            ExecuteRollback(player, snapshotData);
+            ExecuteRollbackAsync(player, snapshotData).Forget();
         }
     }
 
@@ -56,9 +57,9 @@ public partial class AutoBuildSnapshot
     /// </summary>
     /// <param name="player">The player initiating the rollback.</param>
     /// <param name="data">The snapshot data to rollback to.</param>
-    private void ExecuteRollback(BasePlayer player, SnapshotData data)
+    private async UniTaskVoid ExecuteRollbackAsync(BasePlayer player, SnapshotData data)
     {
-        if (TryExecuteRollback(player, data))
+        if (await TryExecuteRollbackAsync(player, data))
         {
             AddLogMessage(player, $"Rollback to snapshot {data.ID} completed.");
         }
@@ -76,14 +77,14 @@ public partial class AutoBuildSnapshot
     /// <param name="player">The player initiating the rollback.</param>
     /// <param name="data">The snapshot data to rollback to.</param>
     /// <returns>True if the rollback was successful; otherwise, false.</returns>
-    private bool TryExecuteRollback(BasePlayer player, SnapshotData data)
+    private async UniTask<bool> TryExecuteRollbackAsync(BasePlayer player, SnapshotData data)
     {
         AddLogMessage(player, "Begin rolling back base...");
 
         using var entitiesToKill = Pool.Get<PooledList<BaseEntity>>();
         using var entitiesToCreate = Pool.Get<PooledList<PersistantEntity>>();
         using var outEntitiesToUpdate = Pool.Get<PooledList<BaseEntity>>();
-        if (!TryPrepareEntities(data.Entities.Values.SelectMany(_ => _), entitiesToKill, entitiesToCreate, outEntitiesToUpdate))
+        if (!await TryPrepareEntitiesAsync(data.Entities.Values.SelectMany(_ => _), entitiesToKill, entitiesToCreate, outEntitiesToUpdate))
         {
             AddLogMessage(player, "Failed to find target entities to cleanup.");
             return false;
@@ -128,7 +129,11 @@ public partial class AutoBuildSnapshot
     /// <param name="outEntitiesToCreate">The list to populate of entities to create.</param>
     /// <param name="outEntitiesToUpdate">The list to populate of entities to update.</param>
     /// <returns>True if the preparation was successful; otherwise, false.</returns>
-    private bool TryPrepareEntities(IEnumerable<PersistantEntity> input, List<BaseEntity> outEntitiesToKill, List<PersistantEntity> outEntitiesToCreate, List<BaseEntity> outEntitiesToUpdate)
+    private async UniTask<bool> TryPrepareEntitiesAsync(
+        IEnumerable<PersistantEntity> input,
+        List<BaseEntity> outEntitiesToKill,
+        List<PersistantEntity> outEntitiesToCreate,
+        List<BaseEntity> outEntitiesToUpdate)
     {
         var trackingIds = Pool.Get<HashSet<string>>();
         foreach (var entity in input)
@@ -179,26 +184,6 @@ public partial class AutoBuildSnapshot
         }
 
         return true;
-    }
-
-    /// <summary>
-    /// Gets the colliding build records for the specified zones.
-    /// </summary>
-    /// <param name="zones">The zones to check for collisions.</param>
-    /// <returns>A queue of colliding records.</returns>
-    private Queue<BuildRecord> GetCollidingRecords(List<Vector4> zones)
-    {
-        var records = Pool.Get<Queue<BuildRecord>>();
-
-        foreach (var record in _buildRecords.Values)
-        {
-            if (AnyZoneContainsRecordZones(record, zones))
-            {
-                records.Enqueue(record);
-            }
-        }
-
-        return records;
     }
 
     /// <summary>

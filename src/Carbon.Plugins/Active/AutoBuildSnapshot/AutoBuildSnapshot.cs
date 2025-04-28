@@ -1,9 +1,7 @@
-﻿using Carbon.Components;
-using Cysharp.Threading.Tasks;
+﻿using Cysharp.Threading.Tasks;
 using Facepunch;
 using Newtonsoft.Json;
 using Oxide.Core;
-using Oxide.Core.Plugins;
 using Oxide.Plugins;
 using System;
 using System.Collections.Generic;
@@ -102,7 +100,7 @@ public partial class AutoBuildSnapshot : CarbonPlugin
 
     private const float _defaultFoundationPrivRadius = 40;
     private const int _defaultMaxSaveFailRetries = 3;
-    private const int _defaultMaxStepFrameDuration = 50;
+    private const int _defaultMaxStepDuration = 50;
     private const float _defaultMaxZoneScanRadius = 100;
 
     #endregion
@@ -441,10 +439,10 @@ public partial class AutoBuildSnapshot : CarbonPlugin
 
             /// <summary>
             /// The maximum duration, in milliseconds, that we can process a step 
-            /// before we should try to release processing into the next frame.
+            /// before yielding it to the game loop (may step into the next frame).
             /// </summary>
-            [JsonProperty("Max Frame Step Duration (ms)")]
-            public int MaxStepFrameDuration { get; set; } = _defaultMaxStepFrameDuration;
+            [JsonProperty("Max Step Duration (ms)")]
+            public int MaxStepDuration { get; set; } = _defaultMaxStepDuration;
 
             /// <summary>
             /// The maximum radius to create zones before splitting them up.

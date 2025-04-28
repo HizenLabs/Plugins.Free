@@ -28,17 +28,13 @@ public partial class AutoBuildSnapshot
         private List<BuildRecord> _linkedRecords;
 
         private Stopwatch _processWatch;
-        private Stopwatch _stepWatch;
+        private Stopwatch _frameWatch;
+        private int _frameSteps;
 
         /// <summary>
         /// The number of frames it took to process the snapshot.
         /// </summary>
-        public int FrameCount { get; private set; }
-
-        /// <summary>
-        /// The maximum time that a step took during processing.
-        /// </summary>
-        public double LongestStepDuration { get; private set; }
+        public int YieldCount { get; private set; }
 
         /// <summary>
         /// The exception, if any, that was thrown during processing.
@@ -56,9 +52,9 @@ public partial class AutoBuildSnapshot
         public double Duration => _processWatch.Elapsed.TotalMilliseconds;
 
         /// <summary>
-        /// The time it took to process the last step (frame), or the current step if not yet completed.
+        /// The time it took to process the last frame.
         /// </summary>
-        public double StepDuration => _stepWatch.Elapsed.TotalMilliseconds;
+        public double FrameDuration => _frameWatch.Elapsed.TotalMilliseconds;
 
         /// <summary>
         /// Enters the pool and frees any unmanaged resources.
@@ -70,10 +66,9 @@ public partial class AutoBuildSnapshot
             Pool.FreeUnmanaged(ref _linkedRecords);
 
             _processWatch.Reset();
-            _stepWatch.Reset();
+            _frameWatch.Reset();
 
-            FrameCount = 0;
-            LongestStepDuration = 0;
+            YieldCount = 0;
             Exception = null;
         }
 
@@ -87,7 +82,8 @@ public partial class AutoBuildSnapshot
             _linkedRecords = Pool.Get<List<BuildRecord>>();
 
             _processWatch ??= new();
-            _stepWatch ??= new();
+            _frameWatch ??= new();
+            _frameSteps = 0;
         }
 
         public static BuildSnapshot Create(AutoBuildSnapshot plugin, BuildRecord record, Action<bool, BuildSnapshot> resultCallback)
@@ -113,44 +109,168 @@ public partial class AutoBuildSnapshot
         /// <summary>
         /// Saves the current snapshot for the initialized record data, including all surrounding TCs/records.
         /// </summary>
-        public async UniTaskVoid BeginSave()
+        public async UniTaskVoid BeginSaveTask()
         {
+            try
+            {
+                // update _linkedRecords
+                await BuildNetworkAsync();
+                await YieldStep();
+
+                // update _buildingEntities
+                await LoadEntitiesAsync();
+                await YieldStep();
+
+                // serialize and save the snapshot
+                await FinishSaveAsync();
+                await YieldStep();
+
+                // update records with success state
+                Update(BuildState.Save_Success);
+
+                // callback success
+                _resultCallback(true, this);
+            }
+            catch (Exception ex)
+            {
+                Exception = ex;
+
+                // update records with failed state
+                Update(ex);
+
+                // callback failure
+                _resultCallback(false, this);
+            }
         }
 
         /// <summary>
         /// Recursively builds the network of linked TCs.
         /// </summary>
-        private async UniTaskVoid BuildNetwork()
+        private async UniTask BuildNetworkAsync()
         {
+            if (_config.MultiTC.Mode == MultiTCMode.Disabled)
+                return;
+
+            using var processed = Pool.Get<PooledList<BuildRecord>>();
+            var processQueue = Pool.Get<Queue<BuildRecord>>();
+            processQueue.Enqueue(_linkedRecords[0]);
+
+            while (processQueue.Count > 0)
+            {
+                var record = processQueue.Dequeue();
+                processed.Add(record);
+
+                if (_linkedRecords.Contains(record))
+                    continue;
+
+                var collidingRecords = _instance.GetCollidingRecords(record.LinkedZones);
+                foreach(var collision in collidingRecords)
+                {
+                    if (processed.Contains(record))
+                        continue;
+
+                    if (IsLinkedRecord(collision))
+                    {
+                        AddLinkedRecord(collision);
+                        processQueue.Enqueue(collision);
+                    }
+
+                    await YieldStep();
+                }
+
+                Pool.FreeUnmanaged(ref collidingRecords);
+            }
+
+            Pool.FreeUnmanaged(ref processQueue);
         }
 
         /// <summary>
         /// Finds all entities in the linked records.
         /// </summary>
-        private async UniTaskVoid FindEntities()
+        private async UniTask LoadEntitiesAsync()
         {
+            using var baseTCs = Pool.Get<PooledList<BuildingPrivlidge>>();
+            foreach (var record in _linkedRecords)
+            {
+                if (!_buildingEntities.TryGetValue(record, out var entityList))
+                {
+                    entityList = Pool.Get<List<BaseEntity>>();
+                    _buildingEntities.Add(record, entityList);
+                }
+
+                entityList.Clear();
+                foreach (var zone in record.EntityZones)
+                {
+                    using var entities = BuildingScanner.GetEntities<BaseEntity>(record.BaseTC, zone, _maskBaseEntities);
+                    foreach (var entity in entities)
+                    {
+                        // skip if already processed
+                        if (entityList.Contains(entity))
+                            continue;
+
+                        // only perform next checks if entity does not belong to authorized player
+                        if (!_authorizedPlayers.Select(p => p.UserID).Contains(entity.OwnerID))
+                        {
+                            // check if entity is owned by one of the authorized players
+                            if (!_config.General.IncludeNonAuthorizedDeployables)
+                                continue;
+
+                            // check if entity is a tracked type
+                            if (!_config.General.IncludeGroundResources && entity is ResourceEntity)
+                                continue;
+                        }
+
+                        // get building priv
+                        var entityTC = entity.GetBuildingPrivilege();
+
+                        // ignore if has no building priv
+                        if (!entityTC)
+                            continue;
+
+                        // should be picked up by another record
+                        if (entityTC != record.BaseTC && baseTCs.Contains(entityTC))
+                            continue;
+
+                        // add to the list
+                        entityList.Add(entity);
+
+                        await YieldStep();
+                    }
+                }
+            }
         }
-        /// <summary>
-        /// Processes the found entities and adds them to the snapshot.
-        /// </summary>
-        private async UniTaskVoid ProcessFoundEntities()
+
+        private async UniTask YieldReset()
         {
+            await UniTask.Yield();
+
+            _frameSteps = 0;
+            _frameWatch.Restart();
+            YieldCount++;
+        }
+
+        private async UniTask YieldStep(int maxSteps = 50)
+        {
+            if (++_frameSteps > maxSteps
+                || FrameDuration > _config.Advanced.MaxStepDuration)
+            {
+                await YieldReset();
+            }
         }
 
         /// <summary>
         /// Finishes the save process and writes the snapshot to disk (or other storage).
         /// </summary>
-        private async UniTaskVoid FinishSave()
+        private async UniTask FinishSaveAsync()
         {
             var now = DateTime.UtcNow;
             var snapshotId = Guid.NewGuid();
+
             var dataFile = $"{_snapshotDataDirectory}/{now:yyyyMMdd}/{now:hhmmss}_{snapshotId}.{_snapshotDataExtension}";
             var metaFile = $"{_snapshotDataDirectory}/{now:yyyyMMdd}/{now:hhmmss}_{snapshotId}.{_snapshotMetaExtension}";
 
-            WriteSnapshotMeta(now, snapshotId, dataFile, metaFile);
-            WriteSnapshotData(now, snapshotId, dataFile, metaFile);
-
-            Update(BuildState.Save_Success);
+            await WriteSnapshotMetaAsync(now, snapshotId, dataFile, metaFile);
+            await WriteSnapshotDataAsync(now, snapshotId, dataFile, metaFile);
         }
 
         /// <summary>
@@ -160,7 +280,7 @@ public partial class AutoBuildSnapshot
         /// <param name="snapshotId">The unique id of the snapshot.</param>
         /// <param name="dataFile">The file to write the data to.</param>
         /// <param name="metaFile">The file to write the metadata to.</param>
-        private async UniTaskVoid WriteSnapshotMeta(DateTime now, Guid snapshotId, string dataFile, string metaFile)
+        private async UniTask WriteSnapshotMetaAsync(DateTime now, Guid snapshotId, string dataFile, string metaFile)
         {
             var linkedBuildingsMeta = Pool.Get<Dictionary<string, BuildingMetaData>>();
             foreach (var kvp in _buildingEntities)
@@ -184,7 +304,10 @@ public partial class AutoBuildSnapshot
                 AuthorizedPlayers = _authorizedPlayers,
             };
 
-            Interface.Oxide.DataFileSystem.WriteObject(metaFile, metaData);
+            await UniTask.RunOnThreadPool(() =>
+            {
+                Interface.Oxide.DataFileSystem.WriteObject(metaFile, metaData);
+            });
 
             // add metadata to the resource collection and update indexes
             _plugin.SyncSnapshotMetaData(metaData);
@@ -199,7 +322,7 @@ public partial class AutoBuildSnapshot
         /// <param name="snapshotId">The unique id of the snapshot.</param>
         /// <param name="dataFile">The file to write the data to.</param>
         /// <param name="metaFile">The file to write the metadata to.</param>
-        private async UniTaskVoid WriteSnapshotData(DateTime now, Guid snapshotId, string dataFile, string metaFile)
+        private async UniTask WriteSnapshotDataAsync(DateTime now, Guid snapshotId, string dataFile, string metaFile)
         {
             var buildingEntities = Pool.Get<Dictionary<string, List<PersistantEntity>>>();
             var zones = Pool.Get<List<Vector4>>();
@@ -227,7 +350,7 @@ public partial class AutoBuildSnapshot
                     Zones = zones,
                 };
 
-                snapshotData.Save(Path.Combine(Interface.Oxide.DataDirectory, dataFile), _config.Advanced.DataSaveFormat);
+                await snapshotData.SaveAsync(Path.Combine(Interface.Oxide.DataDirectory, dataFile), _config.Advanced.DataSaveFormat);
             }
             finally
             {
@@ -238,11 +361,15 @@ public partial class AutoBuildSnapshot
 
         private void AddLinkedRecord(BuildRecord record)
         {
-            if (!IsLinkedRecord(record))
-                return;
+            // if it's the first record, we will always initialize it
+            if (_linkedRecords.Count > 0)
+            {
+                if (_linkedRecords.Contains(record))
+                    return;
 
-            if (_linkedRecords.Contains(record))
-                return;
+                if (!IsLinkedRecord(record))
+                    return;
+            }
 
             _linkedRecords.Add(record);
 
@@ -268,9 +395,6 @@ public partial class AutoBuildSnapshot
         {
             switch (_config.MultiTC.Mode)
             {
-                case MultiTCMode.Disabled:
-                    return false;
-
                 case MultiTCMode.Manual:
                     if (_instance._manualLinks.TryGetValue(record.PersistentID, out var links))
                     {
@@ -290,8 +414,17 @@ public partial class AutoBuildSnapshot
                     }
                     return false;
 
-                default:
+            case MultiTCMode.Disabled:
+            default:
                     return false;
+            }
+        }
+
+        private void Update(Exception ex)
+        {
+            foreach (var record in _linkedRecords)
+            {
+                record.Update(ex);
             }
         }
 
@@ -359,7 +492,7 @@ public partial class AutoBuildSnapshot
         /// Gets the associated snapshot data from the file.
         /// </summary>
         /// <returns>The snapshot data.</returns>
-        public SnapshotData GetData() => SnapshotData.Load(DataFile);
+        public UniTask<SnapshotData> GetDataAsync() => SnapshotData.LoadAsync(DataFile);
     }
 
     /// <summary>
@@ -436,33 +569,38 @@ public partial class AutoBuildSnapshot
         /// Loads the snapshot data from the specified file.
         /// </summary>
         /// <param name="file">The file to load from.</param>
-        public static SnapshotData Load(string file)
+        public static async UniTask<SnapshotData> LoadAsync(string file)
         {
-            file = FindExistingFile(file);
-
-            if (file.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+            await UniTask.SwitchToThreadPool();
+            try
             {
-                var data = File.ReadAllText(file);
-                return JsonConvert.DeserializeObject<SnapshotData>(data);
+                file = FindExistingFile(file);
+
+                if (file.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+                {
+                    var data = File.ReadAllText(file);
+                    return JsonConvert.DeserializeObject<SnapshotData>(data);
+                }
+
+                bool compressed = file.EndsWith(".gz", StringComparison.OrdinalIgnoreCase);
+                using var stream = File.Open(file, FileMode.Open);
+                using var gzip = compressed ? new GZipStream(stream, CompressionMode.Decompress) : null;
+                using var reader = new BinaryReader(compressed ? gzip : stream);
+
+                return new SnapshotData
+                {
+                    Version = SerializationHelper.ReadVersionNumber(reader),
+                    ID = SerializationHelper.ReadGuid(reader),
+                    MetaDataFile = reader.ReadString(),
+                    Timestamp = SerializationHelper.ReadDateTime(reader),
+                    Zones = SerializationHelper.ReadList<Vector4>(reader),
+                    Entities = SerializationHelper.ReadDictionary<string, List<PersistantEntity>>(reader)
+                };
             }
-
-            bool compressed = file.EndsWith(".gz", StringComparison.OrdinalIgnoreCase);
-
-            using var stream = File.Open(file, FileMode.Open);
-            using var gzip = compressed ? new GZipStream(stream, CompressionMode.Decompress) : null;
-            using var reader = new BinaryReader(compressed ? gzip : stream);
-
-            var version = SerializationHelper.ReadVersionNumber(reader);
-
-            return new SnapshotData
+            finally
             {
-                Version = _instance.Version,
-                ID = SerializationHelper.ReadGuid(reader),
-                MetaDataFile = reader.ReadString(),
-                Timestamp = SerializationHelper.ReadDateTime(reader),
-                Zones = SerializationHelper.ReadList<Vector4>(reader),
-                Entities = SerializationHelper.ReadDictionary<string, List<PersistantEntity>>(reader)
-            };
+                await UniTask.SwitchToMainThread();
+            }
         }
 
         /// <summary>
@@ -470,42 +608,52 @@ public partial class AutoBuildSnapshot
         /// </summary>
         /// <param name="file">The file to save to.</param>
         /// <param name="compress">Whether to compress the data.</param>
-        public void Save(string file, DataFormat saveFormat = DataFormat.Binary)
+        public async UniTask SaveAsync(string file, DataFormat saveFormat = DataFormat.Binary)
         {
             var format = _config.Advanced.DataSaveFormat;
-            if (format == DataFormat.Json || format == DataFormat.JsonExpanded)
-            {
-                var jsonFormat = format == DataFormat.JsonExpanded
-                    ? Formatting.Indented
-                    : Formatting.None;
+            var version = _instance.Version;
 
-                var data = JsonConvert.SerializeObject(this, jsonFormat);
-                File.WriteAllText(file + ".json", data);
-            }
-            else if (format == DataFormat.Binary || format == DataFormat.GZip)
+            await UniTask.SwitchToThreadPool();
+            try
             {
-                file += ".bin";
-
-                bool compress = format == DataFormat.GZip;
-                if (compress)
+                if (format == DataFormat.Json || format == DataFormat.JsonExpanded)
                 {
-                    file += ".gz";
+                    var jsonFormat = format == DataFormat.JsonExpanded
+                        ? Formatting.Indented
+                        : Formatting.None;
+
+                    var data = JsonConvert.SerializeObject(this, jsonFormat);
+                    File.WriteAllText(file + ".json", data);
                 }
+                else if (format == DataFormat.Binary || format == DataFormat.GZip)
+                {
+                    file += ".bin";
 
-                using var stream = File.Open(file, FileMode.Create);
-                using var gzip = compress ? new GZipStream(stream, CompressionMode.Compress) : null;
-                using var writer = new BinaryWriter(compress ? gzip : stream);
+                    bool compress = format == DataFormat.GZip;
+                    if (compress)
+                    {
+                        file += ".gz";
+                    }
 
-                SerializationHelper.Write(writer, _instance.Version);
-                SerializationHelper.Write(writer, ID);
-                writer.Write(MetaDataFile);
-                SerializationHelper.Write(writer, Timestamp);
-                SerializationHelper.Write(writer, Zones);
-                SerializationHelper.Write(writer, Entities);
+                    using var stream = File.Open(file, FileMode.Create);
+                    using var gzip = compress ? new GZipStream(stream, CompressionMode.Compress) : null;
+                    using var writer = new BinaryWriter(compress ? gzip : stream);
+
+                    SerializationHelper.Write(writer, version);
+                    SerializationHelper.Write(writer, ID);
+                    writer.Write(MetaDataFile);
+                    SerializationHelper.Write(writer, Timestamp);
+                    SerializationHelper.Write(writer, Zones);
+                    SerializationHelper.Write(writer, Entities);
+                }
+                else
+                {
+                    throw new NotSupportedException($"Unsupported data format: {format}");
+                }
             }
-            else
+            finally
             {
-                throw new NotSupportedException($"Unsupported data format: {format}");
+                await UniTask.SwitchToMainThread();
             }
         }
 

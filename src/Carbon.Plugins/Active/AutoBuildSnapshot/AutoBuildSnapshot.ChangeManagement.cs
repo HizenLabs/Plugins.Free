@@ -91,7 +91,7 @@ public partial class AutoBuildSnapshot
         {
             if (success)
             {
-                AddLogMessage($"Saved {record.LinkedRecords.Count} building(s) in {record.FrameCount} frames (total: {record.Duration} ms | longest: {record.LongestStepDuration} ms)");
+                AddLogMessage($"Saved {record.LinkedRecords.Count} building(s), {record.YieldCount} yields (total {record.Duration} ms)");
             }
             else
             {
@@ -120,7 +120,7 @@ public partial class AutoBuildSnapshot
             }
         });
 
-        snapshot.BeginSave().Forget();
+        snapshot.BeginSaveTask().Forget();
     }
 
     /// <summary>
