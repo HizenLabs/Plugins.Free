@@ -290,7 +290,7 @@ public partial class AutoBuildSnapshot
                 {
                     var entities = Pool.Get<List<PersistantEntity>>();
                     entities.AddRange(_buildingEntities[buildingId]
-                        .Select(e => (PersistantEntity)e)
+                        .Select(PersistantEntity.Load)
                         .OrderBy(e => e.PrefabName)
                         .OrderBy(e => e.Type));
                     buildingEntities.Add(buildingId.PersistentID, entities);
@@ -312,6 +312,12 @@ public partial class AutoBuildSnapshot
             }
             finally
             {
+                foreach(var kvp in buildingEntities)
+                {
+                    var list = buildingEntities[kvp.Key];
+                    Pool.Free(ref list, true);
+                }
+
                 FreeDictionaryList(ref buildingEntities);
                 Pool.FreeUnmanaged(ref zones);
             }

@@ -517,8 +517,6 @@ public partial class AutoBuildSnapshot
             _lastUpdate = DateTime.Now;
             _zonesDirty = true;
         }
-
-        public PersistantEntity GetPersistantEntity() => BaseTC;
     }
 
     /// <summary>
