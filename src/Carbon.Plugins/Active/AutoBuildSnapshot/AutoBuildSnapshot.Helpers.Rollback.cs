@@ -42,8 +42,6 @@ public partial class AutoBuildSnapshot
                     AddLogMessage(player, "Failed to create backup, rollback aborted.");
                     SnapshotHandle.Release(player);
                 }
-
-                Pool.Free(ref snapshots, true);
             });
         }
         else

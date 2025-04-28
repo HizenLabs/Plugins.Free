@@ -244,7 +244,7 @@ public partial class AutoBuildSnapshot
     /// <param name="zone">The zone to check.</param>
     /// <param name="coordinate">The coordinate to check.</param>
     /// <returns>True if the zone contains the coordinate, false otherwise.</returns>
-    private bool ZoneContains(Vector4 zone, Vector3 coordinate) =>
+    private static bool ZoneContains(Vector4 zone, Vector3 coordinate) =>
         (coordinate - (Vector3)zone).sqrMagnitude <= zone.w * zone.w;
 
     /// <summary>
@@ -272,7 +272,7 @@ public partial class AutoBuildSnapshot
     /// </summary>
     /// <param name="timeSpan">The time span to format.</param>
     /// <returns>The formatted relative time string.</returns>
-    private string FormatRelativeTime(System.TimeSpan timeSpan)
+    private static string FormatRelativeTime(System.TimeSpan timeSpan)
     {
         List<string> parts = Pool.Get<List<string>>();
 

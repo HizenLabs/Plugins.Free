@@ -117,7 +117,12 @@ public partial class AutoBuildSnapshot : CarbonPlugin
     /// <summary>
     /// The list of all buildings being recorded/tracked by the plugin.
     /// </summary>
-    private static Dictionary<ulong, BuildRecord> _buildRecords;
+    private Dictionary<ulong, BuildRecord> _buildRecords;
+
+    /// <summary>
+    /// The list of manually linked records, by PersistantID.
+    /// </summary>
+    private Dictionary<string, HashSet<string>> _manualLinks;
 
     /// <summary>
     /// The list of temporary entities that are created for visual feedback (e.g. spheres).
@@ -268,7 +273,6 @@ public partial class AutoBuildSnapshot : CarbonPlugin
         /// </summary>
         [JsonProperty("General Settings")]
         public GeneralSettings General { get; init; } = new();
-
         /// <summary>
         /// The settings for multi-TC buildings.
         /// </summary>
@@ -328,13 +332,25 @@ public partial class AutoBuildSnapshot : CarbonPlugin
             /// <summary>
             /// Whether to try to link multiple TCs together when they are in the same area.
             /// </summary>
-            [JsonProperty("Multi-TC Snapshots Enabled")]
-            public bool Enabled { get; set; } = _defaultTryLinkMultiTCBuildings;
+            [JsonProperty("Multi-TC Snapshots ModeLegend")]
+            public Dictionary<string, MultiTCMode> ModeLegend => _modeLegend;
+            private static readonly Dictionary<string, MultiTCMode> _modeLegend = new()
+            {
+                ["Disabled"] = MultiTCMode.Disabled,
+                // ["Manual"] = MultiTCMode.Manual,
+                // ["Automatic (Experimental)"] = MultiTCMode.Automatic
+            };
+
+            /// <summary>
+            /// Whether to try to link multiple TCs together when they are in the same area.
+            /// </summary>
+            [JsonProperty("Multi-TC Snapshots Mode")]
+            public MultiTCMode Mode { get; set; } = MultiTCMode.Disabled;
 
             /// <summary>
             /// The radius to scan for other TCs when trying to link multiple TCs together.
             /// </summary>
-            [JsonProperty("Multi-TC Scan Radius")]
+            [JsonProperty("Multi-TC Scan Radius (Automatic Mode)")]
             public float ScanRadius { get; set; } = _defaultMultiTCScanRadius;
         }
 
@@ -456,6 +472,13 @@ public partial class AutoBuildSnapshot : CarbonPlugin
             [JsonProperty("Data Save Format")]
             public DataFormat DataSaveFormat { get; set; } = DataFormat.GZip;
         }
+    }
+
+    private enum MultiTCMode
+    {
+        Disabled = 0,
+        Manual = 1,
+        Automatic = 2
     }
 
     private enum DataFormat
@@ -823,8 +846,6 @@ public partial class AutoBuildSnapshot : CarbonPlugin
                     AddLogMessage(player, "Failed to create backup, rollback aborted.");
                     SnapshotHandle.Release(player);
                 }
-
-                Pool.Free(ref snapshots, true);
             });
         }
         else
@@ -1119,7 +1140,7 @@ public partial class AutoBuildSnapshot : CarbonPlugin
 
     private async UniTask<int> GetRandomNumber(BasePlayer player)
     {
-        int count = 0;
+        int count;
         await UniTask.SwitchToThreadPool();
 
         TryGetPlayerTargetCoordinates(BasePlayer.activePlayerList[0], out var targetCoords);

@@ -1,4 +1,5 @@
-﻿using Facepunch;
+﻿using Cysharp.Threading.Tasks;
+using Facepunch;
 using Newtonsoft.Json;
 using Oxide.Core;
 using System;
@@ -25,9 +26,6 @@ public partial class AutoBuildSnapshot
         private Dictionary<BuildRecord, List<BaseEntity>> _buildingEntities;
         private List<PlayerMetaData> _authorizedPlayers;
         private List<BuildRecord> _linkedRecords;
-        private Queue<BuildRecord> _stepRecordQueue;
-        private BuildRecord _stepRecord;
-        private Queue<BaseEntity> _stepEntityQueue;
 
         private Stopwatch _processWatch;
         private Stopwatch _stepWatch;
@@ -63,10 +61,41 @@ public partial class AutoBuildSnapshot
         public double StepDuration => _stepWatch.Elapsed.TotalMilliseconds;
 
         /// <summary>
-        /// Controls whether the next step will be processed in a new frame.
-        /// Duration is represented in fractional milliseconds.
+        /// Enters the pool and frees any unmanaged resources.
         /// </summary>
-        private bool NeedsFrame => StepDuration > _config.Advanced.MaxStepFrameDuration;
+        public void EnterPool()
+        {
+            FreeDictionaryList(ref _buildingEntities);
+            Pool.FreeUnmanaged(ref _authorizedPlayers);
+            Pool.FreeUnmanaged(ref _linkedRecords);
+
+            _processWatch.Reset();
+            _stepWatch.Reset();
+
+            FrameCount = 0;
+            LongestStepDuration = 0;
+            Exception = null;
+        }
+
+        /// <summary>
+        /// Leaves the pool and allocates any unmanaged resources.
+        /// </summary>
+        public void LeavePool()
+        {
+            _buildingEntities = Pool.Get<Dictionary<BuildRecord, List<BaseEntity>>>();
+            _authorizedPlayers = Pool.Get<List<PlayerMetaData>>();
+            _linkedRecords = Pool.Get<List<BuildRecord>>();
+
+            _processWatch ??= new();
+            _stepWatch ??= new();
+        }
+
+        public static BuildSnapshot Create(AutoBuildSnapshot plugin, BuildRecord record, Action<bool, BuildSnapshot> resultCallback)
+        {
+            var snapshot = Pool.Get<BuildSnapshot>();
+            snapshot.Init(plugin, record, resultCallback);
+            return snapshot;
+        }
 
         /// <summary>
         /// Initializes a new build snapshot starting from the specified TC.
@@ -81,201 +110,47 @@ public partial class AutoBuildSnapshot
             AddLinkedRecord(record);
         }
 
-        private void AddLinkedRecord(BuildRecord record)
-        {
-            if (_linkedRecords.Contains(record))
-                return;
-
-            _linkedRecords.Add(record);
-
-            foreach (var user in record.BaseTC.authorizedPlayers)
-            {
-                if (_authorizedPlayers.Any(p => p.UserID == user.userid))
-                    continue;
-
-                _authorizedPlayers.Add(new PlayerMetaData
-                {
-                    UserID = user.userid,
-                    UserName = user.username
-                });
-            }
-        }
-
         /// <summary>
         /// Saves the current snapshot for the initialized record data, including all surrounding TCs/records.
         /// </summary>
-        /// <param name="plugin">The base plugin reference.</param>
-        /// <param name="resultCallback">The callback action when the save is complete, as this can span several frames.</param>
-        public void BeginSave()
+        public async UniTaskVoid BeginSave()
         {
-            Action nextStep;
-            BuildState nextState;
-
-            if (_config.MultiTC.Enabled)
-            {
-                nextStep = BuildNetwork;
-                nextState = BuildState.Save_BuildingNetwork;
-            }
-            else
-            {
-                nextStep = FindEntities;
-                nextState = BuildState.Save_FindingEntities;
-            }
-
-            TryStep(() =>
-            {
-                if (_linkedRecords.Count == 0)
-                {
-                    throw new InvalidOperationException($"Snapshot can't be saved before initializing!");
-                }
-
-                if (++FrameCount > 1)
-                {
-                    throw new InvalidOperationException($"Cannot call save twice on snapshot!");
-                }
-
-                if (!ValidEntity(_linkedRecords[0].BaseTC))
-                {
-                    throw new InvalidOperationException("Base TC is invalid! Unable to perform snapshot.");
-                }
-
-                Update(nextState, _stepRecordQueue.Enqueue);
-            },
-            nextStep);
         }
 
         /// <summary>
         /// Recursively builds the network of linked TCs.
         /// </summary>
-        private void BuildNetwork()
+        private async UniTaskVoid BuildNetwork()
         {
-            if (_stepRecordQueue.Count > 0)
-            {
-                TryStep(() =>
-                {
-                    var next = _stepRecordQueue.Dequeue();
-
-                    foreach (var zone in next.LinkedZones)
-                    {
-                        using var links = BuildingScanner.GetEntities<BuildingPrivlidge>(next.BaseTC, zone, _maskBaseEntities);
-                        foreach (var link in links)
-                        {
-                            var recordId = link.net.ID.Value;
-
-                            // if we're not tracking this tc, skip it
-                            if (!_buildRecords.TryGetValue(recordId, out var record))
-                                continue;
-
-                            // if this record is already linked, skip it
-                            if (_linkedRecords.Contains(record))
-                                continue;
-
-                            // if this record is already in the queue, skip it
-                            if (_stepRecordQueue.Contains(record))
-                                continue;
-
-                            AddLinkedRecord(record);
-
-                            _stepRecordQueue.Enqueue(record);
-                        }
-                    }
-                },
-                BuildNetwork);
-            }
-            else
-            {
-                // Network build complete, update states and begin finding entities
-                TryStep(() =>
-                {
-                    Update(BuildState.Save_FindingEntities, _stepRecordQueue.Enqueue);
-                },
-                FindEntities);
-            }
         }
 
         /// <summary>
         /// Finds all entities in the linked records.
         /// </summary>
-        private void FindEntities()
+        private async UniTaskVoid FindEntities()
         {
-            if (_stepRecordQueue.Count > 0)
-            {
-                TryStep(() =>
-                {
-                    _stepRecord = _stepRecordQueue.Dequeue();
-                    _buildingEntities.Add(_stepRecord, Pool.Get<List<BaseEntity>>());
-                    foreach (var zone in _stepRecord.EntityZones)
-                    {
-                        using var entities = BuildingScanner.GetEntities<BaseEntity>(_stepRecord.BaseTC, zone, _maskBaseEntities);
-                        foreach (var entity in entities)
-                        {
-                            if (!_config.General.IncludeGroundResources && entity.OwnerID == 0 && entity is CollectibleEntity)
-                                continue;
-
-                            if (!_config.General.IncludeNonAuthorizedDeployables && !AuthorizedEntity(entity))
-                                continue;
-
-                            _stepEntityQueue.Enqueue(entity);
-                        }
-                    }
-                },
-                ProcessFoundEntities);
-            }
-            else
-            {
-                // Placeholder until final save step is implemented.
-                TryStep(() =>
-                {
-                    Update(BuildState.Save_Writing);
-                },
-                FinishSave);
-            }
         }
-
-        private bool AuthorizedEntity(BaseEntity entity) =>
-            _authorizedPlayers.Any(p => p.UserID == entity.OwnerID);
-
         /// <summary>
         /// Processes the found entities and adds them to the snapshot.
         /// </summary>
-        private void ProcessFoundEntities()
+        private async UniTaskVoid ProcessFoundEntities()
         {
-            if (_stepEntityQueue.Count > 0)
-            {
-                TryStep(() =>
-                {
-                    var next = _stepEntityQueue.Dequeue();
-                    if (_buildingEntities[_stepRecord].Any(e => e.net.ID == next.net.ID))
-                        return;
-
-                    _buildingEntities[_stepRecord].Add(next);
-                },
-                ProcessFoundEntities);
-            }
-            else
-            {
-                FindEntities();
-            }
         }
 
         /// <summary>
         /// Finishes the save process and writes the snapshot to disk (or other storage).
         /// </summary>
-        private void FinishSave()
+        private async UniTaskVoid FinishSave()
         {
-            TryStep(() =>
-            {
-                var now = DateTime.UtcNow;
-                var snapshotId = Guid.NewGuid();
-                var dataFile = $"{_snapshotDataDirectory}/{now:yyyyMMdd}/{now:hhmmss}_{snapshotId}.{_snapshotDataExtension}";
-                var metaFile = $"{_snapshotDataDirectory}/{now:yyyyMMdd}/{now:hhmmss}_{snapshotId}.{_snapshotMetaExtension}";
+            var now = DateTime.UtcNow;
+            var snapshotId = Guid.NewGuid();
+            var dataFile = $"{_snapshotDataDirectory}/{now:yyyyMMdd}/{now:hhmmss}_{snapshotId}.{_snapshotDataExtension}";
+            var metaFile = $"{_snapshotDataDirectory}/{now:yyyyMMdd}/{now:hhmmss}_{snapshotId}.{_snapshotMetaExtension}";
 
-                WriteSnapshotMeta(now, snapshotId, dataFile, metaFile);
-                WriteSnapshotData(now, snapshotId, dataFile, metaFile);
+            WriteSnapshotMeta(now, snapshotId, dataFile, metaFile);
+            WriteSnapshotData(now, snapshotId, dataFile, metaFile);
 
-                Update(BuildState.Save_Success);
-            },
-            () => _resultCallback(true, this));
+            Update(BuildState.Save_Success);
         }
 
         /// <summary>
@@ -285,7 +160,7 @@ public partial class AutoBuildSnapshot
         /// <param name="snapshotId">The unique id of the snapshot.</param>
         /// <param name="dataFile">The file to write the data to.</param>
         /// <param name="metaFile">The file to write the metadata to.</param>
-        private void WriteSnapshotMeta(DateTime now, Guid snapshotId, string dataFile, string metaFile)
+        private async UniTaskVoid WriteSnapshotMeta(DateTime now, Guid snapshotId, string dataFile, string metaFile)
         {
             var linkedBuildingsMeta = Pool.Get<Dictionary<string, BuildingMetaData>>();
             foreach (var kvp in _buildingEntities)
@@ -324,7 +199,7 @@ public partial class AutoBuildSnapshot
         /// <param name="snapshotId">The unique id of the snapshot.</param>
         /// <param name="dataFile">The file to write the data to.</param>
         /// <param name="metaFile">The file to write the metadata to.</param>
-        private void WriteSnapshotData(DateTime now, Guid snapshotId, string dataFile, string metaFile)
+        private async UniTaskVoid WriteSnapshotData(DateTime now, Guid snapshotId, string dataFile, string metaFile)
         {
             var buildingEntities = Pool.Get<Dictionary<string, List<PersistantEntity>>>();
             var zones = Pool.Get<List<Vector4>>();
@@ -361,56 +236,62 @@ public partial class AutoBuildSnapshot
             }
         }
 
-        /// <summary>
-        /// Attempts to perform a step in the process.
-        /// Decides to run the step immediately or on the next frame depending on <see cref="NeedsFrame"/>.
-        /// This is calculated based off of a preset duration between frames.
-        /// </summary>
-        /// <param name="stepAction">The action to perform.</param>
-        /// <param name="successCallback">The callback to invoke on success.</param>
-        private void TryStep(
-            Action stepAction,
-            Action successCallback
-        )
+        private void AddLinkedRecord(BuildRecord record)
         {
-            // Persist all entities
-            try
+            if (!IsLinkedRecord(record))
+                return;
+
+            if (_linkedRecords.Contains(record))
+                return;
+
+            _linkedRecords.Add(record);
+
+            foreach (var user in record.BaseTC.authorizedPlayers)
             {
-                _processWatch.Start();
-                _stepWatch.Restart();
+                if (_authorizedPlayers.Any(p => p.UserID == user.userid))
+                    continue;
 
-                stepAction();
-
-                _stepWatch.Stop();
-                _processWatch.Stop();
-
-                // Track the longest step duration
-                if (StepDuration > LongestStepDuration)
+                _authorizedPlayers.Add(new PlayerMetaData
                 {
-                    LongestStepDuration = StepDuration;
-                }
-
-                if (NeedsFrame)
-                {
-                    FrameCount++;
-                    _plugin.NextFrame(successCallback);
-                }
-                else
-                {
-                    successCallback();
-                }
+                    UserID = user.userid,
+                    UserName = user.username
+                });
             }
-            catch (Exception ex)
+        }
+
+        /// <summary>
+        /// Checks if the given record is linked to this snapshot.
+        /// </summary>
+        /// <param name="record">The record to check.</param>
+        /// <returns>True if the record is linked, false otherwise.</returns>
+        private bool IsLinkedRecord(BuildRecord record)
+        {
+            switch (_config.MultiTC.Mode)
             {
-                foreach (var record in _linkedRecords)
-                {
-                    record.Update(ex);
-                }
+                case MultiTCMode.Disabled:
+                    return false;
 
-                Exception = ex;
+                case MultiTCMode.Manual:
+                    if (_instance._manualLinks.TryGetValue(record.PersistentID, out var links))
+                    {
+                        return _linkedRecords
+                            .Select(r => r.PersistentID)
+                            .Any(links.Contains);
+                    }
+                    return false;
 
-                // on failure, call the primary result handler immediately
-                _resultCallback(false, this);
+                case MultiTCMode.Automatic:
+                    var authorized = _linkedRecords[0].BaseTC.authorizedPlayers;
+                    if (record.BaseTC.authorizedPlayers.Any(authorized.Contains))
+                    {
+                        return _linkedRecords
+                            .SelectMany(r => r.LinkedZones)
+                            .Any(zone => ZoneContains(zone, record.BaseTC.ServerPosition));
+                    }
+                    return false;
+
+                default:
+                    return false;
             }
         }
 
@@ -422,40 +303,6 @@ public partial class AutoBuildSnapshot
 
                 updateAction?.Invoke(record);
             }
-        }
-
-        /// <summary>
-        /// Enters the pool and frees any unmanaged resources.
-        /// </summary>
-        public void EnterPool()
-        {
-            FreeDictionaryList(ref _buildingEntities);
-            Pool.FreeUnmanaged(ref _authorizedPlayers);
-            Pool.FreeUnmanaged(ref _linkedRecords);
-            Pool.FreeUnmanaged(ref _stepRecordQueue);
-            Pool.FreeUnmanaged(ref _stepEntityQueue);
-
-            _processWatch.Reset();
-            _stepWatch.Reset();
-
-            FrameCount = 0;
-            LongestStepDuration = 0;
-            Exception = null;
-        }
-
-        /// <summary>
-        /// Leaves the pool and allocates any unmanaged resources.
-        /// </summary>
-        public void LeavePool()
-        {
-            _buildingEntities = Pool.Get<Dictionary<BuildRecord, List<BaseEntity>>>();
-            _authorizedPlayers = Pool.Get<List<PlayerMetaData>>();
-            _linkedRecords = Pool.Get<List<BuildRecord>>();
-            _stepRecordQueue = Pool.Get<Queue<BuildRecord>>();
-            _stepEntityQueue = Pool.Get<Queue<BaseEntity>>();
-
-            _processWatch ??= new();
-            _stepWatch ??= new();
         }
     }
 

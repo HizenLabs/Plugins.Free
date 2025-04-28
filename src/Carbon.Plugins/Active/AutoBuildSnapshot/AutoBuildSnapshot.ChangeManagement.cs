@@ -87,8 +87,7 @@ public partial class AutoBuildSnapshot
 
         record.Update(BuildState.Processing);
 
-        var snapshot = Pool.Get<BuildSnapshot>();
-        snapshot.Init(this, record, (success, record) =>
+        var snapshot = BuildSnapshot.Create(this, record, (success, record) =>
         {
             if (success)
             {
@@ -117,11 +116,11 @@ public partial class AutoBuildSnapshot
 
             if (recursive)
             {
-                NextFrame(() => ProcessNextSave(recursive: true));
+                ProcessNextSave(recursive: true);
             }
         });
 
-        snapshot.BeginSave();
+        snapshot.BeginSave().Forget();
     }
 
     /// <summary>
@@ -137,6 +136,8 @@ public partial class AutoBuildSnapshot
             Pool.FreeUnmanaged(ref records);
 
             callback(list != null && list.Count > 0, list);
+
+            Pool.Free(ref list, true);
             return;
         }
 
@@ -413,7 +414,7 @@ public partial class AutoBuildSnapshot
                 _entityZones.Clear();
                 _entityZones.AddRange(zones);
 
-                if (_config.MultiTC.Enabled)
+                if (_config.MultiTC.Mode == MultiTCMode.Automatic)
                 {
                     using var linkedZones = BuildingScanner.GetZones(BaseTC, _config.MultiTC.ScanRadius, _config.Advanced.MaxScanZoneRadius);
                     _linkedZones.Clear();
