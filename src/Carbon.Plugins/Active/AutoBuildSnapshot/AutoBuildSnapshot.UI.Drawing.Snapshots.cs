@@ -222,8 +222,6 @@ public partial class AutoBuildSnapshot
         scrollIndex = Mathf.Clamp(scrollIndex, 0, maxScroll);
         _snapshotScrollIndex[player.userID] = scrollIndex;
 
-        Puts($"Max scroll: {maxScroll} | Scroll index: {scrollIndex}");
-
         // Get current selection
         Guid selectedId = Guid.Empty;
         _currentSelectedSnapshot.TryGetValue(player.userID, out selectedId);

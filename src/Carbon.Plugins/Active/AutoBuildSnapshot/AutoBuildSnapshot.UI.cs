@@ -321,27 +321,6 @@ public partial class AutoBuildSnapshot
     [ChatCommand($"debug")]
     private void CommandUIDebug(BasePlayer player, string command, string[] args)
     {
-        Vector3 targetCoords;
-        if (TryGetPlayerTargetEntity(player, out var target))
-        {
-            // Found target, get zones from target coords
-            targetCoords = target.ServerPosition;
-        }
-        else if (!TryGetPlayerTargetCoordinates(player, out targetCoords))
-        {
-            // No target or coordinates within maxDistance found
-            player.ChatMessage(_lang.GetMessage(LangKeys.error_invalid_target, player));
-            return;
-        }
-
-        var snapshotIds = Pool.Get<List<Guid>>();
-        if (!TryGetSnapshotIdsAtPosition(targetCoords, snapshotIds))
-        {
-            player.ChatMessage(_lang.GetMessage(LangKeys.error_target_no_record, player));
-            return;
-        }
-
-        NavigateMenu(player, MenuLayer.Snapshots, false, false, null, snapshotIds);
     }
 
     #endregion

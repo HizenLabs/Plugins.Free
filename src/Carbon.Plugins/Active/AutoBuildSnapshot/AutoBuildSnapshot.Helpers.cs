@@ -55,22 +55,54 @@ public partial class AutoBuildSnapshot
         entity != null && entity.net != null && entity.net.ID.IsValid && !entity.IsDestroyed;
 
     /// <summary>
+    /// Creates a temporary sphere entity for the player at the specified position.
+    /// </summary>
+    /// <param name="player">The player to create the entity for.</param>
+    /// <param name="position">The position of the entity.</param>
+    /// <param name="density">The density of the sphere.</param>
+    private static void CreateTempSphere(
+        BasePlayer player,
+        Vector3 position,
+        float width,
+        int density = 1)
+    {
+        if (!_instance.UserHasPermission(player, _config.Commands.AdminPermission)) return;
+
+        for (int i = 0; i < density; i++)
+        {
+            CreateTempEntity(player, prefabSphere, position, Quaternion.identity, entity =>
+            {
+                var sphere = entity.GetComponent<SphereEntity>();
+                sphere.lerpRadius = width;
+                sphere.lerpSpeed = 100;
+            });
+        }
+    }
+
+    /// <summary>
     /// Creates a temporary, client-side entity for the player.
     /// </summary>
     /// <param name="player">The player to create the entity for.</param>
     /// <param name="prefabName">The prefab name of the entity.</param>
     /// <param name="position">The position of the entity.</param>
     /// <param name="entityBuilder">An optional action to modify the entity.</param>
-    private static void CreateTempEntity(BasePlayer player, string prefabName, Vector3 position, Quaternion rotation = default, Action<ClientEntity> entityBuilder = null)
+    private static void CreateTempEntity(
+        BasePlayer player, 
+        string prefabName, 
+        Vector3 position, 
+        Quaternion rotation = default,
+        Action<BaseEntity> entityBuilder = null)
     {
-        var entity = ClientEntity.Create(prefabName, position, rotation);
+        if (!_instance.UserHasPermission(player, _config.Commands.AdminPermission)) return;
+
+        var entity = GameManager.server.CreateEntity(prefabName, position);
         entityBuilder?.Invoke(entity);
 
-        entity.SpawnFor(player.net.connection);
+        entity.Spawn();
 
         if (!_tempEntities.TryGetValue(player.userID, out var playerEntities))
         {
-            playerEntities = Pool.Get<List<ClientEntity>>();
+            playerEntities = Pool.Get<List<BaseEntity>>();
             _tempEntities[player.userID] = playerEntities;
         }
 
@@ -103,15 +135,12 @@ public partial class AutoBuildSnapshot
     /// Kills the specified entities.
     /// </summary>
     /// <param name="entities">The entities to kill.</param>
-    private static void KillEntities(List<Components.ClientEntity> entities)
+    private static void KillEntities(List<BaseEntity> entities)
     {
         foreach (var entity in entities)
         {
-            if (entity == null)
-                continue;
-
-            entity.KillAll();
-            entity.Dispose();
+            entity?.Kill();
+            entity?.SendNetworkUpdate();
         }
 
         entities.Clear();

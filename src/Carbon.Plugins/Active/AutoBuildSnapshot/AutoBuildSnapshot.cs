@@ -120,7 +120,7 @@ public partial class AutoBuildSnapshot : CarbonPlugin
     /// <summary>
     /// The list of temporary entities that are created for visual feedback (e.g. spheres).
     /// </summary>
-    private static Dictionary<ulong, List<Components.ClientEntity>> _tempEntities;
+    private static Dictionary<ulong, List<BaseEntity>> _tempEntities;
 
     /// <summary>
     /// The set of log messages.
@@ -541,6 +541,7 @@ public partial class AutoBuildSnapshot : CarbonPlugin
             // Errors
             string error_no_permission { get; }
             string error_invalid_target { get; }
+            string error_target_no_backups { get; }
             string error_target_no_record { get; }
 
             // User Interface
@@ -556,7 +557,8 @@ public partial class AutoBuildSnapshot : CarbonPlugin
 
             public string error_no_permission => "You do not have permission to use this command.";
             public string error_invalid_target => "You must be looking at a target object or ground.";
-            public string error_target_no_record => "Unable to find any backup records in the target area.";
+            public string error_target_no_backups => "Unable to find any backups in the target area.";
+            public string error_target_no_record => "Unable to find any tracked bases in the target area.";
 
             public string ui_main_title => "Auto Build Snapshot";
 
@@ -576,7 +578,12 @@ public partial class AutoBuildSnapshot : CarbonPlugin
         error_invalid_target,
 
         /// <summary>
-        /// Unable to find any backup records in the target area.
+        /// Unable to find any backups in the target area.
+        /// </summary>
+        error_target_no_backups,
+
+        /// <summary>
+        /// Unable to find any tracked bases in the target area.
         /// </summary>
         error_target_no_record,
 
@@ -778,7 +785,51 @@ public partial class AutoBuildSnapshot : CarbonPlugin
     {
         if (!UserHasPermission(player, _config.Commands.Backup)) return;
 
-        // TODO: Implement backup logic
+        Vector3 targetCoords;
+        if (TryGetPlayerTargetEntity(player, out var target))
+        {
+            // Found target, get zones from target coords
+            targetCoords = target.ServerPosition;
+        }
+        else if (!TryGetPlayerTargetCoordinates(player, out targetCoords))
+        {
+            // No target or coordinates within maxDistance found
+            player.ChatMessage(_lang.GetMessage(LangKeys.error_invalid_target, player));
+            return;
+        }
+
+        var updateRecords = Pool.Get<Queue<BuildRecord>>();
+        foreach (var record in _buildRecords.Values)
+        {
+            if (record.LinkedZones.Any(zone => ZoneContains(zone, targetCoords)))
+                updateRecords.Enqueue(record);
+        }
+
+        if (updateRecords.Count > 0)
+        {
+            AddLogMessage(player, $"Found {updateRecords.Count} record(s) containing target, creating backup...");
+
+            // Perform backup
+            ProcessNextSave(updateRecords, (success, snapshots) =>
+            {
+                if (success)
+                {
+                    AddLogMessage(player, $"Backup completed in {snapshots.Sum(x => x.Duration)} ms");
+                }
+                else
+                {
+                    AddLogMessage(player, "Failed to create backup, rollback aborted.");
+                    SnapshotHandle.Release(player);
+                }
+
+                Pool.Free(ref snapshots, true);
+            });
+        }
+        else
+        {
+            player.ChatMessage(_lang.GetMessage(LangKeys.error_target_no_record, player));
+            Pool.FreeUnmanaged(ref updateRecords);
+        }
     }
 
     /// <summary>
@@ -792,7 +843,27 @@ public partial class AutoBuildSnapshot : CarbonPlugin
     {
         if (!UserHasPermission(player, _config.Commands.Rollback)) return;
 
-        // TODO: Implement rollback logic
+        Vector3 targetCoords;
+        if (TryGetPlayerTargetEntity(player, out var target))
+        {
+            // Found target, get zones from target coords
+            targetCoords = target.ServerPosition;
+        }
+        else if (!TryGetPlayerTargetCoordinates(player, out targetCoords))
+        {
+            // No target or coordinates within maxDistance found
+            player.ChatMessage(_lang.GetMessage(LangKeys.error_invalid_target, player));
+            return;
+        }
+
+        var snapshotIds = Pool.Get<List<Guid>>();
+        if (!TryGetSnapshotIdsAtPosition(targetCoords, snapshotIds))
+        {
+            player.ChatMessage(_lang.GetMessage(LangKeys.error_target_no_backups, player));
+            return;
+        }
+
+        NavigateMenu(player, MenuLayer.Snapshots, false, false, null, snapshotIds);
     }
 
     /// <summary>
@@ -852,7 +923,7 @@ public partial class AutoBuildSnapshot : CarbonPlugin
         _playerSnapshotHandles = Pool.Get<Dictionary<ulong, Guid>>();
         _buildingIDToSnapshotIndex = Pool.Get<Dictionary<string, List<Guid>>>();
         _zoneSnapshotIndex = Pool.Get<Dictionary<Vector4, List<Guid>>>();
-        _tempEntities = Pool.Get<Dictionary<ulong, List<ClientEntity>>>();
+        _tempEntities = Pool.Get<Dictionary<ulong, List<BaseEntity>>>();
         _logMessages = Pool.Get<List<string>>();
         _connectedPlayers = Pool.Get<Dictionary<ulong, BasePlayer>>();
 

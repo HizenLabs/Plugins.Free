@@ -1,10 +1,7 @@
-﻿using Oxide.Core.Plugins;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System;
 using UnityEngine;
 using Facepunch;
-using static Carbon.Components.ConVarSnapshots;
 
 namespace Carbon.Plugins;
 
