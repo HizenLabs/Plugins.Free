@@ -120,7 +120,7 @@ public partial class AutoBuildSnapshot
             }
         });
 
-        snapshot.BeginSaveTask().Forget();
+        snapshot.BeginTask().Forget();
     }
 
     /// <summary>

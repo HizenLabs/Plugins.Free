@@ -45,6 +45,14 @@ public partial class AutoBuildSnapshot
 
             Properties = new();
 
+            if (entity.HasParent())
+            {
+                if (entity.parentBone != 0)
+                {
+                    Properties["ParentBone"] = StringPool.Get(entity.parentBone);
+                }
+            }
+
             if (entity is BuildingBlock block)
             {
                 Properties["Grade"] = block.grade;
@@ -69,14 +77,43 @@ public partial class AutoBuildSnapshot
                 Properties["HealthFraction"] = decay.healthFraction;
             }
 
-            if (entity.HasAnySlot())
-            {
-
-            }
-
             if (entity.skinID > 0)
             {
                 Properties["SkinID"] = entity.skinID;
+            }
+        }
+
+        /// <summary>
+        /// Copies the properties from this entity to the specified entity.
+        /// </summary>
+        /// <param name="entity">The entity to copy the properties to.</param>
+        public void CopyTo(BaseEntity entity)
+        {
+            if (IsNull)
+            {
+                return;
+            }
+
+            entity.OwnerID = OwnerID;
+
+            if (entity is BuildingBlock block)
+            {
+                TrySetProperty("Grade", ref block.grade);
+            }
+        }
+
+        /// <summary>
+        /// Tries to set a property on the entity based on the key and value in the properties dictionary.
+        /// </summary>
+        /// <typeparam name="T">The type of the property.</typeparam>
+        /// <param name="key">The key of the property.</param>
+        /// <param name="property">The property to set.</param>
+        private void TrySetProperty<T>(string key, ref T property)
+        {
+            if (Properties.TryGetValue(key, out var value)
+                && value is T typedValue)
+            {
+                property = typedValue;
             }
         }
 

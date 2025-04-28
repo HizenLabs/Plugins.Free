@@ -18,7 +18,7 @@ public partial class AutoBuildSnapshot
     /// Represents all of the elements within set of zones.
     /// The zone set is comprised of the build area surrounding connected TCs.
     /// </summary>
-    private class BuildSnapshot : Pool.IPooled
+    private class BuildSnapshot : ExecutionBase
     {
         private AutoBuildSnapshot _plugin;
         private Action<bool, BuildSnapshot> _resultCallback;
@@ -26,20 +26,6 @@ public partial class AutoBuildSnapshot
         private Dictionary<BuildRecord, List<BaseEntity>> _buildingEntities;
         private List<PlayerMetaData> _authorizedPlayers;
         private List<BuildRecord> _linkedRecords;
-
-        private Stopwatch _processWatch;
-        private Stopwatch _frameWatch;
-        private int _frameSteps;
-
-        /// <summary>
-        /// The number of frames it took to process the snapshot.
-        /// </summary>
-        public int YieldCount { get; private set; }
-
-        /// <summary>
-        /// The exception, if any, that was thrown during processing.
-        /// </summary>
-        public Exception Exception { get; private set; }
 
         /// <summary>
         /// The number of entities in the snapshot.
@@ -52,43 +38,27 @@ public partial class AutoBuildSnapshot
         public IReadOnlyList<BuildRecord> LinkedRecords => _linkedRecords;
 
         /// <summary>
-        /// The time it took to process the snapshot, or the current running duration if not yet completed.
-        /// </summary>
-        public double Duration => _processWatch.Elapsed.TotalMilliseconds;
-
-        /// <summary>
-        /// The time it took to process the last frame.
-        /// </summary>
-        public double FrameDuration => _frameWatch.Elapsed.TotalMilliseconds;
-
-        /// <summary>
         /// Enters the pool and frees any unmanaged resources.
         /// </summary>
-        public void EnterPool()
+        public override void EnterPool()
         {
+            base.EnterPool();
+
             FreeDictionaryList(ref _buildingEntities);
             Pool.FreeUnmanaged(ref _authorizedPlayers);
             Pool.FreeUnmanaged(ref _linkedRecords);
-
-            _processWatch.Reset();
-            _frameWatch.Reset();
-
-            YieldCount = 0;
-            Exception = null;
         }
 
         /// <summary>
         /// Leaves the pool and allocates any unmanaged resources.
         /// </summary>
-        public void LeavePool()
+        public override void LeavePool()
         {
+            base.LeavePool();
+
             _buildingEntities = Pool.Get<Dictionary<BuildRecord, List<BaseEntity>>>();
             _authorizedPlayers = Pool.Get<List<PlayerMetaData>>();
             _linkedRecords = Pool.Get<List<BuildRecord>>();
-
-            _processWatch ??= new();
-            _frameWatch ??= new();
-            _frameSteps = 0;
         }
 
         public static BuildSnapshot Create(AutoBuildSnapshot plugin, BuildRecord record, Action<bool, BuildSnapshot> resultCallback)
@@ -114,9 +84,8 @@ public partial class AutoBuildSnapshot
         /// <summary>
         /// Saves the current snapshot for the initialized record data, including all surrounding TCs/records.
         /// </summary>
-        public async UniTaskVoid BeginSaveTask()
+        protected override async UniTask ProcessAsync()
         {
-            _processWatch.Start();
             try
             {
                 // update _linkedRecords
@@ -139,17 +108,14 @@ public partial class AutoBuildSnapshot
             }
             catch (Exception ex)
             {
-                Exception = ex;
-
                 // update records with failed state
                 Update(ex);
 
                 // callback failure
                 _resultCallback(false, this);
-            }
-            finally
-            {
-                _processWatch.Stop();
+
+                // re-throw upstream
+                throw;
             }
         }
 
@@ -173,7 +139,7 @@ public partial class AutoBuildSnapshot
                 if (_linkedRecords.Contains(record))
                     continue;
 
-                var collidingRecords = _instance.GetCollidingRecords(record.LinkedZones);
+                var collidingRecords = await _instance.GetCollidingRecordsAsync(record.LinkedZones);
                 foreach(var collision in collidingRecords)
                 {
                     if (processed.Contains(record))
@@ -247,26 +213,6 @@ public partial class AutoBuildSnapshot
                         await YieldStep();
                     }
                 }
-            }
-        }
-
-        private async UniTask YieldReset()
-        {
-            _processWatch.Stop();
-            await UniTask.Yield();
-            _processWatch.Start();
-
-            _frameSteps = 0;
-            _frameWatch.Restart();
-            YieldCount++;
-        }
-
-        private async UniTask YieldStep(int maxSteps = 50)
-        {
-            if (++_frameSteps > maxSteps
-                || FrameDuration > _config.Advanced.MaxStepDuration)
-            {
-                await YieldReset();
             }
         }
 

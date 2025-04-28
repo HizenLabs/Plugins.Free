@@ -128,7 +128,7 @@ public partial class AutoBuildSnapshot
                 return false;
 
             var rollback = BuildRollback.Create(this);
-            rollback.BeginRollbackTask().Forget();
+            rollback.BeginTask().Forget();
 
             return true;
         }

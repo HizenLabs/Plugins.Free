@@ -3,6 +3,7 @@ using System.Linq;
 using System;
 using UnityEngine;
 using Facepunch;
+using Cysharp.Threading.Tasks;
 
 namespace Carbon.Plugins;
 
@@ -302,35 +303,46 @@ public partial class AutoBuildSnapshot
     /// <summary>
     /// Gets the colliding build records for the specified zones.
     /// </summary>
-    /// <param name="zones">The zones to check for collisions.</param>
+    /// <param name="inputZones">The zones to check for collisions.</param>
     /// <returns>A queue of colliding records.</returns>
-    private Queue<BuildRecord> GetCollidingRecords(List<Vector4> zones)
+    private async UniTask<Queue<BuildRecord>> GetCollidingRecordsAsync(List<Vector4> inputZones)
     {
         var records = Pool.Get<Queue<BuildRecord>>();
 
-        foreach (var record in _buildRecords.Values)
+        using var buildRecords = Pool.Get<PooledList<BuildRecord>>();
+        buildRecords.AddRange(_buildRecords.Values);
+
+        await UniTask.RunOnThreadPool(() =>
         {
-            if (AnyZoneContainsRecordZones(record, zones))
+            foreach (var record in buildRecords)
             {
-                records.Enqueue(record);
+                if (AnyZonesCollide(inputZones, record.EntityZones))
+                {
+                    records.Enqueue(record);
+                }
             }
-        }
+        });
 
         return records;
     }
 
     /// <summary>
-    /// Checks if any of the zones in the record intersect with the specified zones.
+    /// Checks if any of the zones in the left and right list collide.
     /// </summary>
-    /// <param name="record">The build record to check.</param>
-    /// <param name="zones">The zones to check against.</param>
-    /// <returns>True if any zone contains the record zones, false otherwise.</returns>
-    private bool AnyZoneContainsRecordZones(BuildRecord record, List<Vector4> zones)
+    /// <param name="left">The first list of zones.</param>
+    /// <param name="right">The second list of zones.</param>
+    /// <returns>True if any zones collide, false otherwise.</returns>
+    private bool AnyZonesCollide(List<Vector4> left, List<Vector4> right)
     {
-        foreach (var zone in zones)
+        foreach (var zone in left)
         {
-            if (record.EntityZones.Any(z => ZonesCollide(z, zone)))
-                return true;
+            foreach (var zone2 in right)
+            {
+                if (ZonesCollide(zone, zone2))
+                {
+                    return true;
+                }
+            }
         }
 
         return false;

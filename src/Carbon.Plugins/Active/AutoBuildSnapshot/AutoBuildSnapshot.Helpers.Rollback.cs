@@ -3,22 +3,21 @@ using System.Linq;
 using UnityEngine;
 using Facepunch;
 using Cysharp.Threading.Tasks;
+using System;
 
 namespace Carbon.Plugins;
 
 public partial class AutoBuildSnapshot
 {
-    private class BuildRollback : Pool.IPooled
+    private class BuildRollback : ExecutionBase
     {
         private SnapshotHandle _handle;
 
-        public void EnterPool()
+        public override void EnterPool()
         {
-            Pool.Free(ref _handle);
-        }
+            base.EnterPool();
 
-        public void LeavePool()
-        {
+            Pool.Free(ref _handle);
         }
 
         public static BuildRollback Create(SnapshotHandle handle)
@@ -36,7 +35,7 @@ public partial class AutoBuildSnapshot
         /// <summary>
         /// Executes the rollback operation.
         /// </summary>
-        public async UniTaskVoid BeginRollbackTask()
+        protected override async UniTask ProcessAsync()
         {
             var player = _handle.Player;
             var snapshotId = _handle.ID;
@@ -48,7 +47,7 @@ public partial class AutoBuildSnapshot
             var snapshotData = await _handle.Meta.GetDataAsync();
 
             // Get any records that collide with this snapshot's zones
-            var records = _instance.GetCollidingRecords(snapshotData.Zones);
+            var records = await _instance.GetCollidingRecordsAsync(snapshotData.Zones);
 
             if (records.Count > 0)
             {
@@ -119,28 +118,70 @@ public partial class AutoBuildSnapshot
             // Destroy all entitiesToKill
             foreach (var entity in entitiesToKill)
             {
-                var id = GetPersistanceID(entity);
-                _instance.AddLogMessage($" Destroying entity: {entity.GetType()} ({entity.PrefabName} | ID: {id})");
+                _instance.AddLogMessage($"Destroying entity: {GetPersistanceID(entity)}");
+                entity.Kill();
 
-                // entity.Kill();
+                await YieldStep();
             }
 
             // Spawn all entitiesToSpawn, then add them to entitesToUpdate
-            foreach (var entity in entitiesToCreate)
+            foreach (var create in entitiesToCreate)
             {
-                _instance.AddLogMessage($" Spawning entity: {entity.Type} ({entity.PrefabName} | ID: {entity.ID})");
+                var entity = GameManager.server.CreateEntity(create.PrefabName, create.Position, create.Rotation);
+                if (TryUpdateEntity(entity, create))
+                {
+                    _instance.AddLogMessage($"Creating entity: {create.ID})");
+                    entity.Spawn();
+                }
+                else
+                {
+                    _instance.AddLogMessage($"Failed to create entity: {create.ID}");
+                    entity.Kill();
+                }
+            }
 
-                // GameManager.server.CreateEntity(entity.PrefabName, entity.Position, entity.Rotation);
+            var entityLookup = Pool.Get<Dictionary<string, PersistantEntity>>();
+            foreach (var entity in data.Entities.Values.SelectMany(_ => _))
+            {
+                entityLookup[entity.ID] = entity;
             }
 
             // Update all entitiesToUpdate
             foreach (var entity in outEntitiesToUpdate)
             {
-                var id = GetPersistanceID(entity);
-                _instance.AddLogMessage($" Updating entity: {entity.GetType()} ({entity.PrefabName} | ID: {id})");
+                var entityID = GetPersistanceID(entity);
+                if (entityLookup.TryGetValue(entityID, out var update))
+                {
+                    if (TryUpdateEntity(entity, update))
+                    {
+                        _instance.AddLogMessage($"Updating entity: {entityID}");
+                    }
+                    else
+                    {
+                        _instance.AddLogMessage($"Failed to update entity: {entityID}");
+                    }
+                }
+                
             }
 
+            Pool.FreeUnmanaged(ref entityLookup);
+
             _instance.AddLogMessage(player, "Rollback complete.");
+
+            return true;
+        }
+
+        private bool TryUpdateEntity(BaseEntity entity, PersistantEntity data)
+        {
+            try
+            {
+                data.CopyTo(entity);
+            }
+            catch (Exception ex)
+            {
+                _instance.AddLogMessage($"Exception while trying to update: {ex}");
+                return false;
+            }
 
             return true;
         }
@@ -180,6 +221,8 @@ public partial class AutoBuildSnapshot
                 {
                     outEntitiesToUpdate.Add(currentEntity);
                 }
+
+                await YieldStep();
             }
 
             return true;

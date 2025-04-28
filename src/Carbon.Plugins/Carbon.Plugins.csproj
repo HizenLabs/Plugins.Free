@@ -703,6 +703,7 @@
   <ItemGroup>
     <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.BuildingScanner.cs" />
     <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.BuildSnapshot.cs" />
+    <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.ExecutionBase.cs" />
     <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.Helpers.cs" />
     <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.Helpers.Rollback.cs" />
     <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.SerializationHelper.cs" />
