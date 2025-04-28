@@ -2,8 +2,16 @@ param (
     [Parameter(Mandatory = $true, HelpMessage = "Path to the RustDedicated_Data\Managed directory")]
     [string]$SourcePath,
 
+    [Parameter(Mandatory = $false, HelpMessage = "Path to the carbon\managed directory")]
+    [string]$SourceCarbonPath = $null,
+
     [string]$DestinationPath = "$PSScriptRoot\..\src\managed"
 )
+
+if (!$SourceCarbonPath)
+{
+    $SourceCarbonPath = Join-Path $SourcePath "..\..\carbon\managed"
+}
 
 $rustManagedLibs = @(
     "0Harmony.dll",
@@ -41,6 +49,10 @@ $rustManagedLibs = @(
     "ZString.dll"
 )
 
+$carbonManagedLibs = @(
+    "Carbon.UniTask.dll"
+);
+
 if (Test-Path $DestinationPath)
 {
     Get-ChildItem -Path $DestinationPath -File | Remove-Item -Force
@@ -60,6 +72,23 @@ foreach ($pattern in $rustManagedLibs)
         Write-Host "Updating: $($file.Name) -> $($DestinationPath)"
         $copied++
     }
+}
+
+foreach ($pattern in $carbonManagedLibs)
+{
+    $files = Get-ChildItem -Path $SourceCarbonPath -Filter $pattern -File
+    foreach ($file in $files)
+    {
+        Copy-Item -Path $file.FullName -Destination (Join-Path $DestinationPath $file.Name) -Force
+        Write-Host "Updating: $($file.Name) -> $($DestinationPath)"
+        $copied++
+    }
+}
+
+if ($copied -eq 0)
+{
+    Write-Host "No files copied. Please check the source path and patterns."
+    exit 1
 }
 
 Write-Host "Packages updated."
