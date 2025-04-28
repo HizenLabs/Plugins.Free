@@ -38,6 +38,10 @@ public partial class AutoBuildSnapshot
             OwnerID = entity.OwnerID;
             Position = entity.ServerPosition;
             Rotation = entity.ServerRotation;
+            CenterPosition = Position + entity.bounds.center;
+
+            var size = entity.bounds.size;
+            CollisionRadius = Mathf.Max(size.x, size.y, size.z) + 1;
 
             Properties = new();
 
@@ -124,6 +128,16 @@ public partial class AutoBuildSnapshot
         public Quaternion Rotation { get; init; }
 
         /// <summary>
+        /// The center position of the entity bounds.
+        /// </summary>
+        public Vector3 CenterPosition { get; init; }
+
+        /// <summary>
+        /// The radius from the center to scan for collisions.
+        /// </summary>
+        public float CollisionRadius { get; init; }
+
+        /// <summary>
         /// The object properties.
         /// </summary>
         public Dictionary<string, object> Properties { get; init; }
@@ -161,6 +175,8 @@ public partial class AutoBuildSnapshot
                 OwnerID = reader.ReadUInt64(),
                 Position = SerializationHelper.ReadVector3(reader),
                 Rotation = SerializationHelper.ReadQuaternion(reader),
+                CenterPosition = SerializationHelper.ReadVector3(reader),
+                CollisionRadius = reader.ReadSingle(),
                 Properties = SerializationHelper.ReadDictionary<string, object>(reader)
             };
 
@@ -184,6 +200,8 @@ public partial class AutoBuildSnapshot
             writer.Write(OwnerID);
             SerializationHelper.Write(writer, Position);
             SerializationHelper.Write(writer, Rotation);
+            SerializationHelper.Write(writer, CenterPosition);
+            writer.Write(CollisionRadius);
             SerializationHelper.Write(writer, Properties);
         }
     }

@@ -842,7 +842,12 @@ public partial class AutoBuildSnapshot : CarbonPlugin
                 else
                 {
                     AddLogMessage(player, "Failed to create backup, rollback aborted.");
-                    SnapshotHandle.Release(player);
+
+                    if (_playerSnapshotHandles.TryGetValue(player.userID, out var handleId)
+                        && _snapshotHandles.TryGetValue(handleId, out var handle))
+                    {
+                        SnapshotHandle.Release(player, ref handle);
+                    }
                 }
             });
         }

@@ -91,7 +91,7 @@ public partial class AutoBuildSnapshot
         {
             if (success)
             {
-                AddLogMessage($"Saved {record.LinkedRecords.Count} building(s), {record.YieldCount} yields (total {record.Duration} ms)");
+                AddLogMessage($"Saved {record.LinkedRecords.Count} building(s), {record.EntityCount} entities ({record.YieldCount} yields, total {record.Duration} ms)");
             }
             else
             {

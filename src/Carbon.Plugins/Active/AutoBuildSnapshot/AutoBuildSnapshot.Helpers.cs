@@ -318,4 +318,33 @@ public partial class AutoBuildSnapshot
 
         return records;
     }
+
+    /// <summary>
+    /// Checks if any of the zones in the record intersect with the specified zones.
+    /// </summary>
+    /// <param name="record">The build record to check.</param>
+    /// <param name="zones">The zones to check against.</param>
+    /// <returns>True if any zone contains the record zones, false otherwise.</returns>
+    private bool AnyZoneContainsRecordZones(BuildRecord record, List<Vector4> zones)
+    {
+        foreach (var zone in zones)
+        {
+            if (record.EntityZones.Any(z => ZonesCollide(z, zone)))
+                return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Checks if two zones collide.
+    /// </summary>
+    /// <param name="left">The first zone.</param>
+    /// <param name="right">The second zone.</param>
+    /// <returns>True if the zones collide, false otherwise.</returns>
+    private bool ZonesCollide(Vector4 left, Vector4 right) =>
+        (left.x - right.x) * (left.x - right.x) +
+        (left.y - right.y) * (left.y - right.y) +
+        (left.z - right.z) * (left.z - right.z) <=
+        (left.w + right.w) * (left.w + right.w);
 }

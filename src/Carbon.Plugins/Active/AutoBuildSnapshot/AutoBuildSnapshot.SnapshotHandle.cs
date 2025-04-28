@@ -127,7 +127,8 @@ public partial class AutoBuildSnapshot
             if (player.userID != PlayerUserID)
                 return false;
 
-            _instance.BeginRollbackTask(this).Forget();
+            var rollback = BuildRollback.Create(this);
+            rollback.BeginRollbackTask().Forget();
 
             return true;
         }
@@ -138,27 +139,39 @@ public partial class AutoBuildSnapshot
             LastModified = DateTime.UtcNow;
         }
 
-        public static void Release(BasePlayer player)
+        public static void Release(BasePlayer player, ref SnapshotHandle handle)
         {
-            if (_playerSnapshotHandles.TryGetValue(player.userID, out var handleId))
-            {
-                if (_snapshotHandles.TryGetValue(handleId, out var handle))
-                {
-                    Pool.Free(ref handle);
+            if (handle.PlayerUserID != player.userID)
+                return;
 
-                    _snapshotHandles.Remove(handleId);
+            if (_playerSnapshotHandles.TryGetValue(player.userID, out var existingHandleId))
+            {
+                if (existingHandleId != handle.ID
+                    && _snapshotHandles.TryGetValue(existingHandleId, out var existingHandle)
+                    && existingHandle != handle)
+                {
+                    Release(player, ref existingHandle);
                 }
 
                 _playerSnapshotHandles.Remove(player.userID);
+            }
+
+            if (_snapshotHandles.ContainsKey(handle.ID))
+                _snapshotHandles.Remove(handle.ID);
+
+            if (handle != null)
+            {
+                Pool.Free(ref handle);
             }
         }
 
         public static bool TryTake(BuildSnapshotMetaData meta, BasePlayer player, out SnapshotHandle handle)
         {
             if (_playerSnapshotHandles.TryGetValue(player.userID, out var existingHandleId)
-                && existingHandleId != meta.ID)
+                && existingHandleId != meta.ID
+                && _snapshotHandles.TryGetValue(existingHandleId, out handle))
             {
-                Release(player);
+                Release(player, ref handle);
             }
 
             if (_snapshotHandles.TryGetValue(meta.ID, out handle))

@@ -42,6 +42,11 @@ public partial class AutoBuildSnapshot
         public Exception Exception { get; private set; }
 
         /// <summary>
+        /// The number of entities in the snapshot.
+        /// </summary>
+        public int EntityCount => _buildingEntities.Sum(kvp => kvp.Value.Count);
+
+        /// <summary>
         /// The list of records/tcs processed in this snapshot.
         /// </summary>
         public IReadOnlyList<BuildRecord> LinkedRecords => _linkedRecords;
@@ -111,6 +116,7 @@ public partial class AutoBuildSnapshot
         /// </summary>
         public async UniTaskVoid BeginSaveTask()
         {
+            _processWatch.Start();
             try
             {
                 // update _linkedRecords
@@ -140,6 +146,10 @@ public partial class AutoBuildSnapshot
 
                 // callback failure
                 _resultCallback(false, this);
+            }
+            finally
+            {
+                _processWatch.Stop();
             }
         }
 
@@ -242,7 +252,9 @@ public partial class AutoBuildSnapshot
 
         private async UniTask YieldReset()
         {
+            _processWatch.Stop();
             await UniTask.Yield();
+            _processWatch.Start();
 
             _frameSteps = 0;
             _frameWatch.Restart();
