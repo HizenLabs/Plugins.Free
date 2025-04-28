@@ -1,4 +1,5 @@
 ﻿using Carbon.Components;
+using Cysharp.Threading.Tasks;
 using Facepunch;
 using Newtonsoft.Json;
 using Oxide.Core;
@@ -8,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using UnityEngine;
 
 namespace Carbon.Plugins;
@@ -1097,6 +1099,40 @@ public partial class AutoBuildSnapshot : CarbonPlugin
                 _zoneSnapshotIndex[zone].Add(metaData.ID);
             }
         }
+    }
+
+    #endregion
+
+    #region Debugging
+
+    [ChatCommand($"debug")]
+    private void CommandUIDebug(BasePlayer player, string command, string[] args)
+    {
+        SomeLongTask(player).Forget();
+    }
+
+    private async UniTaskVoid SomeLongTask(BasePlayer player)
+    {
+        player.ChatMessage("Begin waiting...");
+        player.ChatMessage("Wait complete, found entities: " + await GetRandomNumber(player));
+    }
+
+    private async UniTask<int> GetRandomNumber(BasePlayer player)
+    {
+        int count = 0;
+        await UniTask.SwitchToThreadPool();
+
+        TryGetPlayerTargetCoordinates(BasePlayer.activePlayerList[0], out var targetCoords);
+
+        var entities = Pool.Get<List<BaseEntity>>();
+        Vis.Entities(targetCoords, 100, entities, _maskBaseEntities);
+        count = entities.Count;
+        Pool.FreeUnmanaged(ref entities);
+
+        Task.Delay(5000).Wait();
+
+        await UniTask.SwitchToMainThread();
+        return count;
     }
 
     #endregion

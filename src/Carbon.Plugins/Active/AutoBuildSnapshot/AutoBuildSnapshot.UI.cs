@@ -315,13 +315,4 @@ public partial class AutoBuildSnapshot
     }
 
     #endregion
-
-    #region Debugging
-
-    [ChatCommand($"debug")]
-    private void CommandUIDebug(BasePlayer player, string command, string[] args)
-    {
-    }
-
-    #endregion
 }
