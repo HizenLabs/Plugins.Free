@@ -706,7 +706,7 @@
     <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.ExecutionBase.cs" />
     <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.Helpers.cs" />
     <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.Helpers.Rollback.cs" />
-    <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.PersistantEntity.Properties.cs" />
+    <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.PropertyMapping.cs" />
     <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.PersistantItem.cs" />
     <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.SerializationHelper.cs" />
     <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.SnapshotHandle.cs" />
@@ -719,6 +719,7 @@
     <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.UI.Drawing.Main.cs" />
     <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.UI.Drawing.Snapshots.cs" />
     <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.UI.Handlers.cs" />
+    <Compile Include="Active\AutoBuildSnapshot\PersistantBase.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

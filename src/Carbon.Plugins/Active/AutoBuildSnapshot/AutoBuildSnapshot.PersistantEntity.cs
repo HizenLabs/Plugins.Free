@@ -1,7 +1,6 @@
 ﻿using Facepunch;
 using Newtonsoft.Json;
-using Oxide.Core;
-using System.Collections.Generic;
+using System;
 using System.IO;
 using UnityEngine;
 
@@ -12,55 +11,29 @@ public partial class AutoBuildSnapshot
     /// <summary>
     /// Represents a persistent entity, which just uses the prefabID and coords.
     /// </summary>
-    private partial class PersistantEntity : Pool.IPooled
+    private class PersistantEntity : PersistantBase<BaseEntity>
     {
-        public PersistantEntity() { }
-
-        /// <summary>
-        /// Creates a new persistent entity from the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity to create the persistent entity from.</param>
-        public static PersistantEntity Load(BaseEntity entity)
+        private static readonly IPropertyMapping[] _mappings = new IPropertyMapping[]
         {
-            var result = Pool.Get<PersistantEntity>();
-            if (!ValidEntity(entity))
-            {
-                return result;
-            }
+            // BaseEntity properties
+            new PropertyMapping<BaseEntity, ulong>(e => e.OwnerID, e => e.OwnerID != 0),
+            new PropertyMapping<BaseEntity, uint>(e => e.parentBone, e => e.HasParent() && e.parentBone != 0),
+            new PropertyMapping<BaseEntity, ulong>(e => e.skinID, e => e.skinID != 0),
 
-            result.Version = _instance.Version;
-            result.Type = entity.GetType().Name;
-            result.PrefabName = entity.PrefabName;
-            result.PrefabID = entity.prefabID;
-            result.OwnerID = entity.OwnerID;
-            result.Position = entity.ServerPosition;
-            result.Rotation = entity.ServerRotation;
-            result.CenterPosition = result.Position + entity.bounds.center;
+            // BuildingBlock properties
+            new PropertyMapping<BuildingBlock, BuildingGrade.Enum>(e => e.grade),
 
-            var size = entity.bounds.size;
-            result.CollisionRadius = Mathf.Max(size.x, size.y, size.z) + 1;
+            // DecayEntity properties
+            new PropertyMapping<DecayEntity, float>(e => e.health),
+        };
 
-            result.LoadProperties(entity);
-
-            return result;
-        }
+        public PersistantEntity() : base(_mappings) { }
 
         /// <summary>
         /// Generates a unique ID for the entity based on its prefab and position.
         /// </summary>
         [JsonIgnore]
-        public string ID => IsNull ? "null" : GetPersistanceID(Type, Position);
-
-        /// <summary>
-        /// Checks if the entity is null (i.e. has a prefab ID of 0).
-        /// </summary>
-        [JsonIgnore]
-        public bool IsNull => PrefabID == 0;
-
-        /// <summary>
-        /// The plugin version when this entity was created.
-        /// </summary>
-        public VersionNumber Version { get; private set; }
+        public string ID => GetPersistanceID(Type, Position);
 
         /// <summary>
         /// The type of this entity.
@@ -71,16 +44,6 @@ public partial class AutoBuildSnapshot
         /// The prefab name of the entity.
         /// </summary>
         public string PrefabName { get; private set; }
-
-        /// <summary>
-        /// The prefab ID of the entity.
-        /// </summary>
-        public uint PrefabID { get; private set; }
-
-        /// <summary>
-        /// The ID of the entity's owner.
-        /// </summary>
-        public ulong OwnerID { get; private set; }
 
         /// <summary>
         /// The position of the entity.
@@ -102,53 +65,37 @@ public partial class AutoBuildSnapshot
         /// </summary>
         public float CollisionRadius { get; private set; }
 
-        /// <summary>
-        /// The object properties.
-        /// </summary>
-        public Dictionary<string, object> Properties => _properties;
-        private Dictionary<string, object> _properties;
-
-        public void EnterPool()
+        public override void EnterPool()
         {
-            Version = default;
+            base.EnterPool();
+
             Type = null;
             PrefabName = null;
-            PrefabID = 0;
-            OwnerID = 0;
             Position = default;
             Rotation = default;
             CenterPosition = default;
             CollisionRadius = 0;
-
-            Pool.FreeUnmanaged(ref _properties);
         }
 
-        public void LeavePool()
+        /// <summary>
+        /// Creates a new persistent entity from the specified entity.
+        /// </summary>
+        /// <param name="entity">The entity to create the persistent entity from.</param>
+        public static PersistantEntity CreateFrom(BaseEntity entity)
         {
-            _properties = Pool.Get<Dictionary<string, object>>();
+            var result = Pool.Get<PersistantEntity>();
+            result.Read(entity);
+            return result;
         }
 
         public static PersistantEntity Load(string dataFile)
         {
             using var fs = File.Open(dataFile, FileMode.Open, FileAccess.Read, FileShare.None);
             using var reader = new BinaryReader(fs);
-            return ReadFrom(reader);
-        }
 
-        public static PersistantEntity ReadFrom(BinaryReader reader)
-        {
-            var entity = Pool.Get<PersistantEntity>();
-            entity.Version = SerializationHelper.ReadVersionNumber(reader);
-            entity.Type = reader.ReadString();
-            entity.PrefabName = reader.ReadString();
-            entity.PrefabID = reader.ReadUInt32();
-            entity.OwnerID = reader.ReadUInt64();
-            entity.Position = SerializationHelper.ReadVector3(reader);
-            entity.Rotation = SerializationHelper.ReadQuaternion(reader);
-            entity.CenterPosition = SerializationHelper.ReadVector3(reader);
-            entity.CollisionRadius = reader.ReadSingle();
-            entity._properties = SerializationHelper.ReadDictionary<string, object>(reader);
-            return entity;
+            var result = Pool.Get<PersistantEntity>();
+            result.Read(reader);
+            return result;
         }
 
         public void Save(string dataFile)
@@ -159,19 +106,47 @@ public partial class AutoBuildSnapshot
             Write(writer);
         }
 
-        public void Write(BinaryWriter writer)
+        public override void Read(BinaryReader reader)
         {
-            SerializationHelper.Write(writer, Version);
+            base.Read(reader);
+
+            Type = reader.ReadString();
+            PrefabName = reader.ReadString();
+            Position = SerializationHelper.ReadVector3(reader);
+            Rotation = SerializationHelper.ReadQuaternion(reader);
+            CenterPosition = SerializationHelper.ReadVector3(reader);
+            CollisionRadius = reader.ReadSingle();
+        }
+
+        public override void Write(BinaryWriter writer)
+        {
+            base.Write(writer);
+
             writer.Write(Type);
             writer.Write(PrefabName);
-            writer.Write(PrefabID);
-            writer.Write(OwnerID);
             SerializationHelper.Write(writer, Position);
             SerializationHelper.Write(writer, Rotation);
             SerializationHelper.Write(writer, CenterPosition);
             writer.Write(CollisionRadius);
-            SerializationHelper.Write(writer, Properties);
+        }
+
+        public override void Read(BaseEntity obj)
+        {
+            if (!ValidEntity(obj))
+            {
+                throw new InvalidOperationException("Failed to read entity: Invalid entity.");
+            }
+
+            base.Read(obj);
+
+            Type = obj.GetType().Name;
+            PrefabName = obj.PrefabName;
+            Position = obj.ServerPosition;
+            Rotation = obj.ServerRotation;
+            CenterPosition = Position + obj.bounds.center;
+
+            var size = obj.bounds.size;
+            CollisionRadius = Mathf.Max(size.x, size.y, size.z) + 1;
         }
     }
-
 }

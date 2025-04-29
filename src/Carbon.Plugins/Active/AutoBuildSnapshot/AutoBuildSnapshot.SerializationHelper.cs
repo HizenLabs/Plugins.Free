@@ -291,7 +291,9 @@ public partial class AutoBuildSnapshot
         /// </summary>
         public static PersistantEntity ReadPersistantEntity(BinaryReader reader)
         {
-            return PersistantEntity.ReadFrom(reader);
+            var entity = Pool.Get<PersistantEntity>();
+            entity.Read(reader);
+            return entity;
         }
 
         /// <summary>
@@ -307,7 +309,9 @@ public partial class AutoBuildSnapshot
         /// </summary>
         public static PersistantItem ReadPersistantItem(BinaryReader reader)
         {
-            return PersistantItem.ReadFrom(reader);
+            var item = Pool.Get<PersistantItem>();
+            item.Read(reader);
+            return item;
 
         }
 
@@ -456,13 +460,13 @@ public partial class AutoBuildSnapshot
         /// <summary>
         /// Reads a generic dictionary from the binary stream
         /// </summary>
-        public static Dictionary<TKey, TValue> ReadDictionary<TKey, TValue>(BinaryReader reader)
+        public static Dictionary<TKey, TValue> ReadDictionary<TKey, TValue>(BinaryReader reader, Dictionary<TKey, TValue> dict = null)
         {
             var keyType = ReadTypeMarker(reader);
             var valueType = ReadTypeMarker(reader);
             int count = reader.ReadInt32();
 
-            var dict = Pool.Get<Dictionary<TKey, TValue>>();
+            dict ??= Pool.Get<Dictionary<TKey, TValue>>();
             for (int i = 0; i < count; i++)
             {
                 var key = Read<TKey>(reader, keyType);

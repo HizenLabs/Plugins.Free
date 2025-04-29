@@ -289,7 +289,7 @@ public partial class AutoBuildSnapshot
                 {
                     var entities = Pool.Get<List<PersistantEntity>>();
                     entities.AddRange(_buildingEntities[buildingId]
-                        .Select(PersistantEntity.Load)
+                        .Select(PersistantEntity.CreateFrom)
                         .OrderBy(e => e.PrefabName)
                         .OrderBy(e => e.Type));
                     buildingEntities.Add(buildingId.PersistentID, entities);

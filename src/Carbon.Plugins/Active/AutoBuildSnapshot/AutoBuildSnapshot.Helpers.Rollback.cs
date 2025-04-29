@@ -174,7 +174,7 @@ public partial class AutoBuildSnapshot
         {
             try
             {
-                data.CopyTo(entity);
+                data.Write(entity);
             }
             catch (Exception ex)
             {
