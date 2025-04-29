@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Facepunch;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -122,7 +123,11 @@ public partial class AutoBuildSnapshot
             {
                 if (Condition == null || Condition(target))
                 {
-                    dict[Name] = Getter(target);
+                    var value = Getter(target);
+                    if (value is not null && !value.Equals(default(TProperty)))
+                    {
+                        dict[Name] = value;
+                    }
                 }
             }
         }
@@ -145,8 +150,8 @@ public partial class AutoBuildSnapshot
         private static string GetExpressionName(Expression<Func<TObject, TProperty>> propertyExpression)
         {
             // Similar to above but also include type information
-            var memberNames = new List<string>();
-            var memberTypes = new List<string>();
+            using var memberNames = Pool.Get<PooledList<string>>();
+            using var memberTypes = Pool.Get<PooledList<string>>();
             Expression expression = propertyExpression.Body;
 
             while (expression is MemberExpression memberExpression)
@@ -175,7 +180,7 @@ public partial class AutoBuildSnapshot
         private static Action<TObject, TProperty> CreateSetter(Expression<Func<TObject, TProperty>> propertyExpression)
         {
             // The property expression needs to be a MemberExpression
-            if (!(propertyExpression.Body is MemberExpression memberExpression))
+            if (propertyExpression.Body is not MemberExpression memberExpression)
             {
                 return null;
             }
@@ -199,7 +204,7 @@ public partial class AutoBuildSnapshot
             memberExpressions.Reverse();
 
             // The parameter should be at the base of the expression
-            if (!(currentExpression is ParameterExpression))
+            if (currentExpression is not ParameterExpression)
             {
                 return null;
             }
