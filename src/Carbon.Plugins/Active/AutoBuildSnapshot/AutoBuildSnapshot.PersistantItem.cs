@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using Facepunch;
+using System.IO;
 
 namespace Carbon.Plugins;
 
@@ -30,6 +31,17 @@ public partial class AutoBuildSnapshot
             base.EnterPool();
 
             ItemID = default;
+        }
+
+        /// <summary>
+        /// Creates a new persistent entity from the specified entity.
+        /// </summary>
+        /// <param name="entity">The entity to create the persistent entity from.</param>
+        public static PersistantItem CreateFrom(Item item)
+        {
+            var result = Pool.Get<PersistantItem>();
+            result.Read(item);
+            return result;
         }
 
         public override void Read(BinaryReader reader)

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -169,113 +170,94 @@ public partial class AutoBuildSnapshot
         }
 
         /// <summary>
-        /// Creates a setter from a property or field expression.
+        /// Creates a setter from a property or field expression, properly handling nested properties.
         /// </summary>
         private static Action<TObject, TProperty> CreateSetter(Expression<Func<TObject, TProperty>> propertyExpression)
         {
-            // Get the member expression (e.g., obj.Property or obj.Field)
+            // The property expression needs to be a MemberExpression
             if (!(propertyExpression.Body is MemberExpression memberExpression))
             {
-                // Handle more complex expressions (like nested properties)
-                return CreateComplexSetter(propertyExpression);
-            }
-            
-            // Check if it's a property or field
-            var member = memberExpression.Member;
-
-            if (member is PropertyInfo property)
-            {
-                if (property.SetMethod == null || !property.SetMethod.IsPublic)
-                    return null; // No public setter available
-
-                // Create parameter expressions for the lambda
-                var instanceParam = Expression.Parameter(typeof(TObject), "instance");
-                var valueParam = Expression.Parameter(typeof(TProperty), "value");
-
-                // Create the property access and assignment
-                var propertyAccess = Expression.Property(instanceParam, property);
-                var assign = Expression.Assign(propertyAccess, valueParam);
-
-                // Create and compile the lambda expression
-                var lambda = Expression.Lambda<Action<TObject, TProperty>>(
-                    assign, instanceParam, valueParam);
-
-                return lambda.Compile();
-            }
-            else if (member is FieldInfo field)
-            {
-                if (!field.IsPublic)
-                    return null; // Not a public field
-
-                // Create parameter expressions for the lambda
-                var instanceParam = Expression.Parameter(typeof(TObject), "instance");
-                var valueParam = Expression.Parameter(typeof(TProperty), "value");
-
-                // Create the field access and assignment
-                var fieldAccess = Expression.Field(instanceParam, field);
-                var assign = Expression.Assign(fieldAccess, valueParam);
-
-                // Create and compile the lambda expression
-                var lambda = Expression.Lambda<Action<TObject, TProperty>>(
-                    assign, instanceParam, valueParam);
-
-                return lambda.Compile();
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Creates a setter for more complex property chains like obj => obj.SubObj.Property
-        /// </summary>
-        private static Action<TObject, TProperty> CreateComplexSetter(Expression<Func<TObject, TProperty>> propertyExpression)
-        {
-            try
-            {
-                // For complex paths, we'll create a more intricate setter logic
-                // This is much more complex and would need extensive testing
-                // Here's a basic implementation that tries to create a setter for common scenarios
-
-                // Create parameter expressions for the lambda
-                var instanceParam = Expression.Parameter(typeof(TObject), "instance");
-                var valueParam = Expression.Parameter(typeof(TProperty), "value");
-
-                // Recreate the chain of access but with our parameters
-                var visitor = new MemberAccessVisitor(propertyExpression.Parameters[0], instanceParam);
-                var accessChain = visitor.Visit(propertyExpression.Body);
-
-                // Create the assignment
-                var assign = Expression.Assign(accessChain, valueParam);
-
-                // Create and compile the lambda expression
-                var lambda = Expression.Lambda<Action<TObject, TProperty>>(
-                    assign, instanceParam, valueParam);
-
-                return lambda.Compile();
-            }
-            catch
-            {
-                // If we can't create a setter, return null
                 return null;
             }
-        }
 
-        // Helper class to visit and rebuild member access chains
-        private class MemberAccessVisitor : ExpressionVisitor
-        {
-            private readonly ParameterExpression _original;
-            private readonly ParameterExpression _replacement;
+            // Create parameter expressions for the lambda
+            var instanceParam = Expression.Parameter(typeof(TObject), "instance");
+            var valueParam = Expression.Parameter(typeof(TProperty), "value");
 
-            public MemberAccessVisitor(ParameterExpression original, ParameterExpression replacement)
+            // Collect all member expressions in the chain
+            var memberExpressions = new List<MemberExpression>();
+            Expression currentExpression = memberExpression;
+
+            // Build the chain of member expressions
+            while (currentExpression is MemberExpression currentMemberExpression)
             {
-                _original = original;
-                _replacement = replacement;
+                memberExpressions.Add(currentMemberExpression);
+                currentExpression = currentMemberExpression.Expression;
             }
 
-            protected override Expression VisitParameter(ParameterExpression node)
+            // Reverse to start from the root object
+            memberExpressions.Reverse();
+
+            // The parameter should be at the base of the expression
+            if (!(currentExpression is ParameterExpression))
             {
-                return node == _original ? _replacement : base.VisitParameter(node);
+                return null;
             }
+
+            // Build the property access chain starting from the instance parameter
+            Expression propertyAccess = instanceParam;
+
+            // Build all but the last property access
+            for (int i = 0; i < memberExpressions.Count - 1; i++)
+            {
+                var member = memberExpressions[i].Member;
+                if (member is PropertyInfo property)
+                {
+                    propertyAccess = Expression.Property(propertyAccess, property);
+                }
+                else if (member is FieldInfo field)
+                {
+                    propertyAccess = Expression.Field(propertyAccess, field);
+                }
+                else
+                {
+                    // Unsupported member type
+                    return null;
+                }
+            }
+
+            // Get the last member info (the one we want to set)
+            var lastMember = memberExpressions.Last().Member;
+
+            // Create the property access and assignment
+            Expression lastAccess;
+            if (lastMember is PropertyInfo lastProperty)
+            {
+                if (lastProperty.SetMethod == null || !lastProperty.SetMethod.IsPublic)
+                    return null; // No public setter available
+
+                lastAccess = Expression.Property(propertyAccess, lastProperty);
+            }
+            else if (lastMember is FieldInfo lastField)
+            {
+                if (!lastField.IsPublic)
+                    return null; // Not a public field
+
+                lastAccess = Expression.Field(propertyAccess, lastField);
+            }
+            else
+            {
+                // Unsupported member type
+                return null;
+            }
+
+            var assignExpression = Expression.Assign(lastAccess, valueParam);
+
+            // Create and compile the lambda expression
+            var lambda = Expression.Lambda<Action<TObject, TProperty>>(
+                assignExpression, instanceParam, valueParam);
+
+            return lambda.Compile();
         }
     }
 }

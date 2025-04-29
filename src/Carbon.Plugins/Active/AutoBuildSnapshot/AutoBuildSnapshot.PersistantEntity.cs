@@ -1,7 +1,9 @@
 ﻿using Facepunch;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEngine;
 
 namespace Carbon.Plugins;
@@ -65,8 +67,23 @@ public partial class AutoBuildSnapshot
         /// </summary>
         public float CollisionRadius { get; private set; }
 
+        /// <summary>
+        /// The list of sub-items contained within this entity, if applicable.
+        /// </summary>
+        [JsonIgnore]
+        public List<PersistantItem> SubItems => Properties.TryGetValue(nameof(SubItems), out var obj) 
+            ? obj as List<PersistantItem>
+            : null;
+
         public override void EnterPool()
         {
+            var subItems = SubItems;
+            if (subItems != null)
+            {
+                Pool.Free(ref subItems, true);
+                Properties.Remove(nameof(SubItems));
+            }
+
             base.EnterPool();
 
             Type = null;
@@ -75,6 +92,11 @@ public partial class AutoBuildSnapshot
             Rotation = default;
             CenterPosition = default;
             CollisionRadius = 0;
+        }
+
+        public override void LeavePool()
+        {
+            base.LeavePool();
         }
 
         /// <summary>
@@ -147,6 +169,13 @@ public partial class AutoBuildSnapshot
 
             var size = obj.bounds.size;
             CollisionRadius = Mathf.Max(size.x, size.y, size.z) + 1;
+
+            if (obj is StorageContainer container && container.inventory.itemList.Count > 0)
+            {
+                var subItems = Pool.Get<List<PersistantItem>>();
+                subItems.AddRange(container.inventory.itemList.Select(PersistantItem.CreateFrom));
+                Properties[nameof(SubItems)] = subItems;
+            }
         }
     }
 }

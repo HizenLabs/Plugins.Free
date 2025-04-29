@@ -13,11 +13,6 @@ public partial class AutoBuildSnapshot
         private readonly IPropertyMapping[] _mappings;
 
         /// <summary>
-        /// The plugin version when this entity was created.
-        /// </summary>
-        public VersionNumber Version { get; private set; }
-
-        /// <summary>
         /// The object properties.
         /// </summary>
         public Dictionary<string, object> Properties => _properties;
@@ -30,27 +25,21 @@ public partial class AutoBuildSnapshot
 
         public virtual void EnterPool()
         {
-            Version = default;
-
             Pool.FreeUnmanaged(ref _properties);
         }
 
         public virtual void LeavePool()
         {
-            Version = _instance.Version;
-
             _properties = Pool.Get<Dictionary<string, object>>();
         }
 
         public virtual void Read(BinaryReader reader)
         {
-            Version = SerializationHelper.ReadVersionNumber(reader);
             SerializationHelper.ReadDictionary(reader, _properties);
         }
 
         public virtual void Write(BinaryWriter writer)
         {
-            SerializationHelper.Write(writer, Version);
             SerializationHelper.Write(writer, Properties);
         }
 
