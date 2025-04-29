@@ -64,6 +64,7 @@ public partial class AutoBuildSnapshot
             PersistantEntity = 100,
             PersistantItem = 101,
             PlayerMetaData = 102,
+            PooledList = 103,
         }
 
         #endregion
@@ -627,6 +628,7 @@ public partial class AutoBuildSnapshot
                 // generic types
                 case TypeMarker.Array when value is Array arrayValue: Write(writer, arrayValue); break;
                 case TypeMarker.List when value is IList listValue: Write(writer, listValue); break;
+                case TypeMarker.PooledList when value is IList pooledListValue: Write(writer, pooledListValue); break;
                 case TypeMarker.Dictionary when value is IDictionary dictionaryValue: Write(writer, dictionaryValue); break;
 
                 // unity types
@@ -672,6 +674,7 @@ public partial class AutoBuildSnapshot
             // Generic types
             TypeMarker.Array => ReadArray(reader),
             TypeMarker.List => ReadList(reader),
+            TypeMarker.PooledList => ReadList(reader),
             TypeMarker.Dictionary => ReadDictionary(reader),
 
             TypeMarker.Vector2 => ReadVector2(reader),
@@ -730,6 +733,7 @@ public partial class AutoBuildSnapshot
 
             Type t when t.IsArray => TypeMarker.Array,
             Type t when t.IsGenericType && t.GetGenericTypeDefinition() == typeof(List<>) => TypeMarker.List,
+            Type t when t.IsGenericType && t.GetGenericTypeDefinition() == typeof(PooledList<>) => TypeMarker.PooledList,
             Type t when t.IsGenericType && t.GetGenericTypeDefinition() == typeof(Dictionary<,>) => TypeMarker.Dictionary,
 
             _ => throw new NotImplementedException($"Type {type} is not implemented for serialization.")
@@ -758,6 +762,7 @@ public partial class AutoBuildSnapshot
             TypeMarker.Array => typeof(Array),
             TypeMarker.Dictionary => typeof(IDictionary),
             TypeMarker.List => typeof(IList),
+            TypeMarker.PooledList => typeof(IList),
             TypeMarker.DateTime => typeof(DateTime),
             TypeMarker.TimeSpan => typeof(TimeSpan),
             TypeMarker.Type => typeof(Type),
