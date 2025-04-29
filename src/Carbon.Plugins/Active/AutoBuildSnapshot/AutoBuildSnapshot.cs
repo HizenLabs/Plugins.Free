@@ -460,8 +460,10 @@ public partial class AutoBuildSnapshot : CarbonPlugin
             {
                 ["Binary"] = DataFormat.Binary,
                 ["Binary (GZip Compressed)"] = DataFormat.GZip,
+                /*
                 ["Json"] = DataFormat.Json,
                 ["Json (Expanded)"] = DataFormat.JsonExpanded
+                */
             };
 
             /// <summary>
@@ -483,8 +485,8 @@ public partial class AutoBuildSnapshot : CarbonPlugin
     {
         Binary = 0,
         GZip = 1,
-        Json = 2,
-        JsonExpanded = 3
+        // Json = 2,
+        // JsonExpanded = 3
     }
 
     #endregion

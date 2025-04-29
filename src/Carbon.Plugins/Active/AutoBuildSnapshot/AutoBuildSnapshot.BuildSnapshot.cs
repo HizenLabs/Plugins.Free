@@ -565,11 +565,13 @@ public partial class AutoBuildSnapshot
             {
                 file = FindExistingFile(file);
 
+                /*
                 if (file.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
                 {
                     var data = File.ReadAllText(file);
                     return JsonConvert.DeserializeObject<SnapshotData>(data);
                 }
+                */
 
                 bool compressed = file.EndsWith(".gz", StringComparison.OrdinalIgnoreCase);
                 using var stream = File.Open(file, FileMode.Open);
@@ -605,6 +607,7 @@ public partial class AutoBuildSnapshot
             await UniTask.SwitchToThreadPool();
             try
             {
+                /*
                 if (format == DataFormat.Json || format == DataFormat.JsonExpanded)
                 {
                     var jsonFormat = format == DataFormat.JsonExpanded
@@ -614,7 +617,9 @@ public partial class AutoBuildSnapshot
                     var data = JsonConvert.SerializeObject(this, jsonFormat);
                     File.WriteAllText(file + ".json", data);
                 }
-                else if (format == DataFormat.Binary || format == DataFormat.GZip)
+                else 
+                */
+                if (format == DataFormat.Binary || format == DataFormat.GZip)
                 {
                     file += ".bin";
 
@@ -646,7 +651,7 @@ public partial class AutoBuildSnapshot
             }
         }
 
-        private static readonly string[] dataEextensions = { "", ".bin", ".bin.gz", ".json" };
+        private static readonly string[] dataExtensions = { "", ".bin", ".bin.gz", /* ".json" */ };
 
         /// <summary>
         /// Finds an existing file, checking variants and data directory.
@@ -657,7 +662,7 @@ public partial class AutoBuildSnapshot
         private static string FindExistingFile(string filePath)
         {
             // Try original directory
-            foreach (string ext in dataEextensions)
+            foreach (string ext in dataExtensions)
             {
                 string path = filePath + ext;
                 if (File.Exists(path))
@@ -666,7 +671,7 @@ public partial class AutoBuildSnapshot
 
             // Try data directory
             string dataFilePath = Path.Combine(Interface.Oxide.DataDirectory, filePath);
-            foreach (string ext in dataEextensions)
+            foreach (string ext in dataExtensions)
             {
                 string path = dataFilePath + ext;
                 if (File.Exists(path))
