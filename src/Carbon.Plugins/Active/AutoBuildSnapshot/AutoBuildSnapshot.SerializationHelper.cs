@@ -63,6 +63,7 @@ public partial class AutoBuildSnapshot
             // Custom types (100+)
             PersistantEntity = 100,
             PersistantItem = 101,
+            PlayerMetaData = 102,
         }
 
         #endregion
@@ -312,7 +313,27 @@ public partial class AutoBuildSnapshot
             var item = Pool.Get<PersistantItem>();
             item.Read(reader);
             return item;
+        }
 
+        /// <summary>
+        /// Writes a PlayerMetaData to the binary stream
+        /// </summary>
+        public static void Write(BinaryWriter writer, PlayerMetaData player)
+        {
+            writer.Write(player.UserID);
+            writer.Write(player.UserName);
+        }
+
+        /// <summary>
+        /// Reads a PlayerMetaData from the binary stream
+        /// </summary>
+        public static PlayerMetaData ReadPlayerMetaData(BinaryReader reader)
+        {
+            return new PlayerMetaData
+            {
+                UserID = reader.ReadUInt64(),
+                UserName = reader.ReadString()
+            };
         }
 
         #endregion
@@ -618,6 +639,7 @@ public partial class AutoBuildSnapshot
                 // custom types
                 case TypeMarker.PersistantEntity when value is PersistantEntity persistantEntityValue: Write(writer, persistantEntityValue); break;
                 case TypeMarker.PersistantItem when value is PersistantItem persistantItemValue: Write(writer, persistantItemValue); break;
+                case TypeMarker.PlayerMetaData when value is PlayerMetaData playerMetaDataValue: Write(writer, playerMetaDataValue); break;
 
                 default: throw new NotImplementedException($"Type {valueType} is not implemented for writing.");
             }
@@ -660,6 +682,7 @@ public partial class AutoBuildSnapshot
 
             TypeMarker.PersistantEntity => ReadPersistantEntity(reader),
             TypeMarker.PersistantItem => ReadPersistantItem(reader),
+            TypeMarker.PlayerMetaData => ReadPlayerMetaData(reader),
 
             _ => throw new NotImplementedException($"Type {valueType} is not implemented for reading.")
         });
@@ -703,6 +726,7 @@ public partial class AutoBuildSnapshot
 
             Type t when t == typeof(PersistantEntity) => TypeMarker.PersistantEntity,
             Type t when t == typeof(PersistantItem) => TypeMarker.PersistantItem,
+            Type t when t == typeof(PlayerMetaData) => TypeMarker.PlayerMetaData,
 
             Type t when t.IsArray => TypeMarker.Array,
             Type t when t.IsGenericType && t.GetGenericTypeDefinition() == typeof(List<>) => TypeMarker.List,
@@ -746,6 +770,7 @@ public partial class AutoBuildSnapshot
 
             TypeMarker.PersistantEntity => typeof(PersistantEntity),
             TypeMarker.PersistantItem => typeof(PersistantItem),
+            TypeMarker.PlayerMetaData => typeof(PlayerMetaData),
 
             _ => throw new NotImplementedException($"Type {typeMarker} is not a supported reverse type conversion.")
         };
