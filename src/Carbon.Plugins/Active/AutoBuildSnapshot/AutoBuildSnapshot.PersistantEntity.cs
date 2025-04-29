@@ -17,15 +17,40 @@ public partial class AutoBuildSnapshot
     {
         private static readonly IPropertyMapping[] _mappings = new IPropertyMapping[]
         {
-            // BaseEntity properties
-            new PropertyMapping<BaseEntity, ulong>(e => e.OwnerID),
+            // BaseEntity
+            new PropertyMapping<BaseEntity, BaseEntity.Flags>(e => e.flags),
             new PropertyMapping<BaseEntity, uint>(e => e.parentBone, e => e.HasParent()),
             new PropertyMapping<BaseEntity, ulong>(e => e.skinID),
+            // new PropertyMapping<BaseEntity, List<EntityComponentBase>>(e => e.Components),
+            new PropertyMapping<BaseEntity, ulong>(e => e.OwnerID),
+            new PropertyMapping<BaseEntity, BaseEntity.TraitFlag>(e => e.Traits),
 
-            // BuildingBlock properties
+            // BuildingBlock
             new PropertyMapping<BuildingBlock, BuildingGrade.Enum>(e => e.grade),
 
-            // DecayEntity properties
+            // BuildingPrivlidge
+            new PropertyMapping<BuildingPrivlidge, PlayerMetaData[]>(nameof(BuildingPrivlidge.authorizedPlayers),
+                    e => e.authorizedPlayers
+                    .Select(player => new PlayerMetaData
+                    {
+                        UserID = player.userid,
+                        UserName = player.username
+                    })
+                    .ToArray(),
+                    (e, v) =>
+                    {
+                        foreach(var data in v)
+                        {
+                            var playerNameID = Pool.Get<ProtoBuf.PlayerNameID>();
+                            playerNameID.userid = data.UserID;
+                            playerNameID.username = data.UserName;
+                            e.authorizedPlayers.Add(playerNameID);
+                        }
+                    },
+                    e => e.authorizedPlayers.Count > 0
+                ),
+
+            // DecayEntity
             new PropertyMapping<DecayEntity, float>(e => e.health),
         };
 

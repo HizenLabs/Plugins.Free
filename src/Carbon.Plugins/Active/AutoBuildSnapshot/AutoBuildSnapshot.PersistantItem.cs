@@ -13,7 +13,15 @@ public partial class AutoBuildSnapshot
         private static readonly IPropertyMapping[] _mappings = new IPropertyMapping[]
         {
             new PropertyMapping<Item, Item.Flag>(i => i.flags),
-            new PropertyMapping<Item, string>(i => i.info.tag)
+            new PropertyMapping<Item, string>(i => i.info.tag),
+            new PropertyMapping<Item, float>(i => i.fuel),
+            new PropertyMapping<Item, float>(i => i.condition),
+            new PropertyMapping<Item, float>(i => i.maxCondition),
+            new PropertyMapping<Item, float>(i => i.cookTimeLeft),
+            new PropertyMapping<Item, float>(i => i.radioactivity),
+            new PropertyMapping<Item, int?>(i => i.ammoCount),
+            new PropertyMapping<Item, int>(i => i.blueprintTarget),
+            new PropertyMapping<Item, int>(i => i.blueprintAmount),
         };
 
         public PersistantItem() : base(_mappings)
