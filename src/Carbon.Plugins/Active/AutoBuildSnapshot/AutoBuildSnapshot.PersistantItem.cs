@@ -12,8 +12,8 @@ public partial class AutoBuildSnapshot
     {
         private static readonly IPropertyMapping[] _mappings = new IPropertyMapping[]
         {
-            new PropertyMapping<Item, Item.Flag>(i => i.flags, i => i.flags != Item.Flag.None),
-            new PropertyMapping<Item, string>(i => i.info.tag, i => !string.IsNullOrEmpty(i.info.tag))
+            new PropertyMapping<Item, Item.Flag>(i => i.flags),
+            new PropertyMapping<Item, string>(i => i.info.tag)
         };
 
         public PersistantItem() : base(_mappings)

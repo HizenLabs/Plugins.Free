@@ -18,9 +18,9 @@ public partial class AutoBuildSnapshot
         private static readonly IPropertyMapping[] _mappings = new IPropertyMapping[]
         {
             // BaseEntity properties
-            new PropertyMapping<BaseEntity, ulong>(e => e.OwnerID, e => e.OwnerID != 0),
-            new PropertyMapping<BaseEntity, uint>(e => e.parentBone, e => e.HasParent() && e.parentBone != 0),
-            new PropertyMapping<BaseEntity, ulong>(e => e.skinID, e => e.skinID != 0),
+            new PropertyMapping<BaseEntity, ulong>(e => e.OwnerID),
+            new PropertyMapping<BaseEntity, uint>(e => e.parentBone, e => e.HasParent()),
+            new PropertyMapping<BaseEntity, ulong>(e => e.skinID),
 
             // BuildingBlock properties
             new PropertyMapping<BuildingBlock, BuildingGrade.Enum>(e => e.grade),
