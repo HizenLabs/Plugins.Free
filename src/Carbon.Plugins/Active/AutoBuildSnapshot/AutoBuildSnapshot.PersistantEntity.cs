@@ -29,26 +29,23 @@ public partial class AutoBuildSnapshot
             new PropertyMapping<BuildingBlock, BuildingGrade.Enum>(e => e.grade),
 
             // BuildingPrivlidge
-            new PropertyMapping<BuildingPrivlidge, PlayerMetaData[]>(nameof(BuildingPrivlidge.authorizedPlayers),
-                    e => e.authorizedPlayers
-                    .Select(player => new PlayerMetaData
+            new PropertyMapping<BuildingPrivlidge, PooledList<PlayerMetaData>>(
+                $"{nameof(BuildingPrivlidge)}.{nameof(BuildingPrivlidge.authorizedPlayers)}",
+                e =>
+                {
+                    var list = Pool.Get<PooledList<PlayerMetaData>>();
+                    list.AddRange(e.authorizedPlayers.Select(PlayerMetaData.CreateFrom));
+                    return list;
+                },
+                (e, v) =>
+                {
+                    foreach(var data in v)
                     {
-                        UserID = player.userid,
-                        UserName = player.username
-                    })
-                    .ToArray(),
-                    (e, v) =>
-                    {
-                        foreach(var data in v)
-                        {
-                            var playerNameID = Pool.Get<ProtoBuf.PlayerNameID>();
-                            playerNameID.userid = data.UserID;
-                            playerNameID.username = data.UserName;
-                            e.authorizedPlayers.Add(playerNameID);
-                        }
-                    },
-                    e => e.authorizedPlayers.Count > 0
-                ),
+                        e.authorizedPlayers.Add(data.ToPlayerNameID());
+                    }
+                },
+                e => e.authorizedPlayers.Count > 0
+            ),
 
             // DecayEntity
             new PropertyMapping<DecayEntity, float>(e => e.health),
@@ -92,23 +89,8 @@ public partial class AutoBuildSnapshot
         /// </summary>
         public float CollisionRadius { get; private set; }
 
-        /// <summary>
-        /// The list of sub-items contained within this entity, if applicable.
-        /// </summary>
-        [JsonIgnore]
-        public List<PersistantItem> SubItems => Properties.TryGetValue(nameof(SubItems), out var obj) 
-            ? obj as List<PersistantItem>
-            : null;
-
         public override void EnterPool()
         {
-            var subItems = SubItems;
-            if (subItems != null)
-            {
-                Pool.Free(ref subItems, true);
-                Properties.Remove(nameof(SubItems));
-            }
-
             base.EnterPool();
 
             Type = null;

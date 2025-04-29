@@ -1,5 +1,7 @@
 ﻿using Facepunch;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace Carbon.Plugins;
 
@@ -77,6 +79,13 @@ public partial class AutoBuildSnapshot
             ItemID = obj.info.itemid;
             Amount = obj.amount;
             SkinID = obj.skin;
+
+            if (obj.contents?.itemList is { Count: > 0 })
+            {
+                var subItems = Pool.Get<List<PersistantItem>>();
+                subItems.AddRange(obj.contents.itemList.Select(CreateFrom));
+                Properties[nameof(SubItems)] = subItems;
+            }
         }
     }
 }

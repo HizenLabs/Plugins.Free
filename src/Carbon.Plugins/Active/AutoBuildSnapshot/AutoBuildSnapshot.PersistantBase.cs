@@ -1,4 +1,6 @@
 ﻿using Facepunch;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -17,6 +19,14 @@ public partial class AutoBuildSnapshot
         public Dictionary<string, object> Properties => _properties;
         private Dictionary<string, object> _properties;
 
+        /// <summary>
+        /// The list of sub-items contained within this entity, if applicable.
+        /// </summary>
+        [JsonIgnore]
+        public List<PersistantItem> SubItems => Properties.TryGetValue(nameof(SubItems), out var obj)
+            ? obj as List<PersistantItem>
+            : null;
+
         protected PersistantBase(IPropertyMapping[] mappings)
         {
             _mappings = mappings;
@@ -24,6 +34,23 @@ public partial class AutoBuildSnapshot
 
         public virtual void EnterPool()
         {
+            var subItems = SubItems;
+            if (subItems != null)
+            {
+                Pool.Free(ref subItems, true);
+                Properties.Remove(nameof(SubItems));
+            }
+
+            foreach (var prop in _properties)
+            {
+                // this should help us return PooledList types back to the pool,
+                // plus any other custom types we want to pool
+                if (prop.Value is IDisposable obj)
+                {
+                    obj.Dispose();
+                }
+            }
+
             Pool.FreeUnmanaged(ref _properties);
         }
 

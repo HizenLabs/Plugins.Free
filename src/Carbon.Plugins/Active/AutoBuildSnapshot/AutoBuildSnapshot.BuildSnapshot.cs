@@ -493,6 +493,32 @@ public partial class AutoBuildSnapshot
         /// The display name of the player.
         /// </summary>
         public string UserName { get; init; }
+
+        /// <summary>
+        /// Creates a new player metadata from the specified player.
+        /// </summary>
+        /// <param name="player">The player to create the metadata from.</param>
+        /// <returns>The player metadata.</returns>
+        public static PlayerMetaData CreateFrom(ProtoBuf.PlayerNameID player)
+        {
+            return new PlayerMetaData
+            {
+                UserID = player.userid,
+                UserName = player.username
+            };
+        }
+
+        /// <summary>
+        /// Created a PlayerNameID from this metadata.
+        /// </summary>
+        /// <returns>The PlayerNameID.</returns>
+        public ProtoBuf.PlayerNameID ToPlayerNameID()
+        {
+            var result = Pool.Get<ProtoBuf.PlayerNameID>();
+            result.userid = UserID;
+            result.username = UserName;
+            return result;
+        }
     }
 
     private readonly struct SnapshotData
