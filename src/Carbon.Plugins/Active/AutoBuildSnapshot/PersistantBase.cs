@@ -1,5 +1,4 @@
 ﻿using Facepunch;
-using Oxide.Core;
 using System.Collections.Generic;
 using System.IO;
 
