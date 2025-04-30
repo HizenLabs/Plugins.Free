@@ -42,7 +42,7 @@ public partial class AutoBuildSnapshot
         {
             base.EnterPool();
 
-            FreeDictionaryList(ref _buildingEntities);
+            DeepFreeUnmanaged(ref _buildingEntities);
             Pool.FreeUnmanaged(ref _authorizedPlayers);
             Pool.FreeUnmanaged(ref _linkedRecords);
         }
@@ -296,15 +296,8 @@ public partial class AutoBuildSnapshot
 
                 zones.AddRange(_linkedRecords.SelectMany(record => record.EntityZones).Distinct());
 
-                var snapshotData = new SnapshotData
-                {
-                    Version = _plugin.Version,
-                    ID = snapshotId,
-                    MetaDataFile = metaFile,
-                    Timestamp = now,
-                    Entities = buildingEntities,
-                    Zones = zones,
-                };
+                using var snapshotData = Pool.Get<SnapshotData>();
+                snapshotData.Init(_plugin.Version, snapshotId, metaFile, now, buildingEntities, zones);
 
                 await snapshotData.SaveAsync(Path.Combine(Interface.Oxide.DataDirectory, dataFile), _config.Advanced.DataSaveFormat);
             }
@@ -316,8 +309,10 @@ public partial class AutoBuildSnapshot
                     Pool.Free(ref list, true);
                 }
 
-                FreeDictionaryList(ref buildingEntities);
+                DeepFree(ref buildingEntities, true);
                 Pool.FreeUnmanaged(ref zones);
+
+                _instance.Puts("WriteSnapshotDataAsync end");
             }
         }
 
@@ -520,38 +515,89 @@ public partial class AutoBuildSnapshot
         }
     }
 
-    internal readonly struct SnapshotData
+    internal class SnapshotData : Pool.IPooled, IDisposable
     {
         /// <summary>
         /// The version of the plugin when this snapshot was created.
         /// </summary>
-        public required VersionNumber Version { get; init; }
+        public VersionNumber Version { get; private set; }
 
         /// <summary>
         /// The unique id of the snapshot.
         /// </summary>
-        public required Guid ID { get; init; }
+        public Guid ID { get; private set; }
 
         /// <summary>
         /// The namne of the matching metadata file.
         /// Should be the same as this file, but with a ".meta" extension.
         /// </summary>
-        public required string MetaDataFile { get; init; }
+        public string MetaDataFile { get; private set; }
 
         /// <summary>
         /// The time the snapshot was created.
         /// </summary>
-        public required DateTime Timestamp { get; init; }
+        public DateTime Timestamp { get; private set; }
 
         /// <summary>
         /// The entities in this base, grouped by building.
         /// </summary>
-        public required Dictionary<string, List<PersistantEntity>> Entities { get; init; }
+        public Dictionary<string, List<PersistantEntity>> Entities => _entities;
+        private Dictionary<string, List<PersistantEntity>> _entities;
 
         /// <summary>
         /// The zones this base is comprised of.
         /// </summary>
-        public required List<Vector4> Zones { get; init; }
+        public List<Vector4> Zones => _zones;
+        private List<Vector4> _zones;
+
+        public void EnterPool()
+        {
+            Version = default;
+            ID = default;
+            MetaDataFile = string.Empty;
+            Timestamp = default;
+
+            DeepFree(ref _entities, true);
+            Pool.FreeUnmanaged(ref _zones);
+        }
+
+        public void LeavePool()
+        {
+            _entities = Pool.Get<Dictionary<string, List<PersistantEntity>>>();
+            _zones = Pool.Get<List<Vector4>>();
+        }
+
+        public void Dispose()
+        {
+            SnapshotData obj = this;
+            Pool.Free(ref obj);
+        }
+
+        public void Init(
+            VersionNumber version,
+            Guid id,
+            string metaDataFile,
+            DateTime timestamp,
+            Dictionary<string, List<PersistantEntity>> entities = null,
+            List<Vector4> zones = null)
+        {
+            Version = version;
+            ID = id;
+            MetaDataFile = metaDataFile;
+            Timestamp = timestamp;
+
+            if (entities != null && entities != _entities)
+            {
+                DeepFree(ref _entities, true);
+                _entities = entities;
+            }
+
+            if (zones != null && zones != _zones)
+            {
+                Pool.FreeUnmanaged(ref _zones);
+                _zones = zones;
+            }
+        }
 
         /// <summary>
         /// Loads the snapshot data from the specified file.
@@ -577,15 +623,15 @@ public partial class AutoBuildSnapshot
                 using var gzip = compressed ? new GZipStream(stream, CompressionMode.Decompress) : null;
                 using var reader = new BinaryReader(compressed ? gzip : stream);
 
-                return new SnapshotData
-                {
-                    Version = SerializationHelper.ReadVersionNumber(reader),
-                    ID = SerializationHelper.ReadGuid(reader),
-                    MetaDataFile = reader.ReadString(),
-                    Timestamp = SerializationHelper.ReadDateTime(reader),
-                    Zones = SerializationHelper.ReadList<Vector4>(reader),
-                    Entities = SerializationHelper.ReadDictionary<string, List<PersistantEntity>>(reader)
-                };
+                var data = Pool.Get<SnapshotData>();
+                data.Version = SerializationHelper.ReadVersionNumber(reader);
+                data.ID = SerializationHelper.ReadGuid(reader);
+                data.MetaDataFile = reader.ReadString();
+                data.Timestamp = SerializationHelper.ReadDateTime(reader);
+                SerializationHelper.ReadList(reader, data.Zones);
+                SerializationHelper.ReadDictionary(reader, data.Entities);
+
+                return data;
             }
             finally
             {
@@ -603,7 +649,7 @@ public partial class AutoBuildSnapshot
             var format = _config.Advanced.DataSaveFormat;
             var version = _instance.Version;
 
-            await UniTask.SwitchToThreadPool();
+            // await UniTask.SwitchToThreadPool();
             try
             {
                 /*
@@ -620,24 +666,24 @@ public partial class AutoBuildSnapshot
                 */
                 if (format == DataFormat.Binary || format == DataFormat.GZip)
                 {
-                    file += ".bin";
-
-                    bool compress = format == DataFormat.GZip;
-                    if (compress)
+                    await UniTask.RunOnThreadPool(() =>
                     {
-                        file += ".gz";
-                    }
+                        file += ".bin";
 
-                    using var stream = File.Open(file, FileMode.Create);
-                    using var gzip = compress ? new GZipStream(stream, CompressionMode.Compress) : null;
-                    using var writer = new BinaryWriter(compress ? gzip : stream);
+                        bool compress = format == DataFormat.GZip;
+                        if (compress) file += ".gz";
 
-                    SerializationHelper.Write(writer, version);
-                    SerializationHelper.Write(writer, ID);
-                    writer.Write(MetaDataFile);
-                    SerializationHelper.Write(writer, Timestamp);
-                    SerializationHelper.Write(writer, Zones);
-                    SerializationHelper.Write(writer, Entities);
+                        using var stream = File.Open(file, FileMode.Create);
+                        using var gzip = compress ? new GZipStream(stream, CompressionMode.Compress) : null;
+                        using var writer = new BinaryWriter(compress ? gzip : stream);
+
+                        SerializationHelper.Write(writer, version);
+                        SerializationHelper.Write(writer, ID);
+                        writer.Write(MetaDataFile);
+                        SerializationHelper.Write(writer, Timestamp);
+                        SerializationHelper.Write(writer, Zones);
+                        SerializationHelper.Write(writer, Entities);
+                    });
                 }
                 else
                 {
@@ -646,7 +692,7 @@ public partial class AutoBuildSnapshot
             }
             finally
             {
-                await UniTask.SwitchToMainThread();
+                // await UniTask.SwitchToMainThread();
             }
         }
 

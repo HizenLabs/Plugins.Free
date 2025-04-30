@@ -51,8 +51,15 @@ public partial class AutoBuildSnapshot
     /// Checks if the entity has a valid id and isn't destroyed.
     /// </summary>
     /// <param name="entity">The entity to validate.</param>
-    private static bool ValidEntity(BaseNetworkable entity) =>
-        entity != null && entity.net != null && entity.net.ID.IsValid && !entity.IsDestroyed;
+    private static bool ValidEntity(BaseNetworkable entity)
+    {
+        if (entity == null) return false;
+        if (entity.net == null) return false;
+        if (!entity.net.ID.IsValid) return false;
+        if (entity.IsDestroyed) return false;
+
+        return true;
+    }
 
     /// <summary>
     /// Creates a temporary sphere entity for the player at the specified position.
@@ -161,12 +168,31 @@ public partial class AutoBuildSnapshot
     /// <typeparam name="TKey">The type of the keys in the dictionary.</typeparam>
     /// <typeparam name="TValue">The type of the values in the dictionary.</typeparam>
     /// <param name="dict">The dictionary to free.</param>
-    private static void FreeDictionaryList<TKey, TValue>(ref Dictionary<TKey, List<TValue>> dict)
+    private static void DeepFreeUnmanaged<TKey, TValue>(ref Dictionary<TKey, List<TValue>> dict)
     {
         foreach (var key in dict.Keys)
         {
             var list = dict[key];
             Pool.FreeUnmanaged(ref list);
+        }
+
+        Pool.FreeUnmanaged(ref dict);
+    }
+
+    /// <summary>
+    /// Frees the unmanaged resources used by the dictionary list.
+    /// </summary>
+    /// <typeparam name="TKey">The type of the keys in the dictionary.</typeparam>
+    /// <typeparam name="TValue">The type of the values in the dictionary.</typeparam>
+    /// <param name="dict">The dictionary to free.</param>
+    /// <param name="freeElements">Whether to free the internal list.</param>
+    private static void DeepFree<TKey, TValue>(ref Dictionary<TKey, List<TValue>> dict, bool freeElements = false)
+        where TValue : class, Pool.IPooled, new()
+    {
+        foreach (var key in dict.Keys)
+        {
+            var list = dict[key];
+            Pool.Free(ref list, freeElements);
         }
 
         Pool.FreeUnmanaged(ref dict);

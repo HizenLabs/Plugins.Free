@@ -34,7 +34,7 @@ public partial class AutoBuildSnapshot
         }
 
         Pool.FreeUnmanaged(ref _menuLayerIdLookup);
-        FreeDictionaryList(ref _snapshotGuids);
+        DeepFreeUnmanaged(ref _snapshotGuids);
     }
 
     private LUI.LuiContainer RenderBasicLayout(

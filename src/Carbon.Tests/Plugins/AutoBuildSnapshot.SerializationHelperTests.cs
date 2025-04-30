@@ -5,6 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
+using static Carbon.Plugins.AutoBuildSnapshot;
 using static Carbon.Plugins.AutoBuildSnapshot.SerializationHelper;
 
 namespace Carbon.Tests.Plugins;
@@ -282,6 +283,63 @@ public partial class AutoBuildSnapshotTests
 
         #region Custom
 
+        /// <summary>
+        /// Tests for <see cref="Write(BinaryWriter, PersistantEntity)"/> and <see cref="ReadPersistantEntity(BinaryReader)"/>.
+        /// </summary>
+        [TestMethod]
+        public void Test_PersistantEntity_Serialization_RoundTrip()
+        {
+            var entity = PersistantEntity.Create(
+                typeof(BaseEntity).Name,
+                "TestPrefab",
+                new Vector3(1.0f, 2.0f, 3.0f),
+                new Quaternion(0.0f, 0.0f, 0.0f, 1.0f),
+                new Vector3(4.0f, 5.0f, 6.0f),
+                10.0f,
+                new Dictionary<string, object>
+                {
+                    { "TestProperty", "TestValue" }
+                }
+            );
+
+            TestSerializationRoundTrip(entity, Write, ReadPersistantEntity,
+                (orig, deserialized) =>
+                {
+                    Assert.AreEqual(orig.Type, deserialized.Type);
+                    Assert.AreEqual(orig.PrefabName, deserialized.PrefabName);
+                    Assert.AreEqual(orig.Position, deserialized.Position);
+                    Assert.AreEqual(orig.Rotation, deserialized.Rotation);
+                    Assert.AreEqual(orig.CenterPosition, deserialized.CenterPosition);
+                    Assert.AreEqual(orig.CollisionRadius, deserialized.CollisionRadius);
+                });
+        }
+
+        /// <summary>
+        /// Tests for <see cref="Write(BinaryWriter, PersistantItem)"/> and <see cref="ReadPersistantItem(BinaryReader)"/>.
+        /// </summary>
+        [TestMethod]
+        public void Test_DictionaryList_Serialization_RoundTrip()
+        {
+            var dict = new Dictionary<string, List<string>>
+            {
+                { "key1", new List<string> { "value1", "value2" } },
+                { "key2", new List<string> { "value3", "value4" } }
+            };
+            TestSerializationRoundTrip(dict, Write, reader => ReadDictionary<string, List<string>>(reader),
+                (original, deserialized) =>
+                {
+                    Assert.IsNotNull(original);
+                    Assert.IsNotNull(deserialized);
+
+                    Assert.AreEqual(original.Count, deserialized.Count);
+                    foreach (var key in original.Keys)
+                    {
+                        Assert.IsTrue(deserialized.ContainsKey(key));
+                        CollectionAssert.AreEqual(original[key], deserialized[key]);
+                    }
+                });
+        }
+
         #endregion
 
         #endregion
@@ -328,7 +386,7 @@ public partial class AutoBuildSnapshotTests
         public void Test_List_Serialization_RoundTrip()
         {
             // Test int list
-            TestSerializationRoundTrip(new List<int> { 1, 2, 3, 4, 5 }, Write, ReadList<int>,
+            TestSerializationRoundTrip(new List<int> { 1, 2, 3, 4, 5 }, Write, reader => ReadList<int>(reader),
                 (original, deserialized) => {
                     Assert.AreEqual(original.Count, deserialized.Count);
                     for (int i = 0; i < original.Count; i++)
@@ -338,7 +396,7 @@ public partial class AutoBuildSnapshotTests
                 });
 
             // Test string list
-            TestSerializationRoundTrip(new List<string> { "one", "two", "three" }, Write, ReadList<string>,
+            TestSerializationRoundTrip(new List<string> { "one", "two", "three" }, Write, reader => ReadList<string>(reader),
                 (original, deserialized) => {
                     Assert.AreEqual(original.Count, deserialized.Count);
                     for (int i = 0; i < original.Count; i++)
@@ -348,7 +406,7 @@ public partial class AutoBuildSnapshotTests
                 });
 
             // Test empty list
-            TestSerializationRoundTrip(new List<string>(), Write, ReadList<string>,
+            TestSerializationRoundTrip(new List<string>(), Write, reader => ReadList<string>(reader),
                 (original, deserialized) => {
                     Assert.AreEqual(original.Count, deserialized.Count);
                 });

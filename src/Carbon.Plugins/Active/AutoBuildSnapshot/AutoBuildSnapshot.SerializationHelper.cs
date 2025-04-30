@@ -415,12 +415,12 @@ public partial class AutoBuildSnapshot
         /// <summary>
         /// Reads a generic list from the binary stream
         /// </summary>
-        public static List<T> ReadList<T>(BinaryReader reader)
+        public static List<T> ReadList<T>(BinaryReader reader, List<T> list = null)
         {
             var type = ReadTypeMarker(reader);
             int count = reader.ReadInt32();
 
-            var list = Pool.Get<List<T>>();
+            list ??= Pool.Get<List<T>>();
             for (int i = 0; i < count; i++)
             {
                 var item = Read<T>(reader, type);

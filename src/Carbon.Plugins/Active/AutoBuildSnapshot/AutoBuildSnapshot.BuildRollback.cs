@@ -81,16 +81,23 @@ public partial class AutoBuildSnapshot
         /// <param name="data">The snapshot data to rollback to.</param>
         private async UniTaskVoid ExecuteRollbackAsync(BasePlayer player, SnapshotData data)
         {
-            if (await TryExecuteRollbackAsync(player, data))
+            try
             {
-                _instance.AddLogMessage(player, $"Rollback to snapshot {data.ID} completed.");
+                if (await TryExecuteRollbackAsync(player, data))
+                {
+                    _instance.AddLogMessage(player, $"Rollback to snapshot {data.ID} completed.");
+                }
+                else
+                {
+                    _instance.AddLogMessage(player, "The rollback process was aborted.");
+                }
             }
-            else
+            finally
             {
-                _instance.AddLogMessage(player, "The rollback process was aborted.");
-            }
+                data.Dispose();
 
-            SnapshotHandle.Release(player, ref _handle);
+                SnapshotHandle.Release(player, ref _handle);
+            }
         }
 
         /// <summary>
@@ -103,10 +110,16 @@ public partial class AutoBuildSnapshot
         {
             _instance.AddLogMessage(player, "Begin rolling back base...");
 
+            using var rollbackEntities = Pool.Get<PooledList<PersistantEntity>>();
+            foreach (var buildingEntities in data.Entities.Values)
+            {
+                rollbackEntities.AddRange(buildingEntities);
+            }
+
             using var entitiesToKill = Pool.Get<PooledHashSet<BaseEntity>>();
             using var entitiesToCreate = Pool.Get<PooledHashSet<PersistantEntity>>();
             using var outEntitiesToUpdate = Pool.Get<PooledHashSet<BaseEntity>>();
-            if (!await TryPrepareEntitiesAsync(data.Entities.Values.SelectMany(_ => _), entitiesToKill, entitiesToCreate, outEntitiesToUpdate))
+            if (!await TryPrepareEntitiesAsync(rollbackEntities, entitiesToKill, entitiesToCreate, outEntitiesToUpdate))
             {
                 _instance.AddLogMessage(player, "Failed to find target entities to cleanup.");
                 return false;
@@ -127,10 +140,10 @@ public partial class AutoBuildSnapshot
             foreach (var create in entitiesToCreate)
             {
                 var entity = GameManager.server.CreateEntity(create.PrefabName, create.Position, create.Rotation);
+                entity.Spawn();
                 if (TryUpdateEntity(entity, create))
                 {
                     _instance.AddLogMessage($"Creating entity: {create.ID})");
-                    entity.Spawn();
                 }
                 else
                 {
@@ -194,7 +207,7 @@ public partial class AutoBuildSnapshot
         /// <param name="outEntitiesToUpdate">The list to populate of entities to update.</param>
         /// <returns>True if the preparation was successful; otherwise, false.</returns>
         private async UniTask<bool> TryPrepareEntitiesAsync(
-            IEnumerable<PersistantEntity> rollbackEntities,
+            PooledList<PersistantEntity> rollbackEntities,
             PooledHashSet<BaseEntity> outEntitiesToKill,
             PooledHashSet<PersistantEntity> outEntitiesToCreate,
             PooledHashSet<BaseEntity> outEntitiesToUpdate)

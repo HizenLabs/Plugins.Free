@@ -184,5 +184,28 @@ public partial class AutoBuildSnapshot
                 Properties[nameof(SubItems)] = subItems;
             }
         }
+
+        public static PersistantEntity Create(
+            string type,
+            string prefabName,
+            Vector3 position,
+            Quaternion rotation,
+            Vector3 centerPosition,
+            float collisionRadius,
+            Dictionary<string, object> properties)
+        {
+            var result = Pool.Get<PersistantEntity>();
+            result.Type = type;
+            result.PrefabName = prefabName;
+            result.Position = position;
+            result.Rotation = rotation;
+            result.CenterPosition = centerPosition;
+            result.CollisionRadius = collisionRadius;
+            foreach (var prop in properties)
+            {
+                result.Properties[prop.Key] = prop.Value;
+            }
+            return result;
+        }
     }
 }

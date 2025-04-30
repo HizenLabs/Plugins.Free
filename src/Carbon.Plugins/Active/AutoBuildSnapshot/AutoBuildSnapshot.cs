@@ -996,9 +996,9 @@ public partial class AutoBuildSnapshot : CarbonPlugin
         Pool.FreeUnmanaged(ref _snapshotMetaData);
         Pool.Free(ref _snapshotHandles, true);
         Pool.FreeUnmanaged(ref _playerSnapshotHandles);
-        FreeDictionaryList(ref _buildingIDToSnapshotIndex);
-        FreeDictionaryList(ref _zoneSnapshotIndex);
-        FreeDictionaryList(ref _tempEntities);
+        DeepFreeUnmanaged(ref _buildingIDToSnapshotIndex);
+        DeepFreeUnmanaged(ref _zoneSnapshotIndex);
+        DeepFreeUnmanaged(ref _tempEntities);
         Pool.FreeUnmanaged(ref _logMessages);
         Pool.FreeUnmanaged(ref _connectedPlayers);
 
