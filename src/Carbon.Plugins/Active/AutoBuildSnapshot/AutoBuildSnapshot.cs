@@ -474,14 +474,14 @@ public partial class AutoBuildSnapshot : CarbonPlugin
         }
     }
 
-    private enum MultiTCMode
+    internal enum MultiTCMode
     {
         Disabled = 0,
         Manual = 1,
         Automatic = 2
     }
 
-    private enum DataFormat
+    internal enum DataFormat
     {
         Binary = 0,
         GZip = 1,

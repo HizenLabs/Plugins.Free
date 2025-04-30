@@ -122,7 +122,7 @@ public partial class AutoBuildSnapshot
 
                 await YieldStep();
             }
-
+            
             // Spawn all entitiesToSpawn, then add them to entitesToUpdate
             foreach (var create in entitiesToCreate)
             {
@@ -233,14 +233,10 @@ public partial class AutoBuildSnapshot
             using var foundEntities = Pool.Get<PooledList<BaseEntity>>();
             Vis.Entities(entity.CenterPosition, entity.CollisionRadius, foundEntities, _maskBaseEntities);
 
-            _instance.AddLogMessage($"Found {foundEntities.Count} entities in the area of {entity.ID}");
-
             currentEntity = null;
             foreach (var found in foundEntities)
             {
                 var foundID = GetPersistanceID(found);
-                _instance.AddLogMessage($" Entity: {foundID}");
-
                 if (entity.ID == foundID)
                 {
                     currentEntity = found;

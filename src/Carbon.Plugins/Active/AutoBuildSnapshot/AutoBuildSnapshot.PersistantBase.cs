@@ -8,7 +8,7 @@ namespace Carbon.Plugins;
 
 public partial class AutoBuildSnapshot
 {
-    private abstract class PersistantBase<TObject> : Pool.IPooled
+    internal abstract class PersistantBase<TObject> : Pool.IPooled
         where TObject : class
     {
         private readonly IPropertyMapping[] _mappings;

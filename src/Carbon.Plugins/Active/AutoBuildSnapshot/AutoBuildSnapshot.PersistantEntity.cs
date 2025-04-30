@@ -1,6 +1,5 @@
 ﻿using Facepunch;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,7 +13,7 @@ public partial class AutoBuildSnapshot
     /// <summary>
     /// Represents a persistent entity, which just uses the prefabID and coords.
     /// </summary>
-    private class PersistantEntity : PersistantBase<BaseEntity>
+    internal class PersistantEntity : PersistantBase<BaseEntity>
     {
         private static readonly IPropertyMapping[] _mappings = new IPropertyMapping[]
         {

@@ -12,9 +12,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{CA97983F-ABDA-4CBE-AB79-CDF8AA0C2987}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
-		..\scripts\update-managed.ps1 = ..\scripts\update-managed.ps1
-		..\scripts\deploy-plugins.ps1 = ..\scripts\deploy-plugins.ps1
 		..\scripts\deploy-extension.ps1 = ..\scripts\deploy-extension.ps1
+		..\scripts\deploy-plugins.ps1 = ..\scripts\deploy-plugins.ps1
+		..\scripts\update-managed.ps1 = ..\scripts\update-managed.ps1
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Plugins", "Plugins", "{EB0FAC21-70B8-49A2-A41D-7055E2C6F5CB}"
@@ -26,6 +26,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BuildSettings", "BuildSetti
 		Directory.Build.props = Directory.Build.props
 		Directory.Build.User.props = Directory.Build.User.props
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Carbon.Tests", "Carbon.Tests\Carbon.Tests.csproj", "{43D7F203-C9DD-4752-BE45-2CA3F064487E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{6A89C909-5A47-4A40-AD7D-B4DE36EC22CB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +55,14 @@ Global
 		{B65009C9-50BF-4784-A38D-040A055795FE}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B65009C9-50BF-4784-A38D-040A055795FE}.Release|x64.ActiveCfg = Release|x64
 		{B65009C9-50BF-4784-A38D-040A055795FE}.Release|x64.Build.0 = Release|x64
+		{43D7F203-C9DD-4752-BE45-2CA3F064487E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{43D7F203-C9DD-4752-BE45-2CA3F064487E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{43D7F203-C9DD-4752-BE45-2CA3F064487E}.Debug|x64.ActiveCfg = Debug|x64
+		{43D7F203-C9DD-4752-BE45-2CA3F064487E}.Debug|x64.Build.0 = Debug|x64
+		{43D7F203-C9DD-4752-BE45-2CA3F064487E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{43D7F203-C9DD-4752-BE45-2CA3F064487E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{43D7F203-C9DD-4752-BE45-2CA3F064487E}.Release|x64.ActiveCfg = Release|Any CPU
+		{43D7F203-C9DD-4752-BE45-2CA3F064487E}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -60,6 +72,8 @@ Global
 		{B65009C9-50BF-4784-A38D-040A055795FE} = {0CE5AC80-F364-42B4-9017-0B0DF8A46E3F}
 		{0CE5AC80-F364-42B4-9017-0B0DF8A46E3F} = {3750B824-8A27-448C-A651-34F6C3583389}
 		{EB0FAC21-70B8-49A2-A41D-7055E2C6F5CB} = {3750B824-8A27-448C-A651-34F6C3583389}
+		{43D7F203-C9DD-4752-BE45-2CA3F064487E} = {6A89C909-5A47-4A40-AD7D-B4DE36EC22CB}
+		{6A89C909-5A47-4A40-AD7D-B4DE36EC22CB} = {3750B824-8A27-448C-A651-34F6C3583389}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E56ED32D-07F8-4731-8458-2BDC13D8B2D5}

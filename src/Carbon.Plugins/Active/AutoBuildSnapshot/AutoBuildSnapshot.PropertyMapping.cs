@@ -9,7 +9,7 @@ namespace Carbon.Plugins;
 
 public partial class AutoBuildSnapshot
 {
-    private interface IPropertyMapping
+    internal interface IPropertyMapping
     {
         void TryReadProperty(object obj, Dictionary<string, object> dict);
         void TryWriteProperty(object obj, Dictionary<string, object> dict);
@@ -18,7 +18,7 @@ public partial class AutoBuildSnapshot
     /// <summary>
     /// Interface for property mapping.
     /// </summary>
-    private interface IPropertyMapping<in TObject> : IPropertyMapping
+    internal interface IPropertyMapping<in TObject> : IPropertyMapping
         where TObject : class
     {
         void TryReadProperty(TObject obj, Dictionary<string, object> dict);
@@ -30,7 +30,7 @@ public partial class AutoBuildSnapshot
     /// </summary>
     /// <typeparam name="TEntity">The type of the entity.</typeparam>
     /// <typeparam name="TProperty">The type of the property.</typeparam>
-    private readonly struct PropertyMapping<TObject, TProperty> : IPropertyMapping<TObject>
+    internal readonly struct PropertyMapping<TObject, TProperty> : IPropertyMapping<TObject>
         where TObject : class
     {
         /// <summary>

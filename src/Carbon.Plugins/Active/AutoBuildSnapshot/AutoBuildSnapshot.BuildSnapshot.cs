@@ -1,6 +1,5 @@
 ﻿using Cysharp.Threading.Tasks;
 using Facepunch;
-using Newtonsoft.Json;
 using Oxide.Core;
 using System;
 using System.Collections.Generic;
@@ -461,7 +460,7 @@ public partial class AutoBuildSnapshot
     /// <summary>
     /// The metadata for a building in the snapshot.
     /// </summary>
-    private readonly struct BuildingMetaData
+    internal readonly struct BuildingMetaData
     {
         /// <summary>
         /// The position of the building TC.
@@ -482,7 +481,7 @@ public partial class AutoBuildSnapshot
     /// <summary>
     /// The simplified player metadata.
     /// </summary>
-    private readonly struct PlayerMetaData
+    internal readonly struct PlayerMetaData
     {
         /// <summary>
         /// The id of the player.
@@ -521,7 +520,7 @@ public partial class AutoBuildSnapshot
         }
     }
 
-    private readonly struct SnapshotData
+    internal readonly struct SnapshotData
     {
         /// <summary>
         /// The version of the plugin when this snapshot was created.

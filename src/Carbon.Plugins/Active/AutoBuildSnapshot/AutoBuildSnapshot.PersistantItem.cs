@@ -1,5 +1,4 @@
 ﻿using Facepunch;
-using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -11,7 +10,7 @@ public partial class AutoBuildSnapshot
     /// <summary>
     /// Represents a persistent item, which is a simplified version of the Base Item.
     /// </summary>
-    private class PersistantItem : PersistantBase<Item>
+    internal class PersistantItem : PersistantBase<Item>
     {
         private static readonly IPropertyMapping[] _mappings = new IPropertyMapping[]
         {

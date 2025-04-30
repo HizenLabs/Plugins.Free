@@ -14,7 +14,7 @@ public partial class AutoBuildSnapshot
     /// <summary>
     /// Helper class for binary serialization and deserialization
     /// </summary>
-    private static class SerializationHelper
+    internal static class SerializationHelper
     {
         private static Dictionary<(TypeMarker, TypeMarker), MethodInfo> _genericPoolT1 = new();
         private static Dictionary<(TypeMarker, TypeMarker, TypeMarker), MethodInfo> _genericPoolT2 = new();

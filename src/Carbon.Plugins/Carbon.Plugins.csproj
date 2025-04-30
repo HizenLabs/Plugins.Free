@@ -10,6 +10,7 @@
     <RootNamespace>Carbon.Plugins</RootNamespace>
     <AssemblyName>HizenLabs.Carbon.Plugins</AssemblyName>
     <TargetFrameworkVersion>v4.8.1</TargetFrameworkVersion>
+    <LangVersion>11</LangVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
   </PropertyGroup>
@@ -36,7 +37,6 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>x64</PlatformTarget>
-    <LangVersion>11</LangVersion>
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
@@ -45,7 +45,6 @@
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>x64</PlatformTarget>
-    <LangVersion>11</LangVersion>
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <ItemGroup>
@@ -720,6 +719,7 @@
     <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.UI.Drawing.Snapshots.cs" />
     <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.UI.Handlers.cs" />
     <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.PersistantBase.cs" />
+    <Compile Include="AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
