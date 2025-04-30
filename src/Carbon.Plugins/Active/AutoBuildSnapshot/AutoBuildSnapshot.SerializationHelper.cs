@@ -24,7 +24,7 @@ public partial class AutoBuildSnapshot
         /// <summary>
         /// Enum for marking types during serialization
         /// </summary>
-        private enum TypeMarker : byte
+        internal enum TypeMarker : byte
         {
             // Primitive types (0-19)
             Null = 0,
@@ -144,7 +144,7 @@ public partial class AutoBuildSnapshot
 
         #endregion
 
-        #region Unity
+        #region Carbon / Unity
 
         /// <summary>
         /// Writes a version number to the binary stream
@@ -386,8 +386,6 @@ public partial class AutoBuildSnapshot
             int count = reader.ReadInt32();
 
             var csType = GetCSharpType(type);
-            var arrayType = csType.MakeArrayType();
-
             var array = Array.CreateInstance(csType, count);
             for (int i = 0; i < count; i++)
             {
@@ -535,7 +533,7 @@ public partial class AutoBuildSnapshot
         /// <summary>
         /// Writes a TypeMarker to the binary stream
         /// </summary>
-        private static void Write(BinaryWriter writer, TypeMarker type)
+        internal static void Write(BinaryWriter writer, TypeMarker type)
         {
             writer.Write((byte)type);
         }
@@ -543,7 +541,7 @@ public partial class AutoBuildSnapshot
         /// <summary>
         /// Reads a TypeMarker from the binary stream
         /// </summary>
-        private static TypeMarker ReadTypeMarker(BinaryReader reader)
+        internal static TypeMarker ReadTypeMarker(BinaryReader reader)
         {
             byte typeByte = reader.ReadByte();
 

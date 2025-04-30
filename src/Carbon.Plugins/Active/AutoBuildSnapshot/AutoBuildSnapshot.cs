@@ -14,6 +14,7 @@ namespace Carbon.Plugins;
 
 #pragma warning disable IDE0001 // Simplification warning ignore
 #pragma warning disable IDE1006 // Naming Styles
+#pragma warning disable CS0649 // Default value null
 
 [Info("AutoBuildSnapshot", "hizenxyz", "0.0.20")]
 [Description("Automatically backs up a player's base when they build to it, allowing it to be restored later.")]
