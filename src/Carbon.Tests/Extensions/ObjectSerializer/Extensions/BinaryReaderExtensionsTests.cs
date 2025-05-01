@@ -13,6 +13,33 @@ namespace Carbon.Tests.Extensions.ObjectSerializer.Extensions;
 [TestClass]
 public class BinaryReaderExtensionsTests : BinaryReaderWriterTest
 {
+    #region System
+
+    /// <summary>
+    /// Tests the <see cref="BinaryReaderExtensions.ReadGuid(BinaryReader)"/> method to ensure it correctly reads a <see cref="Guid"/> value from a binary stream.
+    /// </summary>
+    [TestMethod]
+    public void ReadGuid_ShouldReturnCorrectGuid()
+    {
+        Guid[] testValues = new Guid[]
+        {
+            Guid.Empty,
+            Guid.NewGuid(),
+            new("12345678-1234-1234-1234-123456789012")
+        };
+
+        for (int i = 0; i < testValues.Length; i++)
+        {
+            _memoryStream.SetLength(0);
+            _writer.Write(testValues[i].ToByteArray());
+
+            _memoryStream.Position = 0;
+            Guid actual = _reader.ReadGuid();
+
+            Assert.AreEqual(testValues[i], actual);
+        }
+    }
+
     /// <summary>
     /// Tests the <see cref="BinaryReaderExtensions.ReadDateTime(BinaryReader)"/> method to ensure it correctly reads a <see cref="DateTime"/> value from a binary stream.
     /// </summary>
@@ -88,30 +115,9 @@ public class BinaryReaderExtensionsTests : BinaryReaderWriterTest
         }
     }
 
-    /// <summary>
-    /// Tests the <see cref="BinaryReaderExtensions.ReadGuid(BinaryReader)"/> method to ensure it correctly reads a <see cref="Guid"/> value from a binary stream.
-    /// </summary>
-    [TestMethod]
-    public void ReadGuid_ShouldReturnCorrectGuid()
-    {
-        Guid[] testValues = new Guid[]
-        {
-            Guid.Empty,
-            Guid.NewGuid(),
-            new("12345678-1234-1234-1234-123456789012")
-        };
+    #endregion
 
-        for (int i = 0; i < testValues.Length; i++)
-        {
-            _memoryStream.SetLength(0);
-            _writer.Write(testValues[i].ToByteArray());
-
-            _memoryStream.Position = 0;
-            Guid actual = _reader.ReadGuid();
-
-            Assert.AreEqual(testValues[i], actual);
-        }
-    }
+    #region UnityEngine
 
     /// <summary>
     /// Tests the <see cref="BinaryReaderExtensions.ReadVector2(BinaryReader)"/> method to ensure it correctly reads a <see cref="Vector2"/> value from a binary stream.
@@ -188,4 +194,8 @@ public class BinaryReaderExtensionsTests : BinaryReaderWriterTest
             Assert.AreEqual(testValues[i], actual);
         }
     }
+
+    #endregion
+
+
 }

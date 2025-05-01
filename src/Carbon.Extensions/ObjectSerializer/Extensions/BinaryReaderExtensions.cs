@@ -10,39 +10,7 @@ namespace HizenLabs.Extensions.ObjectSerializer.Extensions;
 /// </summary>
 public static class BinaryReaderExtensions
 {
-    /// <summary>
-    /// Reads a <see cref="DateTime"/> value from the current stream and advances the stream position by eight bytes.
-    /// </summary>
-    /// <param name="reader">The <see cref="BinaryReader"/> to read from.</param>
-    /// <returns>The <see cref="DateTime"/> value read from the stream.</returns>
-    public static DateTime ReadDateTime(this BinaryReader reader)
-    {
-        long binary = reader.ReadInt64();
-        return DateTime.FromBinary(binary);
-    }
-
-    /// <summary>
-    /// Reads a <see cref="TimeSpan"/> value from the current stream and advances the stream position by eight bytes.
-    /// </summary>
-    /// <param name="reader">The <see cref="BinaryReader"/> to read from.</param>
-    /// <returns>The <see cref="TimeSpan"/> value read from the stream.</returns>
-    public static TimeSpan ReadTimeSpan(this BinaryReader reader)
-    {
-        long ticks = reader.ReadInt64();
-        return TimeSpan.FromTicks(ticks);
-    }
-
-    /// <summary>
-    /// Reads a <see cref="Type"/> value from the current stream and advances the stream position by the length of the type name.
-    /// </summary>
-    /// <param name="reader">The <see cref="BinaryReader"/> to read from.</param>
-    /// <returns>The <see cref="Type"/> value read from the stream.</returns>
-    /// <exception cref="TypeLoadException">Thrown when the type cannot be loaded.</exception>
-    public static Type ReadType(this BinaryReader reader)
-    {
-        string typeName = reader.ReadString();
-        return Type.GetType(typeName) ?? throw new TypeLoadException($"Could not load type '{typeName}'.");
-    }
+    #region System
 
     /// <summary>
     /// Reads a <see cref="Guid"/> value from the current stream and advances the stream position by sixteen bytes.
@@ -77,6 +45,44 @@ public static class BinaryReaderExtensions
 
         return *(Guid*)&parts;
     }
+
+    /// <summary>
+    /// Reads a <see cref="DateTime"/> value from the current stream and advances the stream position by eight bytes.
+    /// </summary>
+    /// <param name="reader">The <see cref="BinaryReader"/> to read from.</param>
+    /// <returns>The <see cref="DateTime"/> value read from the stream.</returns>
+    public static DateTime ReadDateTime(this BinaryReader reader)
+    {
+        long binary = reader.ReadInt64();
+        return DateTime.FromBinary(binary);
+    }
+
+    /// <summary>
+    /// Reads a <see cref="TimeSpan"/> value from the current stream and advances the stream position by eight bytes.
+    /// </summary>
+    /// <param name="reader">The <see cref="BinaryReader"/> to read from.</param>
+    /// <returns>The <see cref="TimeSpan"/> value read from the stream.</returns>
+    public static TimeSpan ReadTimeSpan(this BinaryReader reader)
+    {
+        long ticks = reader.ReadInt64();
+        return TimeSpan.FromTicks(ticks);
+    }
+
+    /// <summary>
+    /// Reads a <see cref="Type"/> value from the current stream and advances the stream position by the length of the type name.
+    /// </summary>
+    /// <param name="reader">The <see cref="BinaryReader"/> to read from.</param>
+    /// <returns>The <see cref="Type"/> value read from the stream.</returns>
+    /// <exception cref="TypeLoadException">Thrown when the type cannot be loaded.</exception>
+    public static Type ReadType(this BinaryReader reader)
+    {
+        string typeName = reader.ReadString();
+        return Type.GetType(typeName) ?? throw new TypeLoadException($"Could not load type '{typeName}'.");
+    }
+
+    #endregion
+
+    #region UnityEngine
 
     /// <summary>
     /// Reads a <see cref="Vector2"/> value from the current stream and advances the stream position by eight bytes.
@@ -119,4 +125,12 @@ public static class BinaryReaderExtensions
         vector.w = reader.ReadSingle();
         return vector;
     }
+
+    #endregion
+
+    #region Collections
+
+
+
+    #endregion
 }

@@ -13,6 +13,34 @@ namespace Carbon.Tests.Extensions.ObjectSerializer.Extensions;
 [TestClass]
 public class BinaryWriterExtensionsTests : BinaryReaderWriterTest
 {
+    #region System
+
+    /// <summary>
+    /// Tests the <see cref="BinaryWriterExtensions.Write(BinaryWriter, Guid)"/> method to ensure it correctly writes a <see cref="Guid"/> value to a binary stream.
+    /// </summary>
+    [TestMethod]
+    public void WriteGuid_ShouldWriteCorrectGuid()
+    {
+        Guid[] testValues = new Guid[]
+        {
+            Guid.Empty,
+            Guid.NewGuid(),
+            new("12345678-1234-1234-1234-123456789012")
+        };
+
+        for (int i = 0; i < testValues.Length; i++)
+        {
+            _memoryStream.SetLength(0);
+            _writer.Write(testValues[i]);
+
+            _memoryStream.Position = 0;
+            byte[] binary = _reader.ReadBytes(16);
+            Guid actual = new(binary);
+
+            Assert.AreEqual(testValues[i], actual);
+        }
+    }
+
     /// <summary>
     /// Tests the <see cref="BinaryWriterExtensions.Write(BinaryWriter, DateTime)"/> method to ensure it correctly writes a <see cref="DateTime"/> value to a binary stream.
     /// </summary>
@@ -88,31 +116,9 @@ public class BinaryWriterExtensionsTests : BinaryReaderWriterTest
         }
     }
 
-    /// <summary>
-    /// Tests the <see cref="BinaryWriterExtensions.Write(BinaryWriter, Guid)"/> method to ensure it correctly writes a <see cref="Guid"/> value to a binary stream.
-    /// </summary>
-    [TestMethod]
-    public void WriteGuid_ShouldWriteCorrectGuid()
-    {
-        Guid[] testValues = new Guid[]
-        {
-            Guid.Empty,
-            Guid.NewGuid(),
-            new("12345678-1234-1234-1234-123456789012")
-        };
+    #endregion
 
-        for (int i = 0; i < testValues.Length; i++)
-        {
-            _memoryStream.SetLength(0);
-            _writer.Write(testValues[i]);
-
-            _memoryStream.Position = 0;
-            byte[] binary = _reader.ReadBytes(16);
-            Guid actual = new(binary);
-
-            Assert.AreEqual(testValues[i], actual);
-        }
-    }
+    #region UnityEngine
 
     /// <summary>
     /// Tests the <see cref="BinaryWriterExtensions.Write(BinaryWriter, Vector2)"/> method to ensure it correctly writes a <see cref="Vector2"/> value to a binary stream.
@@ -189,4 +195,6 @@ public class BinaryWriterExtensionsTests : BinaryReaderWriterTest
             Assert.AreEqual(testValues[i], actual);
         }
     }
+
+    #endregion
 }
