@@ -15,6 +15,37 @@ public class BinaryWriterExtensionsTests : BinaryReaderWriterTest
 {
     #region System
 
+    enum TestEnum : byte { A, B, C, D, E, F, G, H, I, J }
+
+    /// <summary>
+    /// Tests the <see cref="BinaryWriterExtensions.Write(BinaryWriter, Enum)"/> method to ensure it correctly writes an <see cref="Enum"/> value to a binary stream.
+    /// </summary>
+    [TestMethod]
+    public void WriteEnum_ShouldWriteCorrectEnum()
+    {
+        _memoryStream.SetLength(0);
+        _writer.Write(DayOfWeek.Tuesday);
+
+        _memoryStream.Position = 0;
+        int actualInt = _reader.ReadInt32();
+
+        Assert.AreEqual((int)DayOfWeek.Tuesday, actualInt);
+
+        _memoryStream.SetLength(0);
+        _writer.Write(TestEnum.E);
+
+        _memoryStream.Position = 0;
+        byte actualByte = _reader.ReadByte();
+
+        Assert.AreEqual((byte)4, actualByte);
+
+        _memoryStream.Position = 0;
+        Assert.ThrowsException<EndOfStreamException>(() => _reader.ReadInt32());
+
+        _memoryStream.Position = 0;
+        Assert.AreEqual(TestEnum.E, (TestEnum)_reader.ReadByte());
+    }
+
     /// <summary>
     /// Tests the <see cref="BinaryWriterExtensions.Write(BinaryWriter, Guid)"/> method to ensure it correctly writes a <see cref="Guid"/> value to a binary stream.
     /// </summary>

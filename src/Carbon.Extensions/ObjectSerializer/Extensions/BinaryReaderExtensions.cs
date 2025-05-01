@@ -1,4 +1,6 @@
-﻿using HizenLabs.Extensions.ObjectSerializer.Structs;
+﻿using HizenLabs.Extensions.ObjectSerializer.Exceptions;
+using HizenLabs.Extensions.ObjectSerializer.Internal;
+using HizenLabs.Extensions.ObjectSerializer.Structs;
 using System;
 using System.IO;
 using UnityEngine;
@@ -11,6 +13,19 @@ namespace HizenLabs.Extensions.ObjectSerializer.Extensions;
 public static class BinaryReaderExtensions
 {
     #region System
+
+    /// <summary>
+    /// Reads an <see cref="Enum"/> value from the current stream and advances the stream position by the size of the underlying type.
+    /// </summary>
+    /// <param name="reader">The <see cref="BinaryReader"/> to read from.</param>
+    /// <typeparam name="TEnum">The enum type to read.</typeparam>
+    /// <returns>The <see cref="Enum"/> value read from the stream.</returns>
+    /// <exception cref="EnumSerializationException">Thrown when the enum type is not a valid enum type for deserialization.</exception>
+    public static unsafe TEnum ReadEnum<TEnum>(this BinaryReader reader)
+        where TEnum : unmanaged, Enum
+    {
+        return EnumReader<TEnum>.Read(reader);
+    }
 
     /// <summary>
     /// Reads a <see cref="Guid"/> value from the current stream and advances the stream position by sixteen bytes.
@@ -155,12 +170,6 @@ public static class BinaryReaderExtensions
         color.a = reader.ReadSingle();
         return color;
     }
-
-    #endregion
-
-    #region Collections
-
-
 
     #endregion
 }

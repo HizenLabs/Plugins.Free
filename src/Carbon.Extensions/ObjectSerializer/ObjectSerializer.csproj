@@ -535,9 +535,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Enums\TypeMarker.cs" />
+    <Compile Include="Exceptions\EnumSerializationException.cs" />
     <Compile Include="Exceptions\TypeSerializationException.cs" />
     <Compile Include="Extensions\BinaryReaderExtensions.cs" />
     <Compile Include="Extensions\BinaryWriterExtensions.cs" />
+    <Compile Include="Extensions\TypeExtensions.cs" />
+    <Compile Include="Extensions\TypeMarkerExtensions.cs" />
+    <Compile Include="Internal\EnumReader.cs" />
+    <Compile Include="Internal\EnumWriter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Structs\GuidParts.cs" />
   </ItemGroup>

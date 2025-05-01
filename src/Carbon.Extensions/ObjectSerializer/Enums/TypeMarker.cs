@@ -72,14 +72,24 @@ public enum TypeMarker : byte
     Double = 12,
 
     /// <summary>
+    /// <see cref="TypeMarker"/> for <see cref="decimal"/>
+    /// </summary>
+    Decimal = 13,
+
+    /// <summary>
     /// <see cref="TypeMarker"/> for <see cref="char"/>
     /// </summary>
-    Char = 13,
+    Char = 14,
 
     /// <summary>
     /// <see cref="TypeMarker"/> for <see cref="string"/>
     /// </summary>
-    String = 14,
+    String = 15,
+
+    /// <summary>
+    /// <see cref="TypeMarker"/> for <see cref="byte[]"/>
+    /// </summary>
+    ByteArray = 16,
 
     /// <summary>
     /// <see cref="TypeMarker"/> for <see cref="System.Enum"/> types

@@ -1,4 +1,5 @@
 ﻿using HizenLabs.Extensions.ObjectSerializer.Exceptions;
+using HizenLabs.Extensions.ObjectSerializer.Internal;
 using HizenLabs.Extensions.ObjectSerializer.Structs;
 using System;
 using System.IO;
@@ -12,6 +13,19 @@ namespace HizenLabs.Extensions.ObjectSerializer.Extensions;
 public static class BinaryWriterExtensions
 {
     #region System
+
+    /// <summary>
+    /// Writes an <see cref="Enum"/> value to the current stream and advances the stream position by the size of the underlying type.
+    /// </summary>
+    /// <param name="writer">The <see cref="BinaryWriter"/> to write to.</param>
+    /// <param name="value">The <see cref="Enum"/> value to write.</param>
+    /// <typeparam name="TEnum">The type of the enum.</typeparam>
+    /// <exception cref="EnumSerializationException">Thrown when the enum type is not a valid enum type for serialization.</exception>
+    public static unsafe void Write<TEnum>(this BinaryWriter writer, TEnum value)
+        where TEnum : unmanaged, Enum
+    {
+        EnumWriter<TEnum>.Write(writer, value);
+    }
 
     /// <summary>
     /// Writes a <see cref="Guid"/> value to the current stream and advances the stream position by sixteen bytes.

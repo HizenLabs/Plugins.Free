@@ -15,6 +15,18 @@ public class BinaryReaderExtensionsTests : BinaryReaderWriterTest
 {
     #region System
 
+    [TestMethod]
+    public void ReadEnum_ShouldReturnCorrectEnum()
+    {
+        _memoryStream.SetLength(0);
+        _writer.Write(3);
+
+        _memoryStream.Position = 0;
+        var actual = _reader.ReadEnum<DayOfWeek>();
+
+        Assert.AreEqual(DayOfWeek.Wednesday, actual);
+    }
+
     /// <summary>
     /// Tests the <see cref="BinaryReaderExtensions.ReadGuid(BinaryReader)"/> method to ensure it correctly reads a <see cref="Guid"/> value from a binary stream.
     /// </summary>
