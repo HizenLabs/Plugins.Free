@@ -4,6 +4,9 @@ using UnityEngine;
 
 namespace HizenLabs.Extensions.ObjectSerializer.Extensions;
 
+/// <summary>
+/// Provides extension methods for the <see cref="TypeMarker"/> enum.
+/// </summary>
 public static class TypeMarkerExtensions
 {
     /// <summary>

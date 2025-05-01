@@ -4,6 +4,9 @@ using UnityEngine;
 
 namespace HizenLabs.Extensions.ObjectSerializer.Extensions;
 
+/// <summary>
+/// Provides extension methods for the <see cref="Type"/> class.
+/// </summary>
 public static class TypeExtensions
 {
     /// <summary>
