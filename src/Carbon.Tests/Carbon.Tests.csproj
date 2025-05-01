@@ -684,7 +684,6 @@
   <ItemGroup>
     <Compile Include="Extensions\ObjectSerializer\Extensions\BinaryReaderExtensionsTests.cs" />
     <Compile Include="Extensions\ObjectSerializer\Extensions\BinaryWriterExtensionsTests.cs" />
-    <Compile Include="Plugins\AutoBuildSnapshot.SerializationHelperTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Test\Base\BinaryReaderWriterTest.cs" />
     <Compile Include="Test\Base\MemoryStreamTest.cs" />
@@ -702,6 +701,9 @@
       <Project>{fd83841b-e3c7-4982-87e7-39184b1bde98}</Project>
       <Name>Carbon.Plugins</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Plugins\" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets" Condition="Exists('$(VSToolsPath)\TeamTest\Microsoft.TestTools.targets')" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
