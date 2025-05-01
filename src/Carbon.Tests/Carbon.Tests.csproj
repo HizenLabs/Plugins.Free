@@ -682,14 +682,22 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Extensions\ObjectSerializer\Extensions\BinaryReaderExtensionsTests.cs" />
+    <Compile Include="Extensions\ObjectSerializer\Extensions\BinaryWriterExtensionsTests.cs" />
     <Compile Include="Plugins\AutoBuildSnapshot.SerializationHelperTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Test\Base\BinaryReaderWriterTest.cs" />
+    <Compile Include="Test\Base\MemoryStreamTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Carbon.Extensions\ObjectSerializer\ObjectSerializer.csproj">
+      <Project>{0F9B4405-B1ED-4025-B95B-EA8F9D9D5160}</Project>
+      <Name>ObjectSerializer</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Carbon.Plugins\Carbon.Plugins.csproj">
       <Project>{fd83841b-e3c7-4982-87e7-39184b1bde98}</Project>
       <Name>Carbon.Plugins</Name>
