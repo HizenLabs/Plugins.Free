@@ -196,5 +196,57 @@ public class BinaryWriterExtensionsTests : BinaryReaderWriterTest
         }
     }
 
+    /// <summary>
+    /// Tests the <see cref="BinaryWriterExtensions.Write(BinaryWriter, Quaternion)"/> method to ensure it correctly writes a <see cref="Quaternion"/> value to a binary stream.
+    /// </summary>
+    [TestMethod]
+    public void WriteQuaternion_ShouldWriteCorrectQuaternion()
+    {
+        Quaternion[] testValues = new Quaternion[]
+        {
+            Quaternion.identity,
+            new(1, 2, 3, 4),
+            new(float.MaxValue, float.MinValue, -2, 4),
+            new(-51665651.1f, -1.51586168f, -2155.56651f, -213.151651f)
+        };
+
+        for (int i = 0; i < testValues.Length; i++)
+        {
+            _memoryStream.SetLength(0);
+            _writer.Write(testValues[i]);
+
+            _memoryStream.Position = 0;
+            Quaternion actual = new(_reader.ReadSingle(), _reader.ReadSingle(), _reader.ReadSingle(), _reader.ReadSingle());
+
+            Assert.AreEqual(testValues[i], actual);
+        }
+    }
+
+    /// <summary>
+    /// Tests the <see cref="BinaryWriterExtensions.Write(BinaryWriter, Color)"/> method to ensure it correctly writes a <see cref="Color"/> value to a binary stream.
+    /// </summary>
+    [TestMethod]
+    public void WriteColor_ShouldWriteCorrectColor()
+    {
+        Color[] testValues = new Color[]
+        {
+            Color.clear,
+            new(1, 2, 3, 4),
+            new(float.MaxValue, float.MinValue, -2, 4),
+            new(-51665651.1f, -1.51586168f, -2155.56651f, -213.151651f)
+        };
+
+        for (int i = 0; i < testValues.Length; i++)
+        {
+            _memoryStream.SetLength(0);
+            _writer.Write(testValues[i]);
+
+            _memoryStream.Position = 0;
+            Color actual = new(_reader.ReadSingle(), _reader.ReadSingle(), _reader.ReadSingle(), _reader.ReadSingle());
+
+            Assert.AreEqual(testValues[i], actual);
+        }
+    }
+
     #endregion
 }

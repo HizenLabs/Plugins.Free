@@ -121,5 +121,31 @@ public static class BinaryWriterExtensions
         writer.Write(vector.w);
     }
 
+    /// <summary>
+    /// Writes a <see cref="Quaternion"/> value to the current stream and advances the stream position by sixteen bytes.
+    /// </summary>
+    /// <param name="writer">The <see cref="BinaryWriter"/> to write to.</param>
+    /// <param name="quaternion">The <see cref="Quaternion"/> value to write.</param>
+    public static void Write(this BinaryWriter writer, Quaternion quaternion)
+    {
+        writer.Write(quaternion.x);
+        writer.Write(quaternion.y);
+        writer.Write(quaternion.z);
+        writer.Write(quaternion.w);
+    }
+
+    /// <summary>
+    /// Writes a <see cref="Color"/> value to the current stream and advances the stream position by sixteen bytes.
+    /// </summary>
+    /// <param name="writer">The <see cref="BinaryWriter"/> to write to.</param>
+    /// <param name="color">The <see cref="Color"/> value to write.</param>
+    public static void Write(this BinaryWriter writer, Color color)
+    {
+        writer.Write(color.r);
+        writer.Write(color.g);
+        writer.Write(color.b);
+        writer.Write(color.a);
+    }
+
     #endregion
 }

@@ -126,6 +126,36 @@ public static class BinaryReaderExtensions
         return vector;
     }
 
+    /// <summary>
+    /// Reads a <see cref="Quaternion"/> value from the current stream and advances the stream position by sixteen bytes.
+    /// </summary>
+    /// <param name="reader">The <see cref="BinaryReader"/> to read from.</param>
+    /// <returns>The <see cref="Quaternion"/> value read from the stream.</returns>
+    public static Quaternion ReadQuaternion(this BinaryReader reader)
+    {
+        Quaternion quaternion;
+        quaternion.x = reader.ReadSingle();
+        quaternion.y = reader.ReadSingle();
+        quaternion.z = reader.ReadSingle();
+        quaternion.w = reader.ReadSingle();
+        return quaternion;
+    }
+
+    /// <summary>
+    /// Reads a <see cref="Color"/> value from the current stream and advances the stream position by sixteen bytes.
+    /// </summary>
+    /// <param name="reader">The <see cref="BinaryReader"/> to read from.</param>
+    /// <returns>The <see cref="Color"/> value read from the stream.</returns>
+    public static Color ReadColor(this BinaryReader reader)
+    {
+        Color color;
+        color.r = reader.ReadSingle();
+        color.g = reader.ReadSingle();
+        color.b = reader.ReadSingle();
+        color.a = reader.ReadSingle();
+        return color;
+    }
+
     #endregion
 
     #region Collections

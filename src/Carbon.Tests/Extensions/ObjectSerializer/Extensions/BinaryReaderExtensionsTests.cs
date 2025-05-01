@@ -195,7 +195,57 @@ public class BinaryReaderExtensionsTests : BinaryReaderWriterTest
         }
     }
 
+    /// <summary>
+    /// Tests the <see cref="BinaryReaderExtensions.ReadQuaternion(BinaryReader)"/> method to ensure it correctly reads a <see cref="Quaternion"/> value from a binary stream.
+    /// </summary>
+    [TestMethod]
+    public void ReadQuaternion_ShouldReturnCorrectQuaternion()
+    {
+        Quaternion[] testValues = new Quaternion[]
+        {
+            Quaternion.identity,
+            new(1, 1, 1, 1),
+            new(float.MaxValue, float.MinValue, -2, 4),
+            new(-51665651.1f, -1.51586168f, -2155.56651f, -213.151651f)
+        };
+
+        for (int i = 0; i < testValues.Length; i++)
+        {
+            _memoryStream.SetLength(0);
+            _writer.Write(testValues[i]);
+
+            _memoryStream.Position = 0;
+            Quaternion actual = _reader.ReadQuaternion();
+
+            Assert.AreEqual(testValues[i], actual);
+        }
+    }
+
+    /// <summary>
+    /// Tests the <see cref="BinaryReaderExtensions.ReadColor(BinaryReader)"/> method to ensure it correctly reads a <see cref="Color"/> value from a binary stream.
+    /// </summary>
+    [TestMethod]
+    public void ReadColor_ShouldReturnCorrectColor()
+    {
+        Color[] testValues = new Color[]
+        {
+            Color.clear,
+            new(1, 1, 1, 1),
+            new(float.MaxValue, float.MinValue, -2, 4),
+            new(-51665651.1f, -1.51586168f, -2155.56651f, -213.151651f)
+        };
+
+        for (int i = 0; i < testValues.Length; i++)
+        {
+            _memoryStream.SetLength(0);
+            _writer.Write(testValues[i]);
+
+            _memoryStream.Position = 0;
+            Color actual = _reader.ReadColor();
+
+            Assert.AreEqual(testValues[i], actual);
+        }
+    }
+
     #endregion
-
-
 }
