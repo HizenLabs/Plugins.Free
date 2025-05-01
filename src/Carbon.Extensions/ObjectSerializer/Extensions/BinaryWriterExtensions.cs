@@ -57,6 +57,8 @@ public static class BinaryWriterExtensions
     /// </remarks>
     public static unsafe void Write(this BinaryWriter writer, Guid guid)
     {
+        System.Diagnostics.Debug.Assert(sizeof(Guid) == sizeof(GuidParts), $"{nameof(Guid)} and {nameof(GuidParts)} size mismatch!");
+
         GuidParts parts = *(GuidParts*)&guid;
         writer.Write((byte)parts._a);
         writer.Write((byte)(parts._a >> 8));

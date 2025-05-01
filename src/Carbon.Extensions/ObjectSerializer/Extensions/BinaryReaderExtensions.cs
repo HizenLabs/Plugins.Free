@@ -53,6 +53,8 @@ public static class BinaryReaderExtensions
     /// </remarks>
     public static unsafe Guid ReadGuid(this BinaryReader reader)
     {
+        System.Diagnostics.Debug.Assert(sizeof(Guid) == sizeof(GuidParts), $"{nameof(Guid)} and {nameof(GuidParts)} size mismatch!");
+
         GuidParts parts;
 
         parts._a = reader.ReadByte()
