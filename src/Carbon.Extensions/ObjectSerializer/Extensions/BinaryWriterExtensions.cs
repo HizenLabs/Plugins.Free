@@ -2,6 +2,7 @@
 using HizenLabs.Extensions.ObjectSerializer.Structs;
 using System;
 using System.IO;
+using UnityEngine;
 
 namespace HizenLabs.Extensions.ObjectSerializer.Extensions;
 
@@ -76,5 +77,41 @@ public static class BinaryWriterExtensions
         writer.Write(parts._i);
         writer.Write(parts._j);
         writer.Write(parts._k);
+    }
+
+    /// <summary>
+    /// Writes a <see cref="Vector2"/> value to the current stream and advances the stream position by eight bytes.
+    /// </summary>
+    /// <param name="writer">The <see cref="BinaryWriter"/> to write to.</param>
+    /// <param name="vector">The <see cref="Vector2"/> value to write.</param>
+    public static void Write(this BinaryWriter writer, Vector2 vector)
+    {
+        writer.Write(vector.x);
+        writer.Write(vector.y);
+    }
+
+    /// <summary>
+    /// Writes a <see cref="Vector3"/> value to the current stream and advances the stream position by twelve bytes.
+    /// </summary>
+    /// <param name="writer">The <see cref="BinaryWriter"/> to write to.</param>
+    /// <param name="vector">The <see cref="Vector3"/> value to write.</param>
+    public static void Write(this BinaryWriter writer, Vector3 vector)
+    {
+        writer.Write(vector.x);
+        writer.Write(vector.y);
+        writer.Write(vector.z);
+    }
+
+    /// <summary>
+    /// Writes a <see cref="Vector4"/> value to the current stream and advances the stream position by sixteen bytes.
+    /// </summary>
+    /// <param name="writer">The <see cref="BinaryWriter"/> to write to.</param>
+    /// <param name="vector">The <see cref="Vector4"/> value to write.</param>
+    public static void Write(this BinaryWriter writer, Vector4 vector)
+    {
+        writer.Write(vector.x);
+        writer.Write(vector.y);
+        writer.Write(vector.z);
+        writer.Write(vector.w);
     }
 }

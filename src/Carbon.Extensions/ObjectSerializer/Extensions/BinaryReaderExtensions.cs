@@ -1,6 +1,7 @@
 ﻿using HizenLabs.Extensions.ObjectSerializer.Structs;
 using System;
 using System.IO;
+using UnityEngine;
 
 namespace HizenLabs.Extensions.ObjectSerializer.Extensions;
 
@@ -75,5 +76,47 @@ public static class BinaryReaderExtensions
         parts._k = reader.ReadByte();
 
         return *(Guid*)&parts;
+    }
+
+    /// <summary>
+    /// Reads a <see cref="Vector2"/> value from the current stream and advances the stream position by eight bytes.
+    /// </summary>
+    /// <param name="reader">The <see cref="BinaryReader"/> to read from.</param>
+    /// <returns>The <see cref="Vector2"/> value read from the stream.</returns>
+    public static Vector2 ReadVector2(this BinaryReader reader)
+    {
+        Vector2 vector;
+        vector.x = reader.ReadSingle();
+        vector.y = reader.ReadSingle();
+        return vector;
+    }
+
+    /// <summary>
+    /// Reads a <see cref="Vector3"/> value from the current stream and advances the stream position by twelve bytes.
+    /// </summary>
+    /// <param name="reader">The <see cref="BinaryReader"/> to read from.</param>
+    /// <returns>The <see cref="Vector3"/> value read from the stream.</returns>
+    public static Vector3 ReadVector3(this BinaryReader reader)
+    {
+        Vector3 vector;
+        vector.x = reader.ReadSingle();
+        vector.y = reader.ReadSingle();
+        vector.z = reader.ReadSingle();
+        return vector;
+    }
+
+    /// <summary>
+    /// Reads a <see cref="Vector4"/> value from the current stream and advances the stream position by sixteen bytes.
+    /// </summary>
+    /// <param name="reader">The <see cref="BinaryReader"/> to read from.</param>
+    /// <returns>The <see cref="Vector4"/> value read from the stream.</returns>
+    public static Vector4 ReadVector4(this BinaryReader reader)
+    {
+        Vector4 vector;
+        vector.x = reader.ReadSingle();
+        vector.y = reader.ReadSingle();
+        vector.z = reader.ReadSingle();
+        vector.w = reader.ReadSingle();
+        return vector;
     }
 }

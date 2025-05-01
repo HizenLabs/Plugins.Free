@@ -3,6 +3,7 @@ using HizenLabs.Extensions.ObjectSerializer.Extensions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.IO;
+using UnityEngine;
 
 namespace Carbon.Tests.Extensions.ObjectSerializer.Extensions;
 
@@ -107,6 +108,82 @@ public class BinaryReaderExtensionsTests : BinaryReaderWriterTest
 
             _memoryStream.Position = 0;
             Guid actual = _reader.ReadGuid();
+
+            Assert.AreEqual(testValues[i], actual);
+        }
+    }
+
+    /// <summary>
+    /// Tests the <see cref="BinaryReaderExtensions.ReadVector2(BinaryReader)"/> method to ensure it correctly reads a <see cref="Vector2"/> value from a binary stream.
+    /// </summary>
+    [TestMethod]
+    public void ReadVector2_ShouldReturnCorrectVector2()
+    {
+        Vector2[] testValues = new Vector2[]
+        {
+            Vector2.zero,
+            new(1, 1),
+            new(float.MaxValue, float.MinValue)
+        };
+
+        for (int i = 0; i < testValues.Length; i++)
+        {
+            _memoryStream.SetLength(0);
+            _writer.Write(testValues[i]);
+
+            _memoryStream.Position = 0;
+            Vector2 actual = _reader.ReadVector2();
+
+            Assert.AreEqual(testValues[i], actual);
+        }
+    }
+
+    /// <summary>
+    /// Tests the <see cref="BinaryReaderExtensions.ReadVector3(BinaryReader)"/> method to ensure it correctly reads a <see cref="Vector3"/> value from a binary stream.
+    /// </summary>
+    [TestMethod]
+    public void ReadVector3_ShouldReturnCorrectVector3()
+    {
+        Vector3[] testValues = new Vector3[]
+        {
+            Vector3.zero,
+            new(1, 1, 1),
+            new(float.MaxValue, float.MinValue, 0)
+        };
+
+        for (int i = 0; i < testValues.Length; i++)
+        {
+            _memoryStream.SetLength(0);
+            _writer.Write(testValues[i]);
+
+            _memoryStream.Position = 0;
+            Vector3 actual = _reader.ReadVector3();
+
+            Assert.AreEqual(testValues[i], actual);
+        }
+    }
+
+    /// <summary>
+    /// Tests the <see cref="BinaryReaderExtensions.ReadVector4(BinaryReader)"/> method to ensure it correctly reads a <see cref="Vector4"/> value from a binary stream.
+    /// </summary>
+    [TestMethod]
+    public void ReadVector4_ShouldReturnCorrectVector4()
+    {
+        Vector4[] testValues = new Vector4[]
+        {
+            Vector4.zero,
+            new(1, 1, 1, 1),
+            new(float.MaxValue, float.MinValue, -2, 4),
+            new(-51665651.1f, -1.51586168f, -2155.56651f, -213.151651f)
+        };
+
+        for (int i = 0; i < testValues.Length; i++)
+        {
+            _memoryStream.SetLength(0);
+            _writer.Write(testValues[i]);
+
+            _memoryStream.Position = 0;
+            Vector4 actual = _reader.ReadVector4();
 
             Assert.AreEqual(testValues[i], actual);
         }
