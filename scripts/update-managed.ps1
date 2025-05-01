@@ -36,7 +36,6 @@ $rustManagedLibs = @(
     "LZ4pn.dll",
     "Melanchall.DryWetMidi.dll",
     "MidiJack.dll",
-    "Mono*.dll",
     "MP3Sharp.dll",
     "netstandard.dll",
     "Newtonsoft.Json.dll",

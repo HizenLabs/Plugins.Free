@@ -118,8 +118,8 @@ if ([string]::IsNullOrEmpty($outputDir)) {
 }
 
 if ([string]::IsNullOrEmpty($itemsList)) {
-    Write-Error "No extensions found to deploy in props files"
-    exit 1
+    Write-Host "$Name is not in the list of extensions to deploy (list empty)"
+    exit 0
 }
 
 # Check if the specified extension is in the list
