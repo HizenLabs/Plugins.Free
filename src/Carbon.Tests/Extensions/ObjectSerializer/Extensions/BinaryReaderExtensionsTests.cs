@@ -273,4 +273,34 @@ public class BinaryReaderExtensionsTests : BinaryReaderWriterTest
     }
 
     #endregion
+
+    #region Collections
+
+    /// <summary>
+    /// Tests the <see cref="BinaryReaderExtensions.ReadArray{T}(BinaryReader, T[], int, int)"/> method 
+    /// to ensure it correctly reads an array of type <typeparamref name="T"/> from a binary stream.
+    /// </summary>
+    [TestMethod]
+    public void ReadArray_ShouldReturnCorrectArray()
+    {
+        int[] testValues = new int[] { 1, 2, 3, 5, 7, 11, 13, 17, 19, 23 };
+
+        _writer.Write(typeof(int).AssemblyQualifiedName);
+        _writer.Write(testValues.Length);
+        for (int i = 0; i < testValues.Length; i++)
+        {
+            _writer.Write(testValues[i]);
+        }
+
+        int[] actual = new int[testValues.Length];
+        _memoryStream.Position = 0;
+        _reader.ReadArray(actual);
+
+        CollectionAssert.AreEqual(testValues, actual);
+
+        _memoryStream.Position = 0;
+        Assert.ThrowsException<ArgumentOutOfRangeException>(() => _reader.ReadArray(actual, 2, 5));
+    }
+
+    #endregion
 }

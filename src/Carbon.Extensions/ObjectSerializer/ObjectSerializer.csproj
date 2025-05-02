@@ -550,6 +550,8 @@
     <Compile Include="Internal\EnumReader.cs" />
     <Compile Include="Internal\EnumWriter.cs" />
     <Compile Include="Internal\Delegates\GenericDelegateFactory.cs" />
+    <Compile Include="Internal\GenericArrayReader.cs" />
+    <Compile Include="Internal\GenericArrayWriter.cs" />
     <Compile Include="Internal\GenericReader.cs" />
     <Compile Include="Internal\Delegates\GenericTypeResolver.cs" />
     <Compile Include="Internal\GenericWriter.cs" />

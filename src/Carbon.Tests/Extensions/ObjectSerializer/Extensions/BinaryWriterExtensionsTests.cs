@@ -280,4 +280,32 @@ public class BinaryWriterExtensionsTests : BinaryReaderWriterTest
     }
 
     #endregion
+
+    #region Collections
+
+    /// <summary>
+    /// Tests the <see cref="BinaryWriterExtensions.Write(BinaryWriter, Array)"/> method to ensure it correctly writes an array of <see cref="int"/> values to a binary stream.
+    /// </summary>
+    [TestMethod]
+    public void WriteArray_ShouldWriteCorrectArray()
+    {
+        int[] testValues = new int[] { 1, 2, 3, 5, 7, 11, 13, 17, 19, 23 };
+
+        _writer.Write(testValues);
+        _memoryStream.Position = 0;
+
+        var actualTypeName = _reader.ReadString();
+        Assert.AreEqual(typeof(int).AssemblyQualifiedName, actualTypeName);
+
+        var actualLength = _reader.ReadInt32();
+        Assert.AreEqual(testValues.Length, actualLength);
+
+        for (int i = 0; i < testValues.Length; i++)
+        {
+            int actualValue = _reader.ReadInt32();
+            Assert.AreEqual(testValues[i], actualValue);
+        }
+    }
+
+    #endregion
 }

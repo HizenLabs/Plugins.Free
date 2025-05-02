@@ -173,20 +173,17 @@ public static class BinaryWriterExtensions
     /// </summary>
     /// <param name="writer">The <see cref="BinaryWriter"/> to write to.</param>
     /// <param name="array">The array of <see cref="byte"/> values to write.</param>
-    /// <param name="offset">The offset in the array to start writing from.</param>
+    /// <param name="index">The offset in the array to start writing from.</param>
     /// <param name="count">The number of elements to write from the array.</param>
     /// <typeparam name="T">The type of the array elements.</typeparam>
-    public static void Write<T>(this BinaryWriter writer, T[] array, int offset = 0, int count = -1)
+    public static void Write<T>(this BinaryWriter writer, T[] array, int index = 0, int count = -1)
     {
-        var type = typeof(T);
-        writer.Write(type);
-
         if (count < 0) count = array.Length;
         if (count < array.Length) throw new ArgumentOutOfRangeException(nameof(count), "Count cannot be less than the array length.");
-        if (offset < 0 || offset >= array.Length) throw new ArgumentOutOfRangeException(nameof(offset), "Offset cannot be less than 0 or greater than the array length.");
-        if (count + offset > array.Length) throw new ArgumentOutOfRangeException(nameof(count), "Count and offset cannot exceed the array length.");
+        if (index < 0 || index >= array.Length) throw new ArgumentOutOfRangeException(nameof(index), "Index cannot be less than 0 or greater than the array length.");
+        if (count + index > array.Length) throw new ArgumentOutOfRangeException(nameof(count), "Count and index cannot exceed the array length.");
 
-        GenericWriter<T[]>.Write(writer, array, offset, count);
+        GenericArrayWriter<T>.Write(writer, array, index, count);
     }
 
     #endregion

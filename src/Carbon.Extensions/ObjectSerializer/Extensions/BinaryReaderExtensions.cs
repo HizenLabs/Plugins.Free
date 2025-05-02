@@ -183,19 +183,19 @@ public static class BinaryReaderExtensions
     /// <typeparam name="T">The type of the array elements.</typeparam>
     /// <param name="reader">The <see cref="BinaryReader"/> to read from.</param>
     /// <param name="buffer">The buffer to store the read values.</param>
-    /// <param name="offset">The offset in the buffer to start writing to.</param>
+    /// <param name="index">The offset in the buffer to start writing to.</param>
     /// <param name="count">The number of elements to read. If -1, reads the entire buffer.</param>
-    public static void ReadArray<T>(this BinaryReader reader, T[] buffer, int offset = 0, int count = -1)
+    public static void ReadArray<T>(this BinaryReader reader, T[] buffer, int index = 0, int count = -1)
     {
         var type = reader.ReadType();
-        if (type != typeof(T)) throw new InvalidOperationException($"Cannot read array of type {typeof(T)}. Expected type is {type}.");
+        if (type != typeof(T)) throw new ArgumentException($"Cannot read array of type {typeof(T)}. Expected type is {type}.");
         
-        if (count < 0) count = buffer.Length - offset;
+        if (count < 0) count = buffer.Length - index;
 
         var size = reader.ReadInt32();
-        if (count != size) throw new InvalidOperationException($"Cannot read array of type {typeof(T)} into buffer. Buffer size is {buffer.Length}, but got {size}.");
+        if (count != size) throw new ArgumentOutOfRangeException($"Cannot read array of type {typeof(T)} into buffer. Buffer size is {buffer.Length}, but got {size}.");
 
-        GenericReader<T[]>.Read(reader, buffer, offset, size);
+        GenericArrayReader<T>.Read(reader, buffer, index, size);
     }
 
     #endregion
