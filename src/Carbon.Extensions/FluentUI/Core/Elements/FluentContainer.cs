@@ -2,7 +2,6 @@
 using Carbon.Components;
 using HizenLabs.FluentUI.API.Interfaces;
 using HizenLabs.FluentUI.Core.Elements.Base;
-using HizenLabs.FluentUI.Utils.Debug;
 using HizenLabs.FluentUI.Utils.Delays;
 using Oxide.Game.Rust.Cui;
 using System;

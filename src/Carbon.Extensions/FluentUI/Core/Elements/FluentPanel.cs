@@ -3,7 +3,6 @@ using Carbon.Components;
 using HizenLabs.FluentUI.API.Interfaces;
 using HizenLabs.FluentUI.Core.Elements.Base;
 using Oxide.Game.Rust.Cui;
-using System;
 
 namespace HizenLabs.FluentUI.Core.Elements;
 
