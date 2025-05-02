@@ -15,6 +15,9 @@ public class BinaryReaderExtensionsTests : BinaryReaderWriterTest
 {
     #region System
 
+    /// <summary>
+    /// Tests the <see cref="BinaryReaderExtensions.ReadEnum{TEnum}(BinaryReader)"/> method to ensure it correctly reads an <see cref="Enum"/> value from a binary stream.
+    /// </summary>
     [TestMethod]
     public void ReadEnum_ShouldReturnCorrectEnum()
     {
@@ -22,9 +25,19 @@ public class BinaryReaderExtensionsTests : BinaryReaderWriterTest
         _writer.Write(3);
 
         _memoryStream.Position = 0;
-        var actual = _reader.ReadEnum<DayOfWeek>();
+        var actualDayOfWeek = _reader.ReadEnum<DayOfWeek>();
 
-        Assert.AreEqual(DayOfWeek.Wednesday, actual);
+        Assert.AreEqual(DayOfWeek.Wednesday, actualDayOfWeek);
+
+        _memoryStream.Position = 0;
+        var actualOperatingSystemFamily = _reader.ReadEnum<OperatingSystemFamily>();
+
+        Assert.AreEqual(OperatingSystemFamily.Linux, actualOperatingSystemFamily);
+
+        _memoryStream.Position = 0;
+        var actualPlatformID = _reader.ReadEnum<PlatformID>();
+
+        Assert.AreEqual(PlatformID.WinCE, actualPlatformID);
     }
 
     /// <summary>

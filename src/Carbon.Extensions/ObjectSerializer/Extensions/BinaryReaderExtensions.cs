@@ -3,6 +3,8 @@ using HizenLabs.Extensions.ObjectSerializer.Internal;
 using HizenLabs.Extensions.ObjectSerializer.Structs;
 using System;
 using System.IO;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using UnityEngine;
 
 namespace HizenLabs.Extensions.ObjectSerializer.Extensions;
@@ -21,7 +23,7 @@ public static class BinaryReaderExtensions
     /// <typeparam name="TEnum">The enum type to read.</typeparam>
     /// <returns>The <see cref="Enum"/> value read from the stream.</returns>
     /// <exception cref="EnumSerializationException">Thrown when the enum type is not a valid enum type for deserialization.</exception>
-    public static unsafe TEnum ReadEnum<TEnum>(this BinaryReader reader)
+    public static TEnum ReadEnum<TEnum>(this BinaryReader reader)
         where TEnum : unmanaged, Enum
     {
         return EnumReader<TEnum>.Read(reader);
@@ -35,9 +37,9 @@ public static class BinaryReaderExtensions
     /// <remarks>
     /// This method is unsafe and uses a <see cref="GuidParts"/> struct to access the individual bytes of the <see cref="Guid"/> value.
     /// </remarks>
-    public static unsafe Guid ReadGuid(this BinaryReader reader)
+    public static Guid ReadGuid(this BinaryReader reader)
     {
-        System.Diagnostics.Debug.Assert(sizeof(Guid) == sizeof(GuidParts), $"{nameof(Guid)} and {nameof(GuidParts)} size mismatch!");
+        System.Diagnostics.Debug.Assert(Marshal.SizeOf<Guid>() == Marshal.SizeOf<GuidParts>(), $"{nameof(Guid)} and {nameof(GuidParts)} size mismatch!");
 
         GuidParts parts;
 
@@ -58,7 +60,7 @@ public static class BinaryReaderExtensions
         parts._j = reader.ReadByte();
         parts._k = reader.ReadByte();
 
-        return *(Guid*)&parts;
+        return Unsafe.As<GuidParts, Guid>(ref parts);
     }
 
     /// <summary>
@@ -169,6 +171,31 @@ public static class BinaryReaderExtensions
         color.b = reader.ReadSingle();
         color.a = reader.ReadSingle();
         return color;
+    }
+
+    #endregion
+
+    #region Collections
+
+    /// <summary>
+    /// Reads an array of type <typeparamref name="T"/> from the current stream and advances the stream position by the size of the array.
+    /// </summary>
+    /// <typeparam name="T">The type of the array elements.</typeparam>
+    /// <param name="reader">The <see cref="BinaryReader"/> to read from.</param>
+    /// <param name="buffer">The buffer to store the read values.</param>
+    /// <param name="offset">The offset in the buffer to start writing to.</param>
+    /// <param name="count">The number of elements to read. If -1, reads the entire buffer.</param>
+    public static void ReadArray<T>(this BinaryReader reader, T[] buffer, int offset = 0, int count = -1)
+    {
+        var type = reader.ReadType();
+        if (type != typeof(T)) throw new InvalidOperationException($"Cannot read array of type {typeof(T)}. Expected type is {type}.");
+        
+        if (count < 0) count = buffer.Length - offset;
+
+        var size = reader.ReadInt32();
+        if (count != size) throw new InvalidOperationException($"Cannot read array of type {typeof(T)} into buffer. Buffer size is {buffer.Length}, but got {size}.");
+
+        GenericReader<T[]>.Read(reader, buffer, offset, size);
     }
 
     #endregion

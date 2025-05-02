@@ -38,7 +38,7 @@ public static class TypeMarkerExtensions
             TypeMarker.String => typeof(string),
             TypeMarker.ByteArray => typeof(byte[]),
 
-            TypeMarker.Enum => typeof(Enum), // fallback, as enum types require more context
+            TypeMarker.Enum => typeof(Enum),
             TypeMarker.Guid => typeof(Guid),
             TypeMarker.DateTime => typeof(DateTime),
             TypeMarker.TimeSpan => typeof(TimeSpan),
@@ -49,6 +49,10 @@ public static class TypeMarkerExtensions
             TypeMarker.Vector4 => typeof(Vector4),
             TypeMarker.Quaternion => typeof(Quaternion),
             TypeMarker.Color => typeof(Color),
+
+            TypeMarker.Array => typeof(Array),
+            TypeMarker.List => typeof(System.Collections.IList),
+            TypeMarker.Dictionary => typeof(System.Collections.IDictionary),
 
             _ => throw new ArgumentException($"Unsupported TypeMarker: {marker}", nameof(marker))
         };

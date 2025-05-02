@@ -49,6 +49,10 @@ public static class TypeExtensions
         if (handle.Equals(typeof(Quaternion).TypeHandle)) return TypeMarker.Quaternion;
         if (handle.Equals(typeof(Color).TypeHandle)) return TypeMarker.Color;
 
+        if (type.IsArray) return TypeMarker.Array;
+        if (typeof(System.Collections.IList).IsAssignableFrom(type)) return TypeMarker.List;
+        if (typeof(System.Collections.IDictionary).IsAssignableFrom(type)) return TypeMarker.Dictionary;
+
         throw new ArgumentException($"Unsupported type: {type.FullName}", nameof(type));
     }
 }

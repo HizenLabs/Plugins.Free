@@ -271,6 +271,10 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\managed\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -541,8 +545,14 @@
     <Compile Include="Extensions\BinaryWriterExtensions.cs" />
     <Compile Include="Extensions\TypeExtensions.cs" />
     <Compile Include="Extensions\TypeMarkerExtensions.cs" />
+    <Compile Include="Internal\Delegates\DelegateAdapter.cs" />
+    <Compile Include="Internal\Delegates\DelegateExtractor.cs" />
     <Compile Include="Internal\EnumReader.cs" />
     <Compile Include="Internal\EnumWriter.cs" />
+    <Compile Include="Internal\Delegates\GenericDelegateFactory.cs" />
+    <Compile Include="Internal\GenericReader.cs" />
+    <Compile Include="Internal\Delegates\GenericTypeResolver.cs" />
+    <Compile Include="Internal\GenericWriter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Structs\GuidParts.cs" />
   </ItemGroup>
@@ -552,6 +562,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="JsonConverters\" />
+    <Folder Include="Serialized\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

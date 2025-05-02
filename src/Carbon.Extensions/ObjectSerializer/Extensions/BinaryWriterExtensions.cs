@@ -3,6 +3,8 @@ using HizenLabs.Extensions.ObjectSerializer.Internal;
 using HizenLabs.Extensions.ObjectSerializer.Structs;
 using System;
 using System.IO;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using UnityEngine;
 
 namespace HizenLabs.Extensions.ObjectSerializer.Extensions;
@@ -21,7 +23,7 @@ public static class BinaryWriterExtensions
     /// <param name="value">The <see cref="Enum"/> value to write.</param>
     /// <typeparam name="TEnum">The type of the enum.</typeparam>
     /// <exception cref="EnumSerializationException">Thrown when the enum type is not a valid enum type for serialization.</exception>
-    public static unsafe void Write<TEnum>(this BinaryWriter writer, TEnum value)
+    public static void Write<TEnum>(this BinaryWriter writer, TEnum value)
         where TEnum : unmanaged, Enum
     {
         EnumWriter<TEnum>.Write(writer, value);
@@ -36,11 +38,11 @@ public static class BinaryWriterExtensions
     /// This method is unsafe and uses a <see cref="GuidParts"/> struct to access the individual bytes of the <see cref="Guid"/> value.
     /// This works around the need to allocate 16 bytes of memory for the <see cref="Guid.ToByteArray"/> method.
     /// </remarks>
-    public static unsafe void Write(this BinaryWriter writer, Guid guid)
+    public static void Write(this BinaryWriter writer, Guid guid)
     {
-        System.Diagnostics.Debug.Assert(sizeof(Guid) == sizeof(GuidParts), $"{nameof(Guid)} and {nameof(GuidParts)} size mismatch!");
+        System.Diagnostics.Debug.Assert(Marshal.SizeOf<Guid>() == Marshal.SizeOf<GuidParts>(), $"{nameof(Guid)} and {nameof(GuidParts)} size mismatch!");
 
-        GuidParts parts = *(GuidParts*)&guid;
+        GuidParts parts = Unsafe.As<Guid, GuidParts>(ref guid);
         writer.Write((byte)parts._a);
         writer.Write((byte)(parts._a >> 8));
         writer.Write((byte)(parts._a >> 16));
@@ -159,6 +161,32 @@ public static class BinaryWriterExtensions
         writer.Write(color.g);
         writer.Write(color.b);
         writer.Write(color.a);
+    }
+
+    #endregion
+
+    #region Collections
+
+    /// <summary>
+    /// Writes an array of <see cref="byte"/> values to the current stream and advances 
+    /// the stream position by the length of the <paramref name="count"/> or the array length.
+    /// </summary>
+    /// <param name="writer">The <see cref="BinaryWriter"/> to write to.</param>
+    /// <param name="array">The array of <see cref="byte"/> values to write.</param>
+    /// <param name="offset">The offset in the array to start writing from.</param>
+    /// <param name="count">The number of elements to write from the array.</param>
+    /// <typeparam name="T">The type of the array elements.</typeparam>
+    public static void Write<T>(this BinaryWriter writer, T[] array, int offset = 0, int count = -1)
+    {
+        var type = typeof(T);
+        writer.Write(type);
+
+        if (count < 0) count = array.Length;
+        if (count < array.Length) throw new ArgumentOutOfRangeException(nameof(count), "Count cannot be less than the array length.");
+        if (offset < 0 || offset >= array.Length) throw new ArgumentOutOfRangeException(nameof(offset), "Offset cannot be less than 0 or greater than the array length.");
+        if (count + offset > array.Length) throw new ArgumentOutOfRangeException(nameof(count), "Count and offset cannot exceed the array length.");
+
+        GenericWriter<T[]>.Write(writer, array, offset, count);
     }
 
     #endregion
