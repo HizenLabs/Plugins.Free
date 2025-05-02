@@ -144,9 +144,28 @@ public enum TypeMarker : byte
     /// </summary>
     Color = 54,
 
-    // Custom types (100+)
-    // PersistantEntity = 100,
-    // PersistantItem = 101,
-    // PlayerMetaData = 102,
-    // PooledList = 103,
+    /// <summary>
+    /// <see cref="TypeMarker"/> for <see cref="System.Array"/>
+    /// </summary>
+    Array = 100,
+
+    /// <summary>
+    /// <see cref="TypeMarker"/> for <see cref="System.Collections.Generic.List{T}"/>
+    /// </summary>
+    List = 101,
+
+    /// <summary>
+    /// <see cref="TypeMarker"/> for <see cref="System.Collections.Generic.Dictionary{TKey, TValue}"/>
+    /// </summary>
+    Dictionary = 102,
+
+    /// <summary>
+    /// <see cref="TypeMarker"/> for <see cref="Item"/>
+    /// </summary>
+    SerializableItem = 150,
+
+    /// <summary>
+    /// <see cref="TypeMarker"/> for <see cref="BaseEntity"/>
+    /// </summary>
+    SerializableEntity = 151,
 }
