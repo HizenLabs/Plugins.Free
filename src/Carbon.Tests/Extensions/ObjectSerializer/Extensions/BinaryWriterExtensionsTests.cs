@@ -1,4 +1,5 @@
 ﻿using Carbon.Tests.Test.Base;
+using HizenLabs.Extensions.ObjectSerializer.Enums;
 using HizenLabs.Extensions.ObjectSerializer.Extensions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
@@ -294,8 +295,8 @@ public class BinaryWriterExtensionsTests : BinaryReaderWriterTest
         _writer.Write(testValues);
         _memoryStream.Position = 0;
 
-        var actualTypeName = _reader.ReadString();
-        Assert.AreEqual(typeof(int).AssemblyQualifiedName, actualTypeName);
+        var actualType = _reader.ReadEnum<TypeMarker>();
+        Assert.AreEqual(TypeMarker.Int32, actualType);
 
         var actualLength = _reader.ReadInt32();
         Assert.AreEqual(testValues.Length, actualLength);
@@ -305,6 +306,69 @@ public class BinaryWriterExtensionsTests : BinaryReaderWriterTest
             int actualValue = _reader.ReadInt32();
             Assert.AreEqual(testValues[i], actualValue);
         }
+    }
+
+    /// <summary>
+    /// Tests the <see cref="BinaryWriterExtensions.Write(BinaryWriter, Array)"/> method to ensure it correctly writes an array of <see cref="object"/> values to a binary stream.
+    /// </summary>
+    [TestMethod]
+    public void WriteArray_ShouldWriteCorrectArray_Object()
+    {
+        object[] testValues = new object[] { "Test", 123, typeof(int), typeof(string), ' ', string.Empty, Vector3.one, Color.red, null };
+
+        _writer.Write(testValues);
+        _memoryStream.Position = 0;
+
+        var actualTypeName = _reader.ReadEnum<TypeMarker>();
+        Assert.AreEqual(TypeMarker.Object, actualTypeName);
+
+        var actualLength = _reader.ReadInt32();
+        Assert.AreEqual(testValues.Length, actualLength);
+
+        var itemType1 = _reader.ReadEnum<TypeMarker>();
+        Assert.AreEqual(TypeMarker.String, itemType1);
+        var itemValue1 = _reader.ReadString();
+        Assert.AreEqual("Test", itemValue1);
+
+        var itemType2 = _reader.ReadEnum<TypeMarker>();
+        Assert.AreEqual(TypeMarker.Int32, itemType2);
+        var itemValue2 = _reader.ReadInt32();
+        Assert.AreEqual(123, itemValue2);
+
+        var itemType3 = _reader.ReadEnum<TypeMarker>();
+        Assert.AreEqual(TypeMarker.Type, itemType3);
+        var itemValue3 = _reader.ReadString();
+        Assert.AreEqual(typeof(int).AssemblyQualifiedName, itemValue3);
+
+        var itemType4 = _reader.ReadEnum<TypeMarker>();
+        Assert.AreEqual(TypeMarker.Type, itemType4);
+        var itemValue4 = _reader.ReadString();
+        Assert.AreEqual(typeof(string).AssemblyQualifiedName, itemValue4);
+
+        var itemType5 = _reader.ReadEnum<TypeMarker>();
+        Assert.AreEqual(TypeMarker.Char, itemType5);
+        var itemValue5 = _reader.ReadChar();
+        Assert.AreEqual(' ', itemValue5);
+
+        var itemType6 = _reader.ReadEnum<TypeMarker>();
+        Assert.AreEqual(TypeMarker.String, itemType6);
+        var itemValue6 = _reader.ReadString();
+        Assert.AreEqual(string.Empty, itemValue6);
+
+        var itemType7 = _reader.ReadEnum<TypeMarker>();
+        Assert.AreEqual(TypeMarker.Vector3, itemType7);
+        var itemValue7 = new Vector3(_reader.ReadSingle(), _reader.ReadSingle(), _reader.ReadSingle());
+        Assert.AreEqual(Vector3.one, itemValue7);
+
+        var itemType8 = _reader.ReadEnum<TypeMarker>();
+        Assert.AreEqual(TypeMarker.Color, itemType8);
+        var itemValue8 = new Color(_reader.ReadSingle(), _reader.ReadSingle(), _reader.ReadSingle(), _reader.ReadSingle());
+        Assert.AreEqual(Color.red, itemValue8);
+
+        var itemType9 = _reader.ReadEnum<TypeMarker>();
+        Assert.AreEqual(TypeMarker.Null, itemType9);
+
+        Assert.ThrowsException<EndOfStreamException>(() => _reader.ReadByte());
     }
 
     #endregion

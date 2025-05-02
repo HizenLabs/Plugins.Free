@@ -18,40 +18,43 @@ public static class TypeExtensions
     {
         if (type is null) return TypeMarker.Null;
 
-        var handle = type.TypeHandle;
-        if (handle.Equals(typeof(object).TypeHandle)) return TypeMarker.Object;
+        if (type == typeof(object)) return TypeMarker.Object;
 
-        if (handle.Equals(typeof(bool).TypeHandle)) return TypeMarker.Boolean;
-        if (handle.Equals(typeof(sbyte).TypeHandle)) return TypeMarker.SByte;
-        if (handle.Equals(typeof(byte).TypeHandle)) return TypeMarker.Byte;
-        if (handle.Equals(typeof(short).TypeHandle)) return TypeMarker.Int16;
-        if (handle.Equals(typeof(ushort).TypeHandle)) return TypeMarker.UInt16;
-        if (handle.Equals(typeof(int).TypeHandle)) return TypeMarker.Int32;
-        if (handle.Equals(typeof(uint).TypeHandle)) return TypeMarker.UInt32;
-        if (handle.Equals(typeof(long).TypeHandle)) return TypeMarker.Int64;
-        if (handle.Equals(typeof(ulong).TypeHandle)) return TypeMarker.UInt64;
-        if (handle.Equals(typeof(float).TypeHandle)) return TypeMarker.Single;
-        if (handle.Equals(typeof(double).TypeHandle)) return TypeMarker.Double;
-        if (handle.Equals(typeof(decimal).TypeHandle)) return TypeMarker.Decimal;
-        if (handle.Equals(typeof(char).TypeHandle)) return TypeMarker.Char;
-        if (handle.Equals(typeof(string).TypeHandle)) return TypeMarker.String;
-        if (handle.Equals(typeof(byte[]).TypeHandle)) return TypeMarker.ByteArray;
+        if (type == typeof(bool)) return TypeMarker.Boolean;
+        if (type == typeof(sbyte)) return TypeMarker.SByte;
+        if (type == typeof(byte)) return TypeMarker.Byte;
+        if (type == typeof(short)) return TypeMarker.Int16;
+        if (type == typeof(ushort)) return TypeMarker.UInt16;
+        if (type == typeof(int)) return TypeMarker.Int32;
+        if (type == typeof(uint)) return TypeMarker.UInt32;
+        if (type == typeof(long)) return TypeMarker.Int64;
+        if (type == typeof(ulong)) return TypeMarker.UInt64;
+        if (type == typeof(float)) return TypeMarker.Single;
+        if (type == typeof(double)) return TypeMarker.Double;
+        if (type == typeof(decimal)) return TypeMarker.Decimal;
+        if (type == typeof(char)) return TypeMarker.Char;
+        if (type == typeof(string)) return TypeMarker.String;
+        if (type == typeof(byte[])) return TypeMarker.ByteArray;
 
         if (type.IsEnum) return TypeMarker.Enum;
-        if (handle.Equals(typeof(Guid).TypeHandle)) return TypeMarker.Guid;
-        if (handle.Equals(typeof(DateTime).TypeHandle)) return TypeMarker.DateTime;
-        if (handle.Equals(typeof(TimeSpan).TypeHandle)) return TypeMarker.TimeSpan;
-        if (handle.Equals(typeof(Type).TypeHandle)) return TypeMarker.Type;
+        if (type == typeof(Guid)) return TypeMarker.Guid;
+        if (type == typeof(DateTime)) return TypeMarker.DateTime;
+        if (type == typeof(TimeSpan)) return TypeMarker.TimeSpan;
+        if (type == typeof(Type)) return TypeMarker.Type;
 
-        if (handle.Equals(typeof(Vector2).TypeHandle)) return TypeMarker.Vector2;
-        if (handle.Equals(typeof(Vector3).TypeHandle)) return TypeMarker.Vector3;
-        if (handle.Equals(typeof(Vector4).TypeHandle)) return TypeMarker.Vector4;
-        if (handle.Equals(typeof(Quaternion).TypeHandle)) return TypeMarker.Quaternion;
-        if (handle.Equals(typeof(Color).TypeHandle)) return TypeMarker.Color;
+        if (type == typeof(Vector2)) return TypeMarker.Vector2;
+        if (type == typeof(Vector3)) return TypeMarker.Vector3;
+        if (type == typeof(Vector4)) return TypeMarker.Vector4;
+        if (type == typeof(Quaternion)) return TypeMarker.Quaternion;
+        if (type == typeof(Color)) return TypeMarker.Color;
 
         if (type.IsArray) return TypeMarker.Array;
         if (typeof(System.Collections.IList).IsAssignableFrom(type)) return TypeMarker.List;
         if (typeof(System.Collections.IDictionary).IsAssignableFrom(type)) return TypeMarker.Dictionary;
+
+        // I don't understand, but there is a System.RuntimeType as well as System.Type, and this
+        // is basically the only clean way to test for it since it's a hidden type (so I can't use typeof)
+        if (type.FullName == "System.RuntimeType") return TypeMarker.Type;
 
         throw new ArgumentException($"Unsupported type: {type.FullName}", nameof(type));
     }

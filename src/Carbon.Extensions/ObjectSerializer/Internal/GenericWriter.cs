@@ -1,4 +1,5 @@
-﻿using HizenLabs.Extensions.ObjectSerializer.Extensions;
+﻿using HizenLabs.Extensions.ObjectSerializer.Enums;
+using HizenLabs.Extensions.ObjectSerializer.Extensions;
 using System;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -24,43 +25,75 @@ internal class GenericWriter<T>
     /// <exception cref="InvalidOperationException">Thrown when the type is object.</exception>
     static GenericWriter()
     {
-        var type = typeof(T);
+        var type = typeof(T).GetTypeMarker();
 
-        bool unsafeCast = true;
-
-        if (type == typeof(object))
+        if (type == TypeMarker.Object) Write = (w, v) =>
         {
-            unsafeCast = false;
-            type = type.GetType();
-        }
+            if (v is null) w.Write(TypeMarker.Null);
+            else
+            {
+                var objType = v.GetType().GetTypeMarker();
 
-        else if (type == typeof(bool)) Write = (w, v) => w.Write(unsafeCast ? Unsafe.As<T, bool>(ref v) : (bool)(object)v);
-        else if (type == typeof(byte)) Write = (w, v) => w.Write(unsafeCast ? Unsafe.As<T, byte>(ref v) : (byte)(object)v);
-        else if (type == typeof(sbyte)) Write = (w, v) => w.Write(unsafeCast ? Unsafe.As<T, sbyte>(ref v) : (sbyte)(object)v);
-        else if (type == typeof(short)) Write = (w, v) => w.Write(unsafeCast ? Unsafe.As<T, short>(ref v) : (short)(object)v);
-        else if (type == typeof(ushort)) Write = (w, v) => w.Write(unsafeCast ? Unsafe.As<T, ushort>(ref v) : (ushort)(object)v);
-        else if (type == typeof(int)) Write = (w, v) => w.Write(unsafeCast ? Unsafe.As<T, int>(ref v) : (int)(object)v);
-        else if (type == typeof(uint)) Write = (w, v) => w.Write(unsafeCast ? Unsafe.As<T, uint>(ref v) : (uint)(object)v);
-        else if (type == typeof(long)) Write = (w, v) => w.Write(unsafeCast ? Unsafe.As<T, long>(ref v) : (long)(object)v);
-        else if (type == typeof(ulong)) Write = (w, v) => w.Write(unsafeCast ? Unsafe.As<T, ulong>(ref v) : (ulong)(object)v);
-        else if (type == typeof(float)) Write = (w, v) => w.Write(unsafeCast ? Unsafe.As<T, float>(ref v) : (float)(object)v);
-        else if (type == typeof(double)) Write = (w, v) => w.Write(unsafeCast ? Unsafe.As<T, double>(ref v) : (double)(object)v);
-        else if (type == typeof(char)) Write = (w, v) => w.Write(unsafeCast ? Unsafe.As<T, char>(ref v) : (char)(object)v);
+                if (objType == TypeMarker.Boolean && v is bool valueBool) w.Write(valueBool);
+                else if (objType == TypeMarker.SByte && v is sbyte valueSByte) w.Write(valueSByte);
+                else if (objType == TypeMarker.Byte && v is byte valueByte) w.Write(valueByte);
+                else if (objType == TypeMarker.Int16 && v is short valueShort) w.Write(valueShort);
+                else if (objType == TypeMarker.UInt16 && v is ushort valueUShort) w.Write(valueUShort);
+                else if (objType == TypeMarker.Int32 && v is int valueInt) w.Write(valueInt);
+                else if (objType == TypeMarker.UInt32 && v is uint valueUInt) w.Write(valueUInt);
+                else if (objType == TypeMarker.Int64 && v is long valueLong) w.Write(valueLong);
+                else if (objType == TypeMarker.UInt64 && v is ulong valueULong) w.Write(valueULong);
+                else if (objType == TypeMarker.Single && v is float valueFloat) w.Write(valueFloat);
+                else if (objType == TypeMarker.Double && v is double valueDouble) w.Write(valueDouble);
+                else if (objType == TypeMarker.Decimal && v is decimal valueDecimal) w.Write(valueDecimal);
+                else if (objType == TypeMarker.Char && v is char valueChar) w.Write(valueChar);
 
-        else if (type == typeof(string)) Write = (w, v) => w.Write((string)(object)v);
-        else if (type == typeof(Type)) Write = (w, v) => w.Write((Type)(object)v);
+                else if (objType == TypeMarker.String && v is string valueString) w.Write(valueString);
+                else if (objType == TypeMarker.Type && v is Type valueType) w.Write(valueType);
 
-        else if (type.IsEnum) Write = EnumWriter<T>.Write;
+                else if (objType == TypeMarker.Enum) EnumWriter<T>.Write(w, v);
 
-        else if (type == typeof(Guid)) Write = (w, v) => w.Write(unsafeCast ? Unsafe.As<T, Guid>(ref v) : (Guid)(object)v);
-        else if (type == typeof(DateTime)) Write = (w, v) => w.Write(unsafeCast ? Unsafe.As<T, DateTime>(ref v) : (DateTime)(object)v);
-        else if (type == typeof(TimeSpan)) Write = (w, v) => w.Write(unsafeCast ? Unsafe.As<T, TimeSpan>(ref v) : (TimeSpan)(object)v);
+                else if (objType == TypeMarker.Guid && v is Guid valueGuid) w.Write(valueGuid);
+                else if (objType == TypeMarker.DateTime && v is DateTime valueDateTime) w.Write(valueDateTime);
+                else if (objType == TypeMarker.TimeSpan && v is TimeSpan valueTimeSpan) w.Write(valueTimeSpan);
 
-        else if (type == typeof(Vector2)) Write = (w, v) => w.Write(unsafeCast ? Unsafe.As<T, Vector2>(ref v) : (Vector2)(object)v);
-        else if (type == typeof(Vector3)) Write = (w, v) => w.Write(unsafeCast ? Unsafe.As<T, Vector3>(ref v) : (Vector3)(object)v);
-        else if (type == typeof(Vector4)) Write = (w, v) => w.Write(unsafeCast ? Unsafe.As<T, Vector4>(ref v) : (Vector4)(object)v);
-        else if (type == typeof(Quaternion)) Write = (w, v) => w.Write(unsafeCast ? Unsafe.As<T, Quaternion>(ref v) : (Quaternion)(object)v);
-        else if (type == typeof(Color)) Write = (w, v) => w.Write(unsafeCast ? Unsafe.As<T, Color>(ref v) : (Color)(object)v);
+                else if (objType == TypeMarker.Vector2 && v is Vector2 valueVector2) w.Write(valueVector2);
+                else if (objType == TypeMarker.Vector3 && v is Vector3 valueVector3) w.Write(valueVector3);
+                else if (objType == TypeMarker.Vector4 && v is Vector4 valueVector4) w.Write(valueVector4);
+                else if (objType == TypeMarker.Quaternion && v is Quaternion valueQuaternion) w.Write(valueQuaternion);
+                else if (objType == TypeMarker.Color && v is Color valueColor) w.Write(valueColor);
+
+                else throw new NotSupportedException($"Type {objType} is not supported.");
+            }
+        };
+        else if (type == TypeMarker.Boolean) Write = (w, v) => w.Write(Unsafe.As<T, bool>(ref v));
+        else if (type == TypeMarker.SByte) Write = (w, v) => w.Write(Unsafe.As<T, sbyte>(ref v));
+        else if (type == TypeMarker.Byte) Write = (w, v) => w.Write(Unsafe.As<T, byte>(ref v));
+        else if (type == TypeMarker.Int16) Write = (w, v) => w.Write(Unsafe.As<T, short>(ref v));
+        else if (type == TypeMarker.UInt16) Write = (w, v) => w.Write(Unsafe.As<T, ushort>(ref v));
+        else if (type == TypeMarker.Int32) Write = (w, v) => w.Write(Unsafe.As<T, int>(ref v));
+        else if (type == TypeMarker.UInt32) Write = (w, v) => w.Write(Unsafe.As<T, uint>(ref v));
+        else if (type == TypeMarker.Int64) Write = (w, v) => w.Write(Unsafe.As<T, long>(ref v));
+        else if (type == TypeMarker.UInt64) Write = (w, v) => w.Write(Unsafe.As<T, ulong>(ref v));
+        else if (type == TypeMarker.Single) Write = (w, v) => w.Write(Unsafe.As<T, float>(ref v));
+        else if (type == TypeMarker.Double) Write = (w, v) => w.Write(Unsafe.As<T, double>(ref v));
+        else if (type == TypeMarker.Decimal) Write = (w, v) => w.Write(Unsafe.As<T, decimal>(ref v));
+        else if (type == TypeMarker.Char) Write = (w, v) => w.Write(Unsafe.As<T, char>(ref v));
+
+        else if (type == TypeMarker.String) Write = (w, v) => w.Write((string)(object)v!);
+        else if (type == TypeMarker.Type) Write = (w, v) => w.Write((Type)(object)v!);
+
+        else if (type == TypeMarker.Enum) Write = (w, v) => EnumWriter<T>.Write(w, v);
+
+        else if (type == TypeMarker.Guid) Write = (w, v) => w.Write(Unsafe.As<T, Guid>(ref v));
+        else if (type == TypeMarker.DateTime) Write = (w, v) => w.Write(Unsafe.As<T, DateTime>(ref v));
+        else if (type == TypeMarker.TimeSpan) Write = (w, v) => w.Write(Unsafe.As<T, TimeSpan>(ref v));
+
+        else if (type == TypeMarker.Vector2) Write = (w, v) => w.Write(Unsafe.As<T, Vector2>(ref v));
+        else if (type == TypeMarker.Vector3) Write = (w, v) => w.Write(Unsafe.As<T, Vector3>(ref v));
+        else if (type == TypeMarker.Vector4) Write = (w, v) => w.Write(Unsafe.As<T, Vector4>(ref v));
+        else if (type == TypeMarker.Quaternion) Write = (w, v) => w.Write(Unsafe.As<T, Quaternion>(ref v));
+        else if (type == TypeMarker.Color) Write = (w, v) => w.Write(Unsafe.As<T, Color>(ref v));
 
         else Write = (_, _) => throw new NotSupportedException($"Type {typeof(T)} is not supported.");
     }

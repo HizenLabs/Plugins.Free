@@ -1,4 +1,5 @@
-﻿using HizenLabs.Extensions.ObjectSerializer.Extensions;
+﻿using HizenLabs.Extensions.ObjectSerializer.Enums;
+using HizenLabs.Extensions.ObjectSerializer.Extensions;
 using System;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -26,8 +27,41 @@ internal class GenericReader<T>
     {
         var type = typeof(T);
 
-        if (type == typeof(object)) Read = _ => throw new InvalidOperationException("Cannot read object type directly. Use a specific type instead.");
+        if (type == typeof(object)) Read = r =>
+        {
+            var marker = r.ReadEnum<TypeMarker>();
+            if (marker == TypeMarker.Null) return default;
+            else if (marker == TypeMarker.Boolean) return (T)(object)r.ReadBoolean();
+            else if (marker == TypeMarker.SByte) return (T)(object)r.ReadSByte();
+            else if (marker == TypeMarker.Byte) return (T)(object)r.ReadByte();
+            else if (marker == TypeMarker.Int16) return (T)(object)r.ReadInt16();
+            else if (marker == TypeMarker.UInt16) return (T)(object)r.ReadUInt16();
+            else if (marker == TypeMarker.Int32) return (T)(object)r.ReadInt32();
+            else if (marker == TypeMarker.UInt32) return (T)(object)r.ReadUInt32();
+            else if (marker == TypeMarker.Int64) return (T)(object)r.ReadInt64();
+            else if (marker == TypeMarker.UInt64) return (T)(object)r.ReadUInt64();
+            else if (marker == TypeMarker.Single) return (T)(object)r.ReadSingle();
+            else if (marker == TypeMarker.Double) return (T)(object)r.ReadDouble();
+            else if (marker == TypeMarker.Decimal) return (T)(object)r.ReadDecimal();
+            else if (marker == TypeMarker.Char) return (T)(object)r.ReadChar();
 
+            else if (marker == TypeMarker.String) return (T)(object)r.ReadString()!;
+            else if (marker == TypeMarker.Type) return (T)(object)Type.GetType(r.ReadString())!;
+
+            else if (marker == TypeMarker.Enum) return EnumReader<T>.Read(r);
+
+            else if (marker == TypeMarker.Guid) return (T)(object)r.ReadGuid();
+            else if (marker == TypeMarker.DateTime) return (T)(object)r.ReadDateTime();
+            else if (marker == TypeMarker.TimeSpan) return (T)(object)r.ReadTimeSpan();
+
+            else if (marker == TypeMarker.Vector2) return (T)(object)r.ReadVector2();
+            else if (marker == TypeMarker.Vector3) return (T)(object)r.ReadVector3();
+            else if (marker == TypeMarker.Vector4) return (T)(object)r.ReadVector4();
+            else if (marker == TypeMarker.Quaternion) return (T)(object)r.ReadQuaternion();
+            else if (marker == TypeMarker.Color) return (T)(object)r.ReadColor();
+
+            else throw new NotSupportedException($"Type '{marker}' is not supported.");
+        };
         else if (type == typeof(bool)) Read = r => { var v = r.ReadBoolean(); return Unsafe.As<bool, T>(ref v); };
         else if (type == typeof(sbyte)) Read = r => { var v = r.ReadSByte(); return Unsafe.As<sbyte, T>(ref v); };
         else if (type == typeof(byte)) Read = r => { var v = r.ReadByte(); return Unsafe.As<byte, T>(ref v); };
@@ -43,7 +77,6 @@ internal class GenericReader<T>
         else if (type == typeof(char)) Read = r => { var v = r.ReadChar(); return Unsafe.As<char, T>(ref v); };
 
         else if (type == typeof(string)) Read = r => (T)(object)r.ReadString()!;
-
         else if (type == typeof(Type)) Read = r => (T)(object)Type.GetType(r.ReadString())!;
 
         else if (type.IsEnum) Read = r => EnumReader<T>.Read(r);

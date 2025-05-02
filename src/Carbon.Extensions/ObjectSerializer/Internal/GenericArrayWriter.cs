@@ -28,6 +28,7 @@ internal class GenericArrayWriter<T>
         else if (elementType == typeof(byte)) Write = (w, v, index, count) =>
         {
             if (v is not byte[] buffer) throw new ArgumentException("Buffer must be a byte array.", nameof(v));
+
             w.Write(buffer, index, count);
         };
         else
@@ -37,7 +38,7 @@ internal class GenericArrayWriter<T>
             {
                 if (v is not T[] array) throw new ArgumentException("Expected array.", nameof(v));
 
-                w.Write(elementType);
+                w.Write(elementType.GetTypeMarker());
                 w.Write(count);
 
                 for (int i = 0; i < count; i++)
@@ -51,7 +52,7 @@ internal class GenericArrayWriter<T>
                     {
                         if (needsMarker)
                         {
-                            w.Write(item.GetType());
+                            w.Write(item.GetType().GetTypeMarker());
                         }
 
                         GenericWriter<T>.Write(w, item);
