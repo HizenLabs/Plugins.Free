@@ -1,7 +1,7 @@
-﻿using HizenLabs.Extensions.ObjectSerializer.Internal.Delegates;
-using System.IO;
+﻿using System.IO;
 using System;
 using HizenLabs.Extensions.ObjectSerializer.Extensions;
+using HizenLabs.Extensions.ObjectSerializer.Enums;
 
 namespace HizenLabs.Extensions.ObjectSerializer.Internal;
 
@@ -16,10 +16,14 @@ internal class GenericArrayWriter<T>
     /// </summary>
     public static Action<BinaryWriter, T[], int, int> Write { get; }
 
+    /// <summary>
+    /// Initializes the <see cref="GenericArrayWriter{T}"/> class.
+    /// </summary>
+    /// <exception cref="NotSupportedException">Thrown for multi-dimensional arrays.</exception>
     static GenericArrayWriter()
     {
         var elementType = typeof(T);
-
+        
         if (elementType.IsArray) throw new NotSupportedException("Multi-dimensional arrays are not supported.");
         else if (elementType == typeof(byte)) Write = (w, v, index, count) =>
         {
@@ -28,12 +32,7 @@ internal class GenericArrayWriter<T>
         };
         else
         {
-            var elementWriter = GenericDelegateFactory.BuildProperty<Action<BinaryWriter, T>>(
-                genericTypeDef: typeof(GenericWriter<>),
-                typeArgs: elementType,
-                name: nameof(GenericWriter<int>.Write)
-            );
-
+            var needsMarker = elementType == typeof(object);
             Write = (w, v, index, count) =>
             {
                 if (v is not T[] array) throw new ArgumentException("Expected array.", nameof(v));
@@ -43,7 +42,20 @@ internal class GenericArrayWriter<T>
 
                 for (int i = 0; i < count; i++)
                 {
-                    elementWriter(w, array[index + i]);
+                    var item = array[index + i];
+                    if (item is null)
+                    {
+                        w.Write(TypeMarker.Null);
+                    }
+                    else
+                    {
+                        if (needsMarker)
+                        {
+                            w.Write(item.GetType());
+                        }
+
+                        GenericWriter<T>.Write(w, item);
+                    }
                 }
             };
         }

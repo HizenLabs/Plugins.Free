@@ -1,5 +1,4 @@
 ﻿using HizenLabs.Extensions.ObjectSerializer.Extensions;
-using HizenLabs.Extensions.ObjectSerializer.Internal.Delegates;
 using System;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -27,36 +26,41 @@ internal class GenericWriter<T>
     {
         var type = typeof(T);
 
-        if (type == typeof(object)) Write = (_, _) => throw new InvalidOperationException("Cannot write object type directly. Use a specific type instead.");
+        bool unsafeCast = true;
 
-        else if (type == typeof(bool)) Write = (w, v) => w.Write(Unsafe.As<T, bool>(ref v));
-        else if (type == typeof(sbyte)) Write = (w, v) => w.Write(Unsafe.As<T, sbyte>(ref v));
-        else if (type == typeof(byte)) Write = (w, v) => w.Write(Unsafe.As<T, byte>(ref v));
-        else if (type == typeof(short)) Write = (w, v) => w.Write(Unsafe.As<T, short>(ref v));
-        else if (type == typeof(ushort)) Write = (w, v) => w.Write(Unsafe.As<T, ushort>(ref v));
-        else if (type == typeof(int)) Write = (w, v) => w.Write(Unsafe.As<T, int>(ref v));
-        else if (type == typeof(uint)) Write = (w, v) => w.Write(Unsafe.As<T, uint>(ref v));
-        else if (type == typeof(long)) Write = (w, v) => w.Write(Unsafe.As<T, long>(ref v));
-        else if (type == typeof(ulong)) Write = (w, v) => w.Write(Unsafe.As<T, ulong>(ref v));
-        else if (type == typeof(float)) Write = (w, v) => w.Write(Unsafe.As<T, float>(ref v));
-        else if (type == typeof(double)) Write = (w, v) => w.Write(Unsafe.As<T, double>(ref v));
-        else if (type == typeof(decimal)) Write = (w, v) => w.Write(Unsafe.As<T, decimal>(ref v));
-        else if (type == typeof(char)) Write = (w, v) => w.Write(Unsafe.As<T, char>(ref v));
+        if (type == typeof(object))
+        {
+            unsafeCast = false;
+            type = type.GetType();
+        }
 
-        else if (type == typeof(string)) Write = (w, v) => w.Write((string)(object)v!);
-        else if (type == typeof(Type)) Write = (w, v) => w.Write((Type)(object)v!);
+        else if (type == typeof(bool)) Write = (w, v) => w.Write(unsafeCast ? Unsafe.As<T, bool>(ref v) : (bool)(object)v);
+        else if (type == typeof(byte)) Write = (w, v) => w.Write(unsafeCast ? Unsafe.As<T, byte>(ref v) : (byte)(object)v);
+        else if (type == typeof(sbyte)) Write = (w, v) => w.Write(unsafeCast ? Unsafe.As<T, sbyte>(ref v) : (sbyte)(object)v);
+        else if (type == typeof(short)) Write = (w, v) => w.Write(unsafeCast ? Unsafe.As<T, short>(ref v) : (short)(object)v);
+        else if (type == typeof(ushort)) Write = (w, v) => w.Write(unsafeCast ? Unsafe.As<T, ushort>(ref v) : (ushort)(object)v);
+        else if (type == typeof(int)) Write = (w, v) => w.Write(unsafeCast ? Unsafe.As<T, int>(ref v) : (int)(object)v);
+        else if (type == typeof(uint)) Write = (w, v) => w.Write(unsafeCast ? Unsafe.As<T, uint>(ref v) : (uint)(object)v);
+        else if (type == typeof(long)) Write = (w, v) => w.Write(unsafeCast ? Unsafe.As<T, long>(ref v) : (long)(object)v);
+        else if (type == typeof(ulong)) Write = (w, v) => w.Write(unsafeCast ? Unsafe.As<T, ulong>(ref v) : (ulong)(object)v);
+        else if (type == typeof(float)) Write = (w, v) => w.Write(unsafeCast ? Unsafe.As<T, float>(ref v) : (float)(object)v);
+        else if (type == typeof(double)) Write = (w, v) => w.Write(unsafeCast ? Unsafe.As<T, double>(ref v) : (double)(object)v);
+        else if (type == typeof(char)) Write = (w, v) => w.Write(unsafeCast ? Unsafe.As<T, char>(ref v) : (char)(object)v);
 
-        else if (type.IsEnum) Write = (w, v) => EnumWriter<T>.Write(w, v);
+        else if (type == typeof(string)) Write = (w, v) => w.Write((string)(object)v);
+        else if (type == typeof(Type)) Write = (w, v) => w.Write((Type)(object)v);
 
-        else if (type == typeof(Guid)) Write = (w, v) => w.Write(Unsafe.As<T, Guid>(ref v));
-        else if (type == typeof(DateTime)) Write = (w, v) => w.Write(Unsafe.As<T, DateTime>(ref v));
-        else if (type == typeof(TimeSpan)) Write = (w, v) => w.Write(Unsafe.As<T, TimeSpan>(ref v));
+        else if (type.IsEnum) Write = EnumWriter<T>.Write;
 
-        else if (type == typeof(Vector2)) Write = (w, v) => w.Write(Unsafe.As<T, Vector2>(ref v));
-        else if (type == typeof(Vector3)) Write = (w, v) => w.Write(Unsafe.As<T, Vector3>(ref v));
-        else if (type == typeof(Vector4)) Write = (w, v) => w.Write(Unsafe.As<T, Vector4>(ref v));
-        else if (type == typeof(Quaternion)) Write = (w, v) => w.Write(Unsafe.As<T, Quaternion>(ref v));
-        else if (type == typeof(Color)) Write = (w, v) => w.Write(Unsafe.As<T, Color>(ref v));
+        else if (type == typeof(Guid)) Write = (w, v) => w.Write(unsafeCast ? Unsafe.As<T, Guid>(ref v) : (Guid)(object)v);
+        else if (type == typeof(DateTime)) Write = (w, v) => w.Write(unsafeCast ? Unsafe.As<T, DateTime>(ref v) : (DateTime)(object)v);
+        else if (type == typeof(TimeSpan)) Write = (w, v) => w.Write(unsafeCast ? Unsafe.As<T, TimeSpan>(ref v) : (TimeSpan)(object)v);
+
+        else if (type == typeof(Vector2)) Write = (w, v) => w.Write(unsafeCast ? Unsafe.As<T, Vector2>(ref v) : (Vector2)(object)v);
+        else if (type == typeof(Vector3)) Write = (w, v) => w.Write(unsafeCast ? Unsafe.As<T, Vector3>(ref v) : (Vector3)(object)v);
+        else if (type == typeof(Vector4)) Write = (w, v) => w.Write(unsafeCast ? Unsafe.As<T, Vector4>(ref v) : (Vector4)(object)v);
+        else if (type == typeof(Quaternion)) Write = (w, v) => w.Write(unsafeCast ? Unsafe.As<T, Quaternion>(ref v) : (Quaternion)(object)v);
+        else if (type == typeof(Color)) Write = (w, v) => w.Write(unsafeCast ? Unsafe.As<T, Color>(ref v) : (Color)(object)v);
 
         else Write = (_, _) => throw new NotSupportedException($"Type {typeof(T)} is not supported.");
     }
