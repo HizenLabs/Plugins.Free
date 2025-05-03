@@ -1,6 +1,4 @@
-﻿using HizenLabs.Extensions.ObjectSerializer.Enums;
-using HizenLabs.Extensions.ObjectSerializer.Extensions;
-using System;
+﻿using System;
 using System.IO;
 
 namespace HizenLabs.Extensions.ObjectSerializer.Internal;

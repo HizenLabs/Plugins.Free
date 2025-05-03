@@ -1,9 +1,7 @@
 ﻿using Facepunch;
-using HizenLabs.Extensions.ObjectSerializer.Enums;
 using HizenLabs.Extensions.ObjectSerializer.Exceptions;
 using HizenLabs.Extensions.ObjectSerializer.Internal;
 using HizenLabs.Extensions.ObjectSerializer.Structs;
-using JSON;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -204,13 +202,51 @@ public static class BinaryReaderExtensions
     /// <param name="reader">The <see cref="BinaryReader"/> to read from.</param>
     /// <param name="list">The list to store the read values. If null, a new list will be created.</param>
     /// <returns>The list of type <typeparamref name="T"/> read from the stream.</returns>
-    public static List<T> ReadList<T>(this BinaryReader reader, List<T> list = null)
+    public static List<T> ReadList<T>(this BinaryReader reader) =>
+        ReadList<T>(reader, null);
+
+    /// <summary>
+    /// Reads a list of type <typeparamref name="T"/> from the current stream and advances the stream position by the size of the list.
+    /// </summary>
+    /// <typeparam name="T">The type of the list elements.</typeparam>
+    /// <param name="reader">The <see cref="BinaryReader"/> to read from.</param>
+    /// <param name="list">The list to store the read values. If null, a new list will be created.</param>
+    /// <returns>The list of type <typeparamref name="T"/> read from the stream.</returns>
+    public static List<T> ReadList<T>(this BinaryReader reader, List<T> list)
     {
         list ??= Pool.Get<List<T>>();
 
         GenericListReader<T>.Read(reader, list);
 
         return list;
+    }
+
+    /// <summary>
+    /// Reads a dictionary of type <typeparamref name="TKey"/> and <typeparamref name="TValue"/> from the current stream and advances the stream position by the size of the dictionary.
+    /// </summary>
+    /// <typeparam name="TKey">The type of the dictionary keys.</typeparam>
+    /// <typeparam name="TValue">The type of the dictionary values.</typeparam>
+    /// <param name="reader">The <see cref="BinaryReader"/> to read from.</param>
+    /// <param name="dictionary">The dictionary to store the read values. If null, a new dictionary will be created.</param>
+    /// <returns>The dictionary of type <typeparamref name="TKey"/> and <typeparamref name="TValue"/> read from the stream.</returns>
+    public static Dictionary<TKey, TValue> ReadDictionary<TKey, TValue>(this BinaryReader reader) =>
+        ReadDictionary<TKey, TValue>(reader, null);
+
+    /// <summary>
+    /// Reads a dictionary of type <typeparamref name="TKey"/> and <typeparamref name="TValue"/> from the current stream and advances the stream position by the size of the dictionary.
+    /// </summary>
+    /// <typeparam name="TKey">The type of the dictionary keys.</typeparam>
+    /// <typeparam name="TValue">The type of the dictionary values.</typeparam>
+    /// <param name="reader">The <see cref="BinaryReader"/> to read from.</param>
+    /// <param name="dictionary">The dictionary to store the read values. If null, a new dictionary will be created.</param>
+    /// <returns>The dictionary of type <typeparamref name="TKey"/> and <typeparamref name="TValue"/> read from the stream.</returns>
+    public static Dictionary<TKey, TValue> ReadDictionary<TKey, TValue>(this BinaryReader reader, Dictionary<TKey, TValue> dictionary)
+    {
+        dictionary ??= Pool.Get<Dictionary<TKey, TValue>>();
+
+        dictionary = GenericDictionaryReader<TKey, TValue>.Read(reader, dictionary);
+
+        return dictionary;
     }
 
     #endregion

@@ -19,6 +19,7 @@ public class TypeExtensionsTests
     /// <param name="type">The type to test.</param>
     /// <param name="expected">The expected <see cref="TypeMarker"/>.</param>
     [TestMethod]
+    [TestCategory("System")]
     [DataRow(null, TypeMarker.Null)]
     [DataRow(typeof(bool), TypeMarker.Boolean)]
     [DataRow(typeof(sbyte), TypeMarker.SByte)]

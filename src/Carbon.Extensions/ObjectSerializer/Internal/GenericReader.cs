@@ -1,7 +1,6 @@
 ﻿using HizenLabs.Extensions.ObjectSerializer.Enums;
 using HizenLabs.Extensions.ObjectSerializer.Extensions;
 using HizenLabs.Extensions.ObjectSerializer.Internal.Delegates;
-using Rust.Demo;
 using System;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -97,11 +96,21 @@ internal class GenericReader<T>
 
         else if (typeMarker == TypeMarker.List)
         {
-            throw new NotImplementedException();
+            var elementType = type.GetGenericArguments()[0];
+            Read = GenericDelegateFactory.BuildGenericMethod<Func<BinaryReader, T>>(
+                staticType: typeof(BinaryReaderExtensions),
+                methodName: nameof(BinaryReaderExtensions.ReadList),
+                elementType);
         }
         else if (typeMarker == TypeMarker.Dictionary)
         {
-            throw new NotImplementedException();
+            var genericArgs = type.GetGenericArguments();
+            var keyType = genericArgs[0];
+            var valueType = genericArgs[1];
+            Read = GenericDelegateFactory.BuildGenericMethod<Func<BinaryReader, T>>(
+                staticType: typeof(BinaryReaderExtensions),
+                methodName: nameof(BinaryReaderExtensions.ReadDictionary),
+                keyType, valueType);
         }
 
         // Disabling nesting of generic array types because we don't currently have a suitable way to prevent new allocations.

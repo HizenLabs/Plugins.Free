@@ -686,7 +686,8 @@
     <Compile Include="Extensions\ObjectSerializer\Extensions\BinaryReaderExtensionsTests.cs" />
     <Compile Include="Extensions\ObjectSerializer\Extensions\BinaryWriterExtensionsTests.cs" />
     <Compile Include="Extensions\ObjectSerializer\Extensions\TypeExtensionsTests.cs" />
-    <Compile Include="Extensions\ObjectSerializer\Internal\GenericDelegateFactoryTests.cs" />
+    <Compile Include="Extensions\ObjectSerializer\Internal\Delegates\GenericDelegateFactoryTests.cs" />
+    <Compile Include="Integration\RoundTripSerializationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Test\Base\BinaryReaderWriterTest.cs" />
     <Compile Include="Test\Base\MemoryStreamTest.cs" />

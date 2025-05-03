@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Reflection;
 
 namespace HizenLabs.Extensions.ObjectSerializer.Internal.Delegates;
@@ -8,6 +9,8 @@ namespace HizenLabs.Extensions.ObjectSerializer.Internal.Delegates;
 /// </summary>
 internal static class GenericDelegateFactory
 {
+    #region Generic Classes
+
     /// <summary>
     /// Creates a delegate from a static field of a generic type definition.
     /// </summary>
@@ -67,5 +70,31 @@ internal static class GenericDelegateFactory
         var staticDelegate = DelegateExtractor.Extract(member);
         return DelegateAdapter.Adapt<TDelegate>(staticDelegate);
     }
+
+    #endregion
+
+    #region Generic Members
+
+    /// <summary>
+    /// Creates a delegate from a static field of a generic type.
+    /// </summary>
+    /// <typeparam name="TDelegate">The type of the delegate to create.</typeparam>
+    /// <param name="staticType">The static type containing the field.</param>
+    /// <param name="fieldName">The name of the field.</param>
+    /// <param name="fieldTypeArgs">The type arguments to use for the field.</param>
+    /// <returns>The created delegate.</returns>
+    public static TDelegate BuildGenericMethod<TDelegate>(Type staticType, string methodName, params Type[] methodTypeArgs)
+    where TDelegate : Delegate
+    {
+        var method = staticType
+            .GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
+            .FirstOrDefault(m => m.Name == methodName && m.IsGenericMethodDefinition)
+            ?? throw new MissingMethodException(staticType.FullName, methodName);
+        var closedMethod = method.MakeGenericMethod(methodTypeArgs);
+
+        return (TDelegate)Delegate.CreateDelegate(typeof(TDelegate), closedMethod);
+    }
+
+    #endregion
 }
 

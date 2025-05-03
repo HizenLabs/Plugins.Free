@@ -24,7 +24,7 @@ public static class BinaryWriterExtensions
     /// <param name="value">The <see cref="Enum"/> value to write.</param>
     /// <typeparam name="TEnum">The type of the enum.</typeparam>
     /// <exception cref="EnumSerializationException">Thrown when the enum type is not a valid enum type for serialization.</exception>
-    public static void Write<TEnum>(this BinaryWriter writer, TEnum value)
+    public static void WriteEnum<TEnum>(this BinaryWriter writer, TEnum value)
         where TEnum : unmanaged, Enum
     {
         EnumWriter<TEnum>.Write(writer, value);
@@ -177,7 +177,7 @@ public static class BinaryWriterExtensions
     /// <param name="index">The offset in the array to start writing from.</param>
     /// <param name="count">The number of elements to write from the array.</param>
     /// <typeparam name="T">The type of the array elements.</typeparam>
-    public static void Write<T>(this BinaryWriter writer, T[] array, int index = 0, int count = -1)
+    public static void WriteArray<T>(this BinaryWriter writer, T[] array, int index = 0, int count = -1)
     {
         if (count < 0) count = array.Length;
         if (count < array.Length) throw new ArgumentOutOfRangeException(nameof(count), "Count cannot be less than the array length.");
@@ -193,9 +193,21 @@ public static class BinaryWriterExtensions
     /// <param name="writer">The <see cref="BinaryWriter"/> to write to.</param>
     /// <param name="list">The list of <typeparamref name="T"/> values to write.</param>
     /// <typeparam name="T">The type of the list elements.</typeparam>
-    public static void Write<T>(this BinaryWriter writer, List<T> list)
+    public static void WriteList<T>(this BinaryWriter writer, List<T> list)
     {
         GenericListWriter<T>.Write(writer, list);
+    }
+
+    /// <summary>
+    /// Writes a dictionary of <typeparamref name="TKey"/> and <typeparamref name="TValue"/> values to the current stream and advances the stream position by the length of the dictionary.
+    /// </summary>
+    /// <param name="writer">The <see cref="BinaryWriter"/> to write to.</param>
+    /// <param name="dict">The dictionary of <typeparamref name="TKey"/> and <typeparamref name="TValue"/> values to write.</param>
+    /// <typeparam name="TKey">The type of the dictionary keys.</typeparam>
+    /// <typeparam name="TValue">The type of the dictionary values.</typeparam>
+    public static void WriteDictionary<TKey, TValue>(this BinaryWriter writer, Dictionary<TKey, TValue> dict)
+    {
+        GenericDictionaryWriter<TKey, TValue>.Write(writer, dict);
     }
 
     #endregion

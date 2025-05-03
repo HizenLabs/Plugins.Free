@@ -1,4 +1,6 @@
 ﻿using Facepunch;
+using HizenLabs.Extensions.ObjectSerializer.Enums;
+using HizenLabs.Extensions.ObjectSerializer.Extensions;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -30,6 +32,13 @@ internal class GenericListReader<T>
             var count = reader.ReadInt32();
             for (int i = 0; i < count; i++)
             {
+                var marker = reader.ReadEnum<TypeMarker>();
+                if (marker == TypeMarker.Null)
+                {
+                    list.Add(default!);
+                    continue;
+                }
+
                 var item = GenericReader<T>.Read(reader);
                 list.Add(item);
             }

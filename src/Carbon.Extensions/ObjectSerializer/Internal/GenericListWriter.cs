@@ -22,8 +22,6 @@ internal class GenericListWriter<T>
     /// </summary>
     static GenericListWriter()
     {
-        var type = typeof(T);
-
         Write = (writer, list) =>
         {
             writer.Write(list.Count);
@@ -31,10 +29,11 @@ internal class GenericListWriter<T>
             {
                 if (item is null)
                 {
-                    writer.Write(TypeMarker.Null);
+                    writer.WriteEnum(TypeMarker.Null);
                 }
                 else
                 {
+                    writer.WriteEnum(item.GetType().GetTypeMarker());
                     GenericWriter<T>.Write(writer, item);
                 }
             }

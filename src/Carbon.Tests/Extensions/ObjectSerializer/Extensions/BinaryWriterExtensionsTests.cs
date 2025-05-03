@@ -23,10 +23,11 @@ public class BinaryWriterExtensionsTests : BinaryReaderWriterTest
     /// Tests the <see cref="BinaryWriterExtensions.Write(BinaryWriter, Enum)"/> method to ensure it correctly writes an <see cref="Enum"/> value to a binary stream.
     /// </summary>
     [TestMethod]
+    [TestCategory("System")]
     public void WriteEnum_ShouldWriteCorrectEnum()
     {
         _memoryStream.SetLength(0);
-        _writer.Write(DayOfWeek.Tuesday);
+        _writer.WriteEnum(DayOfWeek.Tuesday);
 
         _memoryStream.Position = 0;
         int actualInt = _reader.ReadInt32();
@@ -34,7 +35,7 @@ public class BinaryWriterExtensionsTests : BinaryReaderWriterTest
         Assert.AreEqual((int)DayOfWeek.Tuesday, actualInt);
 
         _memoryStream.SetLength(0);
-        _writer.Write(TestEnum.E);
+        _writer.WriteEnum(TestEnum.E);
 
         _memoryStream.Position = 0;
         byte actualByte = _reader.ReadByte();
@@ -52,6 +53,7 @@ public class BinaryWriterExtensionsTests : BinaryReaderWriterTest
     /// Tests the <see cref="BinaryWriterExtensions.Write(BinaryWriter, Guid)"/> method to ensure it correctly writes a <see cref="Guid"/> value to a binary stream.
     /// </summary>
     [TestMethod]
+    [TestCategory("System")]
     public void WriteGuid_ShouldWriteCorrectGuid()
     {
         Guid[] testValues = new Guid[]
@@ -78,6 +80,7 @@ public class BinaryWriterExtensionsTests : BinaryReaderWriterTest
     /// Tests the <see cref="BinaryWriterExtensions.Write(BinaryWriter, DateTime)"/> method to ensure it correctly writes a <see cref="DateTime"/> value to a binary stream.
     /// </summary>
     [TestMethod]
+    [TestCategory("System")]
     public void WriteDateTime_ShouldWriteCorrectDateTime()
     {
         DateTime[] testValues = new DateTime[]
@@ -103,6 +106,7 @@ public class BinaryWriterExtensionsTests : BinaryReaderWriterTest
     /// Tests the <see cref="BinaryWriterExtensions.Write(BinaryWriter, TimeSpan)"/> method to ensure it correctly writes a <see cref="TimeSpan"/> value to a binary stream.
     /// </summary>
     [TestMethod]
+    [TestCategory("System")]
     public void WriteTimeSpan_ShouldWriteCorrectTimeSpan()
     {
         TimeSpan[] testValues = new TimeSpan[]
@@ -128,6 +132,7 @@ public class BinaryWriterExtensionsTests : BinaryReaderWriterTest
     /// Tests the <see cref="BinaryWriterExtensions.Write(BinaryWriter, Type)"/> method to ensure it correctly writes a <see cref="Type"/> value to a binary stream.
     /// </summary>
     [TestMethod]
+    [TestCategory("System")]
     public void WriteType_ShouldWriteCorrectType()
     {
         Type[] testValues = new Type[]
@@ -157,6 +162,7 @@ public class BinaryWriterExtensionsTests : BinaryReaderWriterTest
     /// Tests the <see cref="BinaryWriterExtensions.Write(BinaryWriter, Vector2)"/> method to ensure it correctly writes a <see cref="Vector2"/> value to a binary stream.
     /// </summary>
     [TestMethod]
+    [TestCategory("UnityEngine")]
     public void WriteVector2_ShouldWriteCorrectVector2()
     {
         Vector2[] testValues = new Vector2[]
@@ -182,6 +188,7 @@ public class BinaryWriterExtensionsTests : BinaryReaderWriterTest
     /// Tests the <see cref="BinaryWriterExtensions.Write(BinaryWriter, Vector3)"/> method to ensure it correctly writes a <see cref="Vector3"/> value to a binary stream.
     /// </summary>
     [TestMethod]
+    [TestCategory("UnityEngine")]
     public void WriteVector3_ShouldWriteCorrectVector3()
     {
         Vector3[] testValues = new Vector3[]
@@ -207,6 +214,7 @@ public class BinaryWriterExtensionsTests : BinaryReaderWriterTest
     /// Tests the <see cref="BinaryWriterExtensions.Write(BinaryWriter, Vector4)"/> method to ensure it correctly writes a <see cref="Vector4"/> value to a binary stream.
     /// </summary>
     [TestMethod]
+    [TestCategory("UnityEngine")]
     public void WriteVector4_ShouldWriteCorrectVector4()
     {
         Vector4[] testValues = new Vector4[]
@@ -233,6 +241,7 @@ public class BinaryWriterExtensionsTests : BinaryReaderWriterTest
     /// Tests the <see cref="BinaryWriterExtensions.Write(BinaryWriter, Quaternion)"/> method to ensure it correctly writes a <see cref="Quaternion"/> value to a binary stream.
     /// </summary>
     [TestMethod]
+    [TestCategory("UnityEngine")]
     public void WriteQuaternion_ShouldWriteCorrectQuaternion()
     {
         Quaternion[] testValues = new Quaternion[]
@@ -259,6 +268,7 @@ public class BinaryWriterExtensionsTests : BinaryReaderWriterTest
     /// Tests the <see cref="BinaryWriterExtensions.Write(BinaryWriter, Color)"/> method to ensure it correctly writes a <see cref="Color"/> value to a binary stream.
     /// </summary>
     [TestMethod]
+    [TestCategory("UnityEngine")]
     public void WriteColor_ShouldWriteCorrectColor()
     {
         Color[] testValues = new Color[]
@@ -289,11 +299,12 @@ public class BinaryWriterExtensionsTests : BinaryReaderWriterTest
     /// Tests the <see cref="BinaryWriterExtensions.Write(BinaryWriter, Array)"/> method to ensure it correctly writes an array of <see cref="int"/> values to a binary stream.
     /// </summary>
     [TestMethod]
+    [TestCategory("System.Collections")]
     public void WriteArray_ShouldWriteCorrectArray()
     {
         int[] testValues = new int[] { 1, 2, 3, 5, 7, 11, 13, 17, 19, 23 };
 
-        _writer.Write(testValues);
+        _writer.WriteArray(testValues);
         _memoryStream.Position = 0;
 
         var actualLength = _reader.ReadInt32();
@@ -310,11 +321,12 @@ public class BinaryWriterExtensionsTests : BinaryReaderWriterTest
     /// Tests the <see cref="BinaryWriterExtensions.Write(BinaryWriter, Array)"/> method to ensure it correctly writes an array of <see cref="object"/> values to a binary stream.
     /// </summary>
     [TestMethod]
+    [TestCategory("System.Collections")]
     public void WriteArray_ShouldWriteCorrectArray_Object()
     {
         object[] testValues = new object[] { "Test", 123, typeof(int), typeof(string), ' ', string.Empty, Vector3.one, Color.red, null };
 
-        _writer.Write(testValues);
+        _writer.WriteArray(testValues);
         _memoryStream.Position = 0;
 
         var actualLength = _reader.ReadInt32();
@@ -370,11 +382,12 @@ public class BinaryWriterExtensionsTests : BinaryReaderWriterTest
     /// Tests the <see cref="BinaryWriterExtensions.Write(BinaryWriter, List{T})"/> method to ensure it correctly writes a list of <see cref="int"/> values to a binary stream.
     /// </summary>
     [TestMethod]
+    [TestCategory("System.Collections")]
     public void WriteList_ShouldWriteCorrectList()
     {
         var testValues = new List<int> { 1, 2, 3, 5, 7, 11, 13, 17, 19, 23 };
 
-        _writer.Write(testValues);
+        _writer.WriteList(testValues);
         _memoryStream.Position = 0;
 
         var actualLength = _reader.ReadInt32();
@@ -382,6 +395,9 @@ public class BinaryWriterExtensionsTests : BinaryReaderWriterTest
 
         for (int i = 0; i < testValues.Count; i++)
         {
+            var actualMarker = _reader.ReadEnum<TypeMarker>();
+            Assert.AreEqual(TypeMarker.Int32, actualMarker);
+
             int actualValue = _reader.ReadInt32();
             Assert.AreEqual(testValues[i], actualValue);
         }

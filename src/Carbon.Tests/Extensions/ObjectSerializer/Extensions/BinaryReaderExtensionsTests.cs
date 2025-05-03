@@ -1,5 +1,4 @@
 ﻿using Carbon.Tests.Test.Base;
-using Epic.OnlineServices;
 using HizenLabs.Extensions.ObjectSerializer.Enums;
 using HizenLabs.Extensions.ObjectSerializer.Extensions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -22,6 +21,7 @@ public class BinaryReaderExtensionsTests : BinaryReaderWriterTest
     /// Tests the <see cref="BinaryReaderExtensions.ReadEnum{TEnum}(BinaryReader)"/> method to ensure it correctly reads an <see cref="Enum"/> value from a binary stream.
     /// </summary>
     [TestMethod]
+    [TestCategory("System")]
     public void ReadEnum_ShouldReturnCorrectEnum()
     {
         _memoryStream.SetLength(0);
@@ -47,6 +47,7 @@ public class BinaryReaderExtensionsTests : BinaryReaderWriterTest
     /// Tests the <see cref="BinaryReaderExtensions.ReadGuid(BinaryReader)"/> method to ensure it correctly reads a <see cref="Guid"/> value from a binary stream.
     /// </summary>
     [TestMethod]
+    [TestCategory("System")]
     public void ReadGuid_ShouldReturnCorrectGuid()
     {
         Guid[] testValues = new Guid[]
@@ -72,6 +73,7 @@ public class BinaryReaderExtensionsTests : BinaryReaderWriterTest
     /// Tests the <see cref="BinaryReaderExtensions.ReadDateTime(BinaryReader)"/> method to ensure it correctly reads a <see cref="DateTime"/> value from a binary stream.
     /// </summary>
     [TestMethod]
+    [TestCategory("System")]
     public void ReadDateTime_ShouldReturnCorrectDateTime()
     {
         DateTime[] testValues = new DateTime[]
@@ -97,6 +99,7 @@ public class BinaryReaderExtensionsTests : BinaryReaderWriterTest
     /// Tests the <see cref="BinaryReaderExtensions.ReadTimeSpan(BinaryReader)"/> method to ensure it correctly reads a <see cref="TimeSpan"/> value from a binary stream.
     /// </summary>
     [TestMethod]
+    [TestCategory("System")]
     public void ReadTimeSpan_ShouldReturnCorrectTimeSpan()
     {
         TimeSpan[] testValues = new TimeSpan[]
@@ -122,6 +125,7 @@ public class BinaryReaderExtensionsTests : BinaryReaderWriterTest
     /// Tests the <see cref="BinaryReaderExtensions.ReadType(BinaryReader)"/> method to ensure it correctly reads a <see cref="Type"/> value from a binary stream.
     /// </summary>
     [TestMethod]
+    [TestCategory("System")]
     public void ReadType_ShouldReturnCorrectType()
     {
         Type[] testValues = new Type[]
@@ -151,6 +155,7 @@ public class BinaryReaderExtensionsTests : BinaryReaderWriterTest
     /// Tests the <see cref="BinaryReaderExtensions.ReadVector2(BinaryReader)"/> method to ensure it correctly reads a <see cref="Vector2"/> value from a binary stream.
     /// </summary>
     [TestMethod]
+    [TestCategory("UnityEngine")]
     public void ReadVector2_ShouldReturnCorrectVector2()
     {
         Vector2[] testValues = new Vector2[]
@@ -176,6 +181,7 @@ public class BinaryReaderExtensionsTests : BinaryReaderWriterTest
     /// Tests the <see cref="BinaryReaderExtensions.ReadVector3(BinaryReader)"/> method to ensure it correctly reads a <see cref="Vector3"/> value from a binary stream.
     /// </summary>
     [TestMethod]
+    [TestCategory("UnityEngine")]
     public void ReadVector3_ShouldReturnCorrectVector3()
     {
         Vector3[] testValues = new Vector3[]
@@ -201,6 +207,7 @@ public class BinaryReaderExtensionsTests : BinaryReaderWriterTest
     /// Tests the <see cref="BinaryReaderExtensions.ReadVector4(BinaryReader)"/> method to ensure it correctly reads a <see cref="Vector4"/> value from a binary stream.
     /// </summary>
     [TestMethod]
+    [TestCategory("UnityEngine")]
     public void ReadVector4_ShouldReturnCorrectVector4()
     {
         Vector4[] testValues = new Vector4[]
@@ -227,6 +234,7 @@ public class BinaryReaderExtensionsTests : BinaryReaderWriterTest
     /// Tests the <see cref="BinaryReaderExtensions.ReadQuaternion(BinaryReader)"/> method to ensure it correctly reads a <see cref="Quaternion"/> value from a binary stream.
     /// </summary>
     [TestMethod]
+    [TestCategory("UnityEngine")]
     public void ReadQuaternion_ShouldReturnCorrectQuaternion()
     {
         Quaternion[] testValues = new Quaternion[]
@@ -253,6 +261,7 @@ public class BinaryReaderExtensionsTests : BinaryReaderWriterTest
     /// Tests the <see cref="BinaryReaderExtensions.ReadColor(BinaryReader)"/> method to ensure it correctly reads a <see cref="Color"/> value from a binary stream.
     /// </summary>
     [TestMethod]
+    [TestCategory("UnityEngine")]
     public void ReadColor_ShouldReturnCorrectColor()
     {
         Color[] testValues = new Color[]
@@ -284,6 +293,7 @@ public class BinaryReaderExtensionsTests : BinaryReaderWriterTest
     /// to ensure it correctly reads an array of type <typeparamref name="T"/> from a binary stream.
     /// </summary>
     [TestMethod]
+    [TestCategory("System.Collections")]
     public void ReadArray_ShouldReturnCorrectArray()
     {
         int[] testValues = new int[] { 1, 2, 3, 5, 7, 11, 13, 17, 19, 23 };
@@ -310,6 +320,7 @@ public class BinaryReaderExtensionsTests : BinaryReaderWriterTest
     /// Tests the <see cref="BinaryReaderExtensions.ReadList{T}(BinaryReader, List{T})"/> method
     /// </summary>
     [TestMethod]
+    [TestCategory("System.Collections")]
     public void ReadList_ShouldReturnCorrectList()
     {
         var testValues = new List<int> { 1, 2, 3, 5, 7, 11, 13, 17, 19, 23 };
@@ -317,6 +328,7 @@ public class BinaryReaderExtensionsTests : BinaryReaderWriterTest
         _writer.Write(testValues.Count);
         foreach (var item in testValues)
         {
+            _writer.WriteEnum(TypeMarker.Int32);
             _writer.Write(item);
         }
 

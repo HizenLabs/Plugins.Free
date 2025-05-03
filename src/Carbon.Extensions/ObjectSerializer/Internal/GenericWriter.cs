@@ -1,5 +1,6 @@
 ﻿using HizenLabs.Extensions.ObjectSerializer.Enums;
 using HizenLabs.Extensions.ObjectSerializer.Extensions;
+using HizenLabs.Extensions.ObjectSerializer.Internal.Delegates;
 using System;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -30,11 +31,11 @@ internal class GenericWriter<T>
 
         if (typeMarker == TypeMarker.Object) Write = (w, v) =>
         {
-            if (v is null) w.Write(TypeMarker.Null);
+            if (v is null) w.WriteEnum(TypeMarker.Null);
             else
             {
                 var objType = v.GetType().GetTypeMarker();
-                w.Write(objType);
+                w.WriteEnum(objType);
 
                 if (objType == TypeMarker.Boolean && v is bool valueBool) w.Write(valueBool);
                 else if (objType == TypeMarker.SByte && v is sbyte valueSByte) w.Write(valueSByte);
@@ -99,11 +100,22 @@ internal class GenericWriter<T>
 
         else if (typeMarker == TypeMarker.List)
         {
-            throw new NotImplementedException();
+            var elementType = type.GetGenericArguments()[0];
+            Write = GenericDelegateFactory.BuildGenericMethod<Action<BinaryWriter, T>>(
+                staticType: typeof(BinaryWriterExtensions),
+                methodName: nameof(BinaryWriterExtensions.WriteList),
+                elementType);
         }
         else if (typeMarker == TypeMarker.Dictionary)
         {
-            throw new NotImplementedException();
+            var genericArgs = type.GetGenericArguments();
+            var keyType = genericArgs[0];
+            var valueType = genericArgs[1];
+            Write = GenericDelegateFactory.BuildGenericMethod<Action<BinaryWriter, T>>(
+                staticType: typeof(BinaryWriterExtensions),
+                methodName: nameof(BinaryWriterExtensions.WriteDictionary),
+                keyType,
+                valueType);
         }
 
         // Disabling nesting of generic array types because we don't currently have a suitable way to prevent new allocations during read.

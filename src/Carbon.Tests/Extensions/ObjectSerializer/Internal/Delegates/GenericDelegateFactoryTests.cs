@@ -3,7 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Runtime.CompilerServices;
 
-namespace Carbon.Tests.Extensions.ObjectSerializer.Internal;
+namespace Carbon.Tests.Extensions.ObjectSerializer.Internal.Delegates;
 
 /// <summary>
 /// Tests for the <see cref="GenericDelegateFactory"/> class.
@@ -48,6 +48,7 @@ public class GenericDelegateFactoryTests
     /// Tests the Build method of GenericDelegateFactory with a valid delegate field.
     /// </summary>
     [TestMethod]
+    [TestCategory("Internal")]
     public void Build_ValidCombineDelegate_ReturnsWorkingDelegate()
     {
         var combineString = GenericDelegateFactory.BuildProperty<Func<string, string, string>>(

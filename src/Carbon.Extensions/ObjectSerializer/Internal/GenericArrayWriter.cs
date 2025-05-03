@@ -1,7 +1,5 @@
 ﻿using System.IO;
 using System;
-using HizenLabs.Extensions.ObjectSerializer.Extensions;
-using HizenLabs.Extensions.ObjectSerializer.Enums;
 
 namespace HizenLabs.Extensions.ObjectSerializer.Internal;
 
