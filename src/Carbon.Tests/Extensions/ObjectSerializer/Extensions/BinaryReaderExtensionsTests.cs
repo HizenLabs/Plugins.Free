@@ -1,8 +1,10 @@
 ﻿using Carbon.Tests.Test.Base;
+using Epic.OnlineServices;
 using HizenLabs.Extensions.ObjectSerializer.Enums;
 using HizenLabs.Extensions.ObjectSerializer.Extensions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
@@ -302,6 +304,35 @@ public class BinaryReaderExtensionsTests : BinaryReaderWriterTest
 
         _memoryStream.Position = 0;
         Assert.ThrowsException<ArgumentException>(() => _reader.ReadArray(actual, 2, 5));
+    }
+
+    /// <summary>
+    /// Tests the <see cref="BinaryReaderExtensions.ReadList{T}(BinaryReader, List{T})"/> method
+    /// </summary>
+    [TestMethod]
+    public void ReadList_ShouldReturnCorrectList()
+    {
+        var testValues = new List<int> { 1, 2, 3, 5, 7, 11, 13, 17, 19, 23 };
+
+        _writer.Write(testValues.Count);
+        foreach (var item in testValues)
+        {
+            _writer.Write(item);
+        }
+
+        List<int> actual = new();
+        _memoryStream.Position = 0;
+        var result = _reader.ReadList(actual);
+
+        Assert.ReferenceEquals(result, actual);
+        CollectionAssert.AreEqual(testValues, actual);
+        Assert.ThrowsException<EndOfStreamException>(() => _reader.ReadByte());
+
+        _memoryStream.Position = 0;
+        var newResult = _reader.ReadList<int>();
+
+        Assert.IsFalse(result == newResult);
+        CollectionAssert.AreEqual(result, newResult);
     }
 
     #endregion

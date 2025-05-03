@@ -1,9 +1,11 @@
-﻿using HizenLabs.Extensions.ObjectSerializer.Enums;
+﻿using Facepunch;
+using HizenLabs.Extensions.ObjectSerializer.Enums;
 using HizenLabs.Extensions.ObjectSerializer.Exceptions;
 using HizenLabs.Extensions.ObjectSerializer.Internal;
 using HizenLabs.Extensions.ObjectSerializer.Structs;
 using JSON;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -193,6 +195,22 @@ public static class BinaryReaderExtensions
         if ((index + count) > buffer.Length) throw new ArgumentOutOfRangeException(nameof(count), "Index + count cannot be greater than the buffer length.");
 
         GenericArrayReader<T>.Read(reader, buffer, index, count);
+    }
+
+    /// <summary>
+    /// Reads a list of type <typeparamref name="T"/> from the current stream and advances the stream position by the size of the list.
+    /// </summary>
+    /// <typeparam name="T">The type of the list elements.</typeparam>
+    /// <param name="reader">The <see cref="BinaryReader"/> to read from.</param>
+    /// <param name="list">The list to store the read values. If null, a new list will be created.</param>
+    /// <returns>The list of type <typeparamref name="T"/> read from the stream.</returns>
+    public static List<T> ReadList<T>(this BinaryReader reader, List<T> list = null)
+    {
+        list ??= Pool.Get<List<T>>();
+
+        GenericListReader<T>.Read(reader, list);
+
+        return list;
     }
 
     #endregion

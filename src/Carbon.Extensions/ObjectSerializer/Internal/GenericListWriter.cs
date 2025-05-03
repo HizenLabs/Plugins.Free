@@ -23,13 +23,10 @@ internal class GenericListWriter<T>
     static GenericListWriter()
     {
         var type = typeof(T);
-        var needsMarker = type == typeof(object);
 
         Write = (writer, list) =>
         {
-            writer.Write(type);
             writer.Write(list.Count);
-
             foreach (var item in list)
             {
                 if (item is null)
@@ -38,11 +35,6 @@ internal class GenericListWriter<T>
                 }
                 else
                 {
-                    if (needsMarker)
-                    {
-                        writer.Write(item.GetType());
-                    }
-
                     GenericWriter<T>.Write(writer, item);
                 }
             }

@@ -1,6 +1,40 @@
-﻿namespace HizenLabs.Extensions.ObjectSerializer.Internal
+﻿using Facepunch;
+using System;
+using System.Collections.Generic;
+using System.IO;
+
+namespace HizenLabs.Extensions.ObjectSerializer.Internal;
+
+/// <summary>
+/// Provides methods for reading generic instances of <typeparamref name="T"/> from a <see cref="BinaryReader"/>.
+/// </summary>
+/// <typeparam name="T">The type of the object to read.</typeparam>
+internal class GenericListReader<T>
 {
-    internal class GenericListReader
+    /// <summary>
+    /// The delegate that reads a list of <typeparamref name="T"/> from the <see cref="BinaryReader"/>.
+    /// </summary>
+    public static Func<BinaryReader, List<T>, List<T>> Read { get; }
+
+    /// <summary>
+    /// Initializes the <see cref="GenericListReader{T}"/> class.
+    /// </summary>
+    static GenericListReader()
     {
+        var type = typeof(T);
+
+        Read = (reader, list) =>
+        {
+            list ??= Pool.Get<List<T>>();
+
+            var count = reader.ReadInt32();
+            for (int i = 0; i < count; i++)
+            {
+                var item = GenericReader<T>.Read(reader);
+                list.Add(item);
+            }
+
+            return list;
+        };
     }
 }

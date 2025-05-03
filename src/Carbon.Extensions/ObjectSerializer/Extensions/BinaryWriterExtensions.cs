@@ -2,6 +2,7 @@
 using HizenLabs.Extensions.ObjectSerializer.Internal;
 using HizenLabs.Extensions.ObjectSerializer.Structs;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -184,6 +185,17 @@ public static class BinaryWriterExtensions
         if (count + index > array.Length) throw new ArgumentOutOfRangeException(nameof(count), "Count and index cannot exceed the array length.");
 
         GenericArrayWriter<T>.Write(writer, array, index, count);
+    }
+
+    /// <summary>
+    /// Writes a list of <typeparamref name="T"/> values to the current stream and advances the stream position by the length of the list.
+    /// </summary>
+    /// <param name="writer">The <see cref="BinaryWriter"/> to write to.</param>
+    /// <param name="list">The list of <typeparamref name="T"/> values to write.</param>
+    /// <typeparam name="T">The type of the list elements.</typeparam>
+    public static void Write<T>(this BinaryWriter writer, List<T> list)
+    {
+        GenericListWriter<T>.Write(writer, list);
     }
 
     #endregion

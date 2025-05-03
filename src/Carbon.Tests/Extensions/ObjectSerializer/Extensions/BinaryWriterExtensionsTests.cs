@@ -3,6 +3,7 @@ using HizenLabs.Extensions.ObjectSerializer.Enums;
 using HizenLabs.Extensions.ObjectSerializer.Extensions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
@@ -363,6 +364,27 @@ public class BinaryWriterExtensionsTests : BinaryReaderWriterTest
         Assert.AreEqual(TypeMarker.Null, itemType9);
 
         Assert.ThrowsException<EndOfStreamException>(() => _reader.ReadByte());
+    }
+
+    /// <summary>
+    /// Tests the <see cref="BinaryWriterExtensions.Write(BinaryWriter, List{T})"/> method to ensure it correctly writes a list of <see cref="int"/> values to a binary stream.
+    /// </summary>
+    [TestMethod]
+    public void WriteList_ShouldWriteCorrectList()
+    {
+        var testValues = new List<int> { 1, 2, 3, 5, 7, 11, 13, 17, 19, 23 };
+
+        _writer.Write(testValues);
+        _memoryStream.Position = 0;
+
+        var actualLength = _reader.ReadInt32();
+        Assert.AreEqual(testValues.Count, actualLength);
+
+        for (int i = 0; i < testValues.Count; i++)
+        {
+            int actualValue = _reader.ReadInt32();
+            Assert.AreEqual(testValues[i], actualValue);
+        }
     }
 
     #endregion
