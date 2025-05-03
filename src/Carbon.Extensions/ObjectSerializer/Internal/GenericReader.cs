@@ -1,6 +1,7 @@
 ﻿using HizenLabs.Extensions.ObjectSerializer.Enums;
 using HizenLabs.Extensions.ObjectSerializer.Extensions;
 using HizenLabs.Extensions.ObjectSerializer.Internal.Delegates;
+using Rust.Demo;
 using System;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -94,15 +95,14 @@ internal class GenericReader<T>
         else if (typeMarker == TypeMarker.Quaternion) Read = r => { var v = r.ReadQuaternion(); return Unsafe.As<Quaternion, T>(ref v); };
         else if (typeMarker == TypeMarker.Color) Read = r => { var v = r.ReadColor(); return Unsafe.As<Color, T>(ref v); };
 
-        else if (typeMarker == TypeMarker.List) Read = r =>
-        {
-            var elementType = type.GetGenericArguments()[0].GetTypeMarker();
-            throw new NotImplementedException();
-        };
-        else if (typeMarker == TypeMarker.Dictionary) Read = r =>
+        else if (typeMarker == TypeMarker.List)
         {
             throw new NotImplementedException();
-        };
+        }
+        else if (typeMarker == TypeMarker.Dictionary)
+        {
+            throw new NotImplementedException();
+        }
 
         // Disabling nesting of generic array types because we don't currently have a suitable way to prevent new allocations.
         // With GenericArrayReader<T> we at least directly read into the array, but we don't have the type params for that here (nor do we want to add them yet).
