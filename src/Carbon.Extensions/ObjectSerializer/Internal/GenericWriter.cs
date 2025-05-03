@@ -96,6 +96,21 @@ internal class GenericWriter<T>
         else if (type == TypeMarker.Quaternion) Write = (w, v) => w.Write(Unsafe.As<T, Quaternion>(ref v));
         else if (type == TypeMarker.Color) Write = (w, v) => w.Write(Unsafe.As<T, Color>(ref v));
 
+        else if (type == TypeMarker.List) Write = (w, v) =>
+        {
+            throw new NotImplementedException();
+        };
+        else if (type == TypeMarker.Dictionary) Write = (w, v) =>
+        {
+            throw new NotImplementedException();
+        };
+
+        // Disabling nesting of generic array types because we don't currently have a suitable way to prevent new allocations during read.
+        // We _could_ just enable them during write, but then we don't have a matching generic reader for them and it would cause headaches.
+        // With GenericArrayReader<T> we at least directly read into the array, but we don't have the type params for that here (nor do we want to add them yet).
+        // In general, we should use List<> anyway.
+        else if (type == TypeMarker.Array) Write = (_, _) => throw new Exception("Generic array mappings are not supported. Please use List<> instead.");
+
         else Write = (_, _) => throw new NotSupportedException($"Type {typeof(T)} is not supported.");
     }
 }
