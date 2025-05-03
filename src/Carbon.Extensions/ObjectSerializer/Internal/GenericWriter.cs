@@ -25,9 +25,10 @@ internal class GenericWriter<T>
     /// <exception cref="InvalidOperationException">Thrown when the type is object.</exception>
     static GenericWriter()
     {
-        var type = typeof(T).GetTypeMarker();
+        var type = typeof(T);
+        var typeMarker = type.GetTypeMarker();
 
-        if (type == TypeMarker.Object) Write = (w, v) =>
+        if (typeMarker == TypeMarker.Object) Write = (w, v) =>
         {
             if (v is null) w.Write(TypeMarker.Null);
             else
@@ -67,40 +68,42 @@ internal class GenericWriter<T>
                 else throw new NotSupportedException($"Type {objType} is not supported.");
             }
         };
-        else if (type == TypeMarker.Boolean) Write = (w, v) => w.Write(Unsafe.As<T, bool>(ref v));
-        else if (type == TypeMarker.SByte) Write = (w, v) => w.Write(Unsafe.As<T, sbyte>(ref v));
-        else if (type == TypeMarker.Byte) Write = (w, v) => w.Write(Unsafe.As<T, byte>(ref v));
-        else if (type == TypeMarker.Int16) Write = (w, v) => w.Write(Unsafe.As<T, short>(ref v));
-        else if (type == TypeMarker.UInt16) Write = (w, v) => w.Write(Unsafe.As<T, ushort>(ref v));
-        else if (type == TypeMarker.Int32) Write = (w, v) => w.Write(Unsafe.As<T, int>(ref v));
-        else if (type == TypeMarker.UInt32) Write = (w, v) => w.Write(Unsafe.As<T, uint>(ref v));
-        else if (type == TypeMarker.Int64) Write = (w, v) => w.Write(Unsafe.As<T, long>(ref v));
-        else if (type == TypeMarker.UInt64) Write = (w, v) => w.Write(Unsafe.As<T, ulong>(ref v));
-        else if (type == TypeMarker.Single) Write = (w, v) => w.Write(Unsafe.As<T, float>(ref v));
-        else if (type == TypeMarker.Double) Write = (w, v) => w.Write(Unsafe.As<T, double>(ref v));
-        else if (type == TypeMarker.Decimal) Write = (w, v) => w.Write(Unsafe.As<T, decimal>(ref v));
-        else if (type == TypeMarker.Char) Write = (w, v) => w.Write(Unsafe.As<T, char>(ref v));
+        else if (typeMarker == TypeMarker.Boolean) Write = (w, v) => w.Write(Unsafe.As<T, bool>(ref v));
+        else if (typeMarker == TypeMarker.SByte) Write = (w, v) => w.Write(Unsafe.As<T, sbyte>(ref v));
+        else if (typeMarker == TypeMarker.Byte) Write = (w, v) => w.Write(Unsafe.As<T, byte>(ref v));
+        else if (typeMarker == TypeMarker.Int16) Write = (w, v) => w.Write(Unsafe.As<T, short>(ref v));
+        else if (typeMarker == TypeMarker.UInt16) Write = (w, v) => w.Write(Unsafe.As<T, ushort>(ref v));
+        else if (typeMarker == TypeMarker.Int32) Write = (w, v) => w.Write(Unsafe.As<T, int>(ref v));
+        else if (typeMarker == TypeMarker.UInt32) Write = (w, v) => w.Write(Unsafe.As<T, uint>(ref v));
+        else if (typeMarker == TypeMarker.Int64) Write = (w, v) => w.Write(Unsafe.As<T, long>(ref v));
+        else if (typeMarker == TypeMarker.UInt64) Write = (w, v) => w.Write(Unsafe.As<T, ulong>(ref v));
+        else if (typeMarker == TypeMarker.Single) Write = (w, v) => w.Write(Unsafe.As<T, float>(ref v));
+        else if (typeMarker == TypeMarker.Double) Write = (w, v) => w.Write(Unsafe.As<T, double>(ref v));
+        else if (typeMarker == TypeMarker.Decimal) Write = (w, v) => w.Write(Unsafe.As<T, decimal>(ref v));
+        else if (typeMarker == TypeMarker.Char) Write = (w, v) => w.Write(Unsafe.As<T, char>(ref v));
 
-        else if (type == TypeMarker.String) Write = (w, v) => w.Write((string)(object)v!);
-        else if (type == TypeMarker.Type) Write = (w, v) => w.Write((Type)(object)v!);
+        else if (typeMarker == TypeMarker.String) Write = (w, v) => w.Write((string)(object)v!);
+        else if (typeMarker == TypeMarker.Type) Write = (w, v) => w.Write((Type)(object)v!);
 
-        else if (type == TypeMarker.Enum) Write = (w, v) => EnumWriter<T>.Write(w, v);
+        else if (typeMarker == TypeMarker.Enum) Write = (w, v) => EnumWriter<T>.Write(w, v);
 
-        else if (type == TypeMarker.Guid) Write = (w, v) => w.Write(Unsafe.As<T, Guid>(ref v));
-        else if (type == TypeMarker.DateTime) Write = (w, v) => w.Write(Unsafe.As<T, DateTime>(ref v));
-        else if (type == TypeMarker.TimeSpan) Write = (w, v) => w.Write(Unsafe.As<T, TimeSpan>(ref v));
+        else if (typeMarker == TypeMarker.Guid) Write = (w, v) => w.Write(Unsafe.As<T, Guid>(ref v));
+        else if (typeMarker == TypeMarker.DateTime) Write = (w, v) => w.Write(Unsafe.As<T, DateTime>(ref v));
+        else if (typeMarker == TypeMarker.TimeSpan) Write = (w, v) => w.Write(Unsafe.As<T, TimeSpan>(ref v));
 
-        else if (type == TypeMarker.Vector2) Write = (w, v) => w.Write(Unsafe.As<T, Vector2>(ref v));
-        else if (type == TypeMarker.Vector3) Write = (w, v) => w.Write(Unsafe.As<T, Vector3>(ref v));
-        else if (type == TypeMarker.Vector4) Write = (w, v) => w.Write(Unsafe.As<T, Vector4>(ref v));
-        else if (type == TypeMarker.Quaternion) Write = (w, v) => w.Write(Unsafe.As<T, Quaternion>(ref v));
-        else if (type == TypeMarker.Color) Write = (w, v) => w.Write(Unsafe.As<T, Color>(ref v));
+        else if (typeMarker == TypeMarker.Vector2) Write = (w, v) => w.Write(Unsafe.As<T, Vector2>(ref v));
+        else if (typeMarker == TypeMarker.Vector3) Write = (w, v) => w.Write(Unsafe.As<T, Vector3>(ref v));
+        else if (typeMarker == TypeMarker.Vector4) Write = (w, v) => w.Write(Unsafe.As<T, Vector4>(ref v));
+        else if (typeMarker == TypeMarker.Quaternion) Write = (w, v) => w.Write(Unsafe.As<T, Quaternion>(ref v));
+        else if (typeMarker == TypeMarker.Color) Write = (w, v) => w.Write(Unsafe.As<T, Color>(ref v));
 
-        else if (type == TypeMarker.List) Write = (w, v) =>
+        else if (typeMarker == TypeMarker.List) Write = (w, v) =>
         {
+            var elementType = type.GetGenericArguments()[0].GetTypeMarker();
             throw new NotImplementedException();
+
         };
-        else if (type == TypeMarker.Dictionary) Write = (w, v) =>
+        else if (typeMarker == TypeMarker.Dictionary) Write = (w, v) =>
         {
             throw new NotImplementedException();
         };
@@ -109,7 +112,7 @@ internal class GenericWriter<T>
         // We _could_ just enable them during write, but then we don't have a matching generic reader for them and it would cause headaches.
         // With GenericArrayReader<T> we at least directly read into the array, but we don't have the type params for that here (nor do we want to add them yet).
         // In general, we should use List<> anyway.
-        else if (type == TypeMarker.Array) Write = (_, _) => throw new Exception("Generic array mappings are not supported. Please use List<> instead.");
+        else if (typeMarker == TypeMarker.Array) Write = (_, _) => throw new Exception("Generic array mappings are not supported. Please use List<> instead.");
 
         else Write = (_, _) => throw new NotSupportedException($"Type {typeof(T)} is not supported.");
     }

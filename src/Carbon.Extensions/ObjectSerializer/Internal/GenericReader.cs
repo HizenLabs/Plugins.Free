@@ -26,9 +26,10 @@ internal class GenericReader<T>
     /// <exception cref="InvalidOperationException">Thrown when the type is object.</exception>
     static GenericReader()
     {
-        var type = typeof(T).GetTypeMarker();
+        var type = typeof(T);
+        var typeMarker = type.GetTypeMarker();
 
-        if (type == TypeMarker.Object) Read = r =>
+        if (typeMarker == TypeMarker.Object) Read = r =>
         {
             var marker = r.ReadEnum<TypeMarker>();
 
@@ -64,40 +65,41 @@ internal class GenericReader<T>
 
             else throw new NotSupportedException($"Type '{marker}' is not supported.");
         };
-        else if (type == TypeMarker.Boolean) Read = r => { var v = r.ReadBoolean(); return Unsafe.As<bool, T>(ref v); };
-        else if (type == TypeMarker.SByte) Read = r => { var v = r.ReadSByte(); return Unsafe.As<sbyte, T>(ref v); };
-        else if (type == TypeMarker.Byte) Read = r => { var v = r.ReadByte(); return Unsafe.As<byte, T>(ref v); };
-        else if (type == TypeMarker.Int16) Read = r => { var v = r.ReadInt16(); return Unsafe.As<short, T>(ref v); };
-        else if (type == TypeMarker.UInt16) Read = r => { var v = r.ReadUInt16(); return Unsafe.As<ushort, T>(ref v); };
-        else if (type == TypeMarker.Int32) Read = r => { var v = r.ReadInt32(); return Unsafe.As<int, T>(ref v); };
-        else if (type == TypeMarker.UInt32) Read = r => { var v = r.ReadUInt32(); return Unsafe.As<uint, T>(ref v); };
-        else if (type == TypeMarker.Int64) Read = r => { var v = r.ReadInt64(); return Unsafe.As<long, T>(ref v); };
-        else if (type == TypeMarker.UInt64) Read = r => { var v = r.ReadUInt64(); return Unsafe.As<ulong, T>(ref v); };
-        else if (type == TypeMarker.Single) Read = r => { var v = r.ReadSingle(); return Unsafe.As<float, T>(ref v); };
-        else if (type == TypeMarker.Double) Read = r => { var v = r.ReadDouble(); return Unsafe.As<double, T>(ref v); };
-        else if (type == TypeMarker.Decimal) Read = r => { var v = r.ReadDecimal(); return Unsafe.As<decimal, T>(ref v); };
-        else if (type == TypeMarker.Char) Read = r => { var v = r.ReadChar(); return Unsafe.As<char, T>(ref v); };
+        else if (typeMarker == TypeMarker.Boolean) Read = r => { var v = r.ReadBoolean(); return Unsafe.As<bool, T>(ref v); };
+        else if (typeMarker == TypeMarker.SByte) Read = r => { var v = r.ReadSByte(); return Unsafe.As<sbyte, T>(ref v); };
+        else if (typeMarker == TypeMarker.Byte) Read = r => { var v = r.ReadByte(); return Unsafe.As<byte, T>(ref v); };
+        else if (typeMarker == TypeMarker.Int16) Read = r => { var v = r.ReadInt16(); return Unsafe.As<short, T>(ref v); };
+        else if (typeMarker == TypeMarker.UInt16) Read = r => { var v = r.ReadUInt16(); return Unsafe.As<ushort, T>(ref v); };
+        else if (typeMarker == TypeMarker.Int32) Read = r => { var v = r.ReadInt32(); return Unsafe.As<int, T>(ref v); };
+        else if (typeMarker == TypeMarker.UInt32) Read = r => { var v = r.ReadUInt32(); return Unsafe.As<uint, T>(ref v); };
+        else if (typeMarker == TypeMarker.Int64) Read = r => { var v = r.ReadInt64(); return Unsafe.As<long, T>(ref v); };
+        else if (typeMarker == TypeMarker.UInt64) Read = r => { var v = r.ReadUInt64(); return Unsafe.As<ulong, T>(ref v); };
+        else if (typeMarker == TypeMarker.Single) Read = r => { var v = r.ReadSingle(); return Unsafe.As<float, T>(ref v); };
+        else if (typeMarker == TypeMarker.Double) Read = r => { var v = r.ReadDouble(); return Unsafe.As<double, T>(ref v); };
+        else if (typeMarker == TypeMarker.Decimal) Read = r => { var v = r.ReadDecimal(); return Unsafe.As<decimal, T>(ref v); };
+        else if (typeMarker == TypeMarker.Char) Read = r => { var v = r.ReadChar(); return Unsafe.As<char, T>(ref v); };
 
-        else if (type == TypeMarker.String) Read = r => (T)(object)r.ReadString();
-        else if (type == TypeMarker.Type) Read = r => (T)(object)Type.GetType(r.ReadString());
+        else if (typeMarker == TypeMarker.String) Read = r => (T)(object)r.ReadString();
+        else if (typeMarker == TypeMarker.Type) Read = r => (T)(object)Type.GetType(r.ReadString());
 
-        else if (type == TypeMarker.Enum) Read = r => EnumReader<T>.Read(r);
+        else if (typeMarker == TypeMarker.Enum) Read = r => EnumReader<T>.Read(r);
 
-        else if (type == TypeMarker.Guid) Read = r => { var v = r.ReadGuid(); return Unsafe.As<Guid, T>(ref v); };
-        else if (type == TypeMarker.DateTime) Read = r => { var v = r.ReadDateTime(); return Unsafe.As<DateTime, T>(ref v); };
-        else if (type == TypeMarker.TimeSpan) Read = r => { var v = r.ReadTimeSpan(); return Unsafe.As<TimeSpan, T>(ref v); };
+        else if (typeMarker == TypeMarker.Guid) Read = r => { var v = r.ReadGuid(); return Unsafe.As<Guid, T>(ref v); };
+        else if (typeMarker == TypeMarker.DateTime) Read = r => { var v = r.ReadDateTime(); return Unsafe.As<DateTime, T>(ref v); };
+        else if (typeMarker == TypeMarker.TimeSpan) Read = r => { var v = r.ReadTimeSpan(); return Unsafe.As<TimeSpan, T>(ref v); };
 
-        else if (type == TypeMarker.Vector2) Read = r => { var v = r.ReadVector2(); return Unsafe.As<Vector2, T>(ref v); };
-        else if (type == TypeMarker.Vector3) Read = r => { var v = r.ReadVector3(); return Unsafe.As<Vector3, T>(ref v); };
-        else if (type == TypeMarker.Vector4) Read = r => { var v = r.ReadVector4(); return Unsafe.As<Vector4, T>(ref v); };
-        else if (type == TypeMarker.Quaternion) Read = r => { var v = r.ReadQuaternion(); return Unsafe.As<Quaternion, T>(ref v); };
-        else if (type == TypeMarker.Color) Read = r => { var v = r.ReadColor(); return Unsafe.As<Color, T>(ref v); };
+        else if (typeMarker == TypeMarker.Vector2) Read = r => { var v = r.ReadVector2(); return Unsafe.As<Vector2, T>(ref v); };
+        else if (typeMarker == TypeMarker.Vector3) Read = r => { var v = r.ReadVector3(); return Unsafe.As<Vector3, T>(ref v); };
+        else if (typeMarker == TypeMarker.Vector4) Read = r => { var v = r.ReadVector4(); return Unsafe.As<Vector4, T>(ref v); };
+        else if (typeMarker == TypeMarker.Quaternion) Read = r => { var v = r.ReadQuaternion(); return Unsafe.As<Quaternion, T>(ref v); };
+        else if (typeMarker == TypeMarker.Color) Read = r => { var v = r.ReadColor(); return Unsafe.As<Color, T>(ref v); };
 
-        else if (type == TypeMarker.List) Read = r =>
+        else if (typeMarker == TypeMarker.List) Read = r =>
         {
+            var elementType = type.GetGenericArguments()[0].GetTypeMarker();
             throw new NotImplementedException();
         };
-        else if (type == TypeMarker.Dictionary) Read = r =>
+        else if (typeMarker == TypeMarker.Dictionary) Read = r =>
         {
             throw new NotImplementedException();
         };
@@ -105,8 +107,8 @@ internal class GenericReader<T>
         // Disabling nesting of generic array types because we don't currently have a suitable way to prevent new allocations.
         // With GenericArrayReader<T> we at least directly read into the array, but we don't have the type params for that here (nor do we want to add them yet).
         // In general, we should use List<> anyway.
-        else if (type == TypeMarker.Array) Read = _ => throw new Exception("Generic array mappings are not supported. Please use List<> instead.");
+        else if (typeMarker == TypeMarker.Array) Read = _ => throw new Exception("Generic array mappings are not supported. Please use List<> instead.");
 
-        else Read = _ => throw new NotSupportedException($"Type '{type}' is not supported.");
+        else Read = _ => throw new NotSupportedException($"Type '{typeMarker}' is not supported.");
     }
 }
