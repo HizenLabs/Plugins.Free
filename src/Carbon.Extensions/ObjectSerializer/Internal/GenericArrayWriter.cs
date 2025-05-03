@@ -33,30 +33,14 @@ internal class GenericArrayWriter<T>
         };
         else
         {
-            var needsMarker = elementType == typeof(object);
             Write = (w, v, index, count) =>
             {
                 if (v is not T[] array) throw new ArgumentException("Expected array.", nameof(v));
 
-                w.Write(elementType.GetTypeMarker());
                 w.Write(count);
-
                 for (int i = 0; i < count; i++)
                 {
-                    var item = array[index + i];
-                    if (item is null)
-                    {
-                        w.Write(TypeMarker.Null);
-                    }
-                    else
-                    {
-                        if (needsMarker)
-                        {
-                            w.Write(item.GetType().GetTypeMarker());
-                        }
-
-                        GenericWriter<T>.Write(w, item);
-                    }
+                    GenericWriter<T>.Write(w, array[i]);
                 }
             };
         }

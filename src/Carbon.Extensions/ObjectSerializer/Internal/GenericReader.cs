@@ -30,6 +30,7 @@ internal class GenericReader<T>
         if (type == typeof(object)) Read = r =>
         {
             var marker = r.ReadEnum<TypeMarker>();
+
             if (marker == TypeMarker.Null) return default;
             else if (marker == TypeMarker.Boolean) return (T)(object)r.ReadBoolean();
             else if (marker == TypeMarker.SByte) return (T)(object)r.ReadSByte();

@@ -295,9 +295,6 @@ public class BinaryWriterExtensionsTests : BinaryReaderWriterTest
         _writer.Write(testValues);
         _memoryStream.Position = 0;
 
-        var actualType = _reader.ReadEnum<TypeMarker>();
-        Assert.AreEqual(TypeMarker.Int32, actualType);
-
         var actualLength = _reader.ReadInt32();
         Assert.AreEqual(testValues.Length, actualLength);
 
@@ -318,9 +315,6 @@ public class BinaryWriterExtensionsTests : BinaryReaderWriterTest
 
         _writer.Write(testValues);
         _memoryStream.Position = 0;
-
-        var actualTypeName = _reader.ReadEnum<TypeMarker>();
-        Assert.AreEqual(TypeMarker.Object, actualTypeName);
 
         var actualLength = _reader.ReadInt32();
         Assert.AreEqual(testValues.Length, actualLength);

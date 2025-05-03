@@ -1,4 +1,5 @@
 ﻿using Carbon.Tests.Test.Base;
+using HizenLabs.Extensions.ObjectSerializer.Enums;
 using HizenLabs.Extensions.ObjectSerializer.Extensions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
@@ -285,7 +286,6 @@ public class BinaryReaderExtensionsTests : BinaryReaderWriterTest
     {
         int[] testValues = new int[] { 1, 2, 3, 5, 7, 11, 13, 17, 19, 23 };
 
-        _writer.Write(typeof(int).AssemblyQualifiedName);
         _writer.Write(testValues.Length);
         for (int i = 0; i < testValues.Length; i++)
         {
@@ -298,8 +298,10 @@ public class BinaryReaderExtensionsTests : BinaryReaderWriterTest
 
         CollectionAssert.AreEqual(testValues, actual);
 
+        Assert.ThrowsException<EndOfStreamException>(() => _reader.ReadByte());
+
         _memoryStream.Position = 0;
-        Assert.ThrowsException<ArgumentOutOfRangeException>(() => _reader.ReadArray(actual, 2, 5));
+        Assert.ThrowsException<ArgumentException>(() => _reader.ReadArray(actual, 2, 5));
     }
 
     #endregion

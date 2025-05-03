@@ -1,4 +1,5 @@
-﻿using HizenLabs.Extensions.ObjectSerializer.Internal.Delegates;
+﻿using HizenLabs.Extensions.ObjectSerializer.Enums;
+using HizenLabs.Extensions.ObjectSerializer.Extensions;
 using System;
 using System.IO;
 
@@ -30,17 +31,17 @@ internal class GenericArrayReader<T>
         };
         else
         {
-            var elementReader = GenericDelegateFactory.BuildProperty<Func<BinaryReader, T>>(
-                genericTypeDef: typeof(GenericReader<>),
-                typeArgs: elementType,
-                name: nameof(GenericReader<int>.Read)
-            );
-
-            Read = (r, buffer, index, count) =>
+            Read = (r, v, index, count) =>
             {
+                if (v is not T[] array) throw new ArgumentException("Expected array.", nameof(v));
+
+                var size = r.ReadInt32();
+                if (size != count) throw new ArgumentException($"Expected length {count}, but got {size}.");
+
                 for (int i = 0; i < count; i++)
                 {
-                    buffer[index + i] = elementReader(r);
+                    var item = GenericReader<T>.Read(r);
+                    array[index + i] = item;
                 }
             };
         }

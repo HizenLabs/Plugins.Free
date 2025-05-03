@@ -1,6 +1,8 @@
-﻿using HizenLabs.Extensions.ObjectSerializer.Exceptions;
+﻿using HizenLabs.Extensions.ObjectSerializer.Enums;
+using HizenLabs.Extensions.ObjectSerializer.Exceptions;
 using HizenLabs.Extensions.ObjectSerializer.Internal;
 using HizenLabs.Extensions.ObjectSerializer.Structs;
+using JSON;
 using System;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -187,15 +189,10 @@ public static class BinaryReaderExtensions
     /// <param name="count">The number of elements to read. If -1, reads the entire buffer.</param>
     public static void ReadArray<T>(this BinaryReader reader, T[] buffer, int index = 0, int count = -1)
     {
-        var type = reader.ReadType();
-        if (type != typeof(T)) throw new ArgumentException($"Cannot read array of type {typeof(T)}. Expected type is {type}.");
-        
         if (count < 0) count = buffer.Length - index;
+        if ((index + count) > buffer.Length) throw new ArgumentOutOfRangeException(nameof(count), "Index + count cannot be greater than the buffer length.");
 
-        var size = reader.ReadInt32();
-        if (count != size) throw new ArgumentOutOfRangeException($"Cannot read array of type {typeof(T)} into buffer. Buffer size is {buffer.Length}, but got {size}.");
-
-        GenericArrayReader<T>.Read(reader, buffer, index, size);
+        GenericArrayReader<T>.Read(reader, buffer, index, count);
     }
 
     #endregion

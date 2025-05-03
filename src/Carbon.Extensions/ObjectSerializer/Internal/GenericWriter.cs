@@ -33,6 +33,7 @@ internal class GenericWriter<T>
             else
             {
                 var objType = v.GetType().GetTypeMarker();
+                w.Write(objType);
 
                 if (objType == TypeMarker.Boolean && v is bool valueBool) w.Write(valueBool);
                 else if (objType == TypeMarker.SByte && v is sbyte valueSByte) w.Write(valueSByte);
