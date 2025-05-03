@@ -1,5 +1,6 @@
 ﻿using HizenLabs.Extensions.ObjectSerializer.Enums;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace HizenLabs.Extensions.ObjectSerializer.Extensions;
@@ -49,8 +50,9 @@ public static class TypeExtensions
         if (type == typeof(Color)) return TypeMarker.Color;
 
         if (type.IsArray) return TypeMarker.Array;
-        if (typeof(System.Collections.IList).IsAssignableFrom(type)) return TypeMarker.List;
-        if (typeof(System.Collections.IDictionary).IsAssignableFrom(type)) return TypeMarker.Dictionary;
+
+        if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>)) return TypeMarker.List;
+        if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Dictionary<,>)) return TypeMarker.Dictionary;
 
         // I don't understand, but there is a System.RuntimeType as well as System.Type, and this
         // is basically the only clean way to test for it since it's a hidden type (so I can't use typeof)
