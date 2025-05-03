@@ -543,6 +543,7 @@
     <Compile Include="Exceptions\TypeSerializationException.cs" />
     <Compile Include="Extensions\BinaryReaderExtensions.cs" />
     <Compile Include="Extensions\BinaryWriterExtensions.cs" />
+    <Compile Include="Extensions\DictionaryExtensions.cs" />
     <Compile Include="Extensions\TypeExtensions.cs" />
     <Compile Include="Extensions\TypeMarkerExtensions.cs" />
     <Compile Include="Internal\Delegates\DelegateAdapter.cs" />
@@ -559,7 +560,16 @@
     <Compile Include="Internal\GenericReader.cs" />
     <Compile Include="Internal\Delegates\GenericTypeResolver.cs" />
     <Compile Include="Internal\GenericWriter.cs" />
+    <Compile Include="Mappers\Abstractions\BaseObjectMapper.cs" />
+    <Compile Include="Mappers\Abstractions\IObjectMapper.cs" />
+    <Compile Include="Mappers\Abstractions\IObjectDataMapping.cs" />
+    <Compile Include="Mappers\BaseEntityMapper.cs" />
+    <Compile Include="Mappers\ItemMapper.cs" />
+    <Compile Include="Mappers\ObjectMapperFactory.cs" />
+    <Compile Include="Mappers\ObjectDataMapping.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Serialization\SerializationContext.cs" />
+    <Compile Include="Serialization\SerializableObject.cs" />
     <Compile Include="Structs\GuidParts.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -568,7 +578,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="JsonConverters\" />
-    <Folder Include="Serialized\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
