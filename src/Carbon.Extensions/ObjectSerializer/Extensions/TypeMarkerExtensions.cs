@@ -1,5 +1,6 @@
 ﻿using HizenLabs.Extensions.ObjectSerializer.Enums;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace HizenLabs.Extensions.ObjectSerializer.Extensions;
@@ -51,8 +52,8 @@ public static class TypeMarkerExtensions
             TypeMarker.Color => typeof(Color),
 
             TypeMarker.Array => typeof(Array),
-            TypeMarker.List => typeof(System.Collections.IList),
-            TypeMarker.Dictionary => typeof(System.Collections.IDictionary),
+            TypeMarker.List => typeof(List<>),
+            TypeMarker.Dictionary => typeof(Dictionary<,>),
 
             _ => throw new ArgumentException($"Unsupported TypeMarker: {marker}", nameof(marker))
         };
