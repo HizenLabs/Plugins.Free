@@ -541,6 +541,7 @@
     <Compile Include="Enums\ObjectType.cs" />
     <Compile Include="Enums\TypeMarker.cs" />
     <Compile Include="Exceptions\EnumSerializationException.cs" />
+    <Compile Include="Exceptions\TypeMarkerResolverException.cs" />
     <Compile Include="Exceptions\TypeSerializationException.cs" />
     <Compile Include="Extensions\BinaryReaderExtensions.cs" />
     <Compile Include="Extensions\BinaryWriterExtensions.cs" />
@@ -561,6 +562,14 @@
     <Compile Include="Internal\GenericReader.cs" />
     <Compile Include="Internal\Delegates\GenericTypeResolver.cs" />
     <Compile Include="Internal\GenericWriter.cs" />
+    <Compile Include="Internal\TypeMarkerResolvers\ArrayTypeMarkerResolver.cs" />
+    <Compile Include="Internal\TypeMarkerResolvers\DirectTypeMarkerResolver.cs" />
+    <Compile Include="Internal\TypeMarkerResolvers\EnumTypeMarkerResolver.cs" />
+    <Compile Include="Internal\TypeMarkerResolvers\GenericTypeMarkerResolver.cs" />
+    <Compile Include="Internal\TypeMarkerResolvers\ITypeMarkerResolver.cs" />
+    <Compile Include="Internal\TypeMarkerResolvers\NullTypeMarkerResolver.cs" />
+    <Compile Include="Internal\TypeMarkerResolvers\SpecialTypeMarkerResolver.cs" />
+    <Compile Include="Internal\TypeMarkerResolvers\TypeMarkerResolver.cs" />
     <Compile Include="Mappers\Abstractions\BaseObjectMapper.cs" />
     <Compile Include="Mappers\Abstractions\IObjectMapper.cs" />
     <Compile Include="Mappers\Abstractions\IObjectDataMapping.cs" />
