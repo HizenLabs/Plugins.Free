@@ -14,12 +14,6 @@ namespace HizenLabs.Extensions.ObjectSerializer.Extensions;
 /// </summary>
 public static class BinaryReaderExtensions
 {
-    #region Pooling
-
-    private static ArrayPool<byte> _guidBuffer = new(16);
-
-    #endregion
-
     #region System
 
     /// <summary>
