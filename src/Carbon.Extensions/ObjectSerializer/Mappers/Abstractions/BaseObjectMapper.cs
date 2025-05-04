@@ -60,6 +60,13 @@ public abstract class BaseObjectMapper<TOriginal> : IObjectMapper
     }
 
     /// <summary>
+    /// Creates an instance of the original object type from the serialized data.
+    /// </summary>
+    /// <param name="source">The serialized data.</param>
+    /// <returns>An instance of the original object type.</returns>
+    protected abstract TOriginal CreateInstance(SerializableObject source);
+
+    /// <summary>
     /// First stage of serialization. This is called during the initial object serialization.
     /// Not all objects are guaranteed to be ready at this stage.
     /// </summary>
@@ -88,12 +95,16 @@ public abstract class BaseObjectMapper<TOriginal> : IObjectMapper
     /// </summary>
     /// <param name="source">The object to deserialize from.</param>
     /// <param name="target">The target object to deserialize to.</param>
-    protected virtual void OnDeserializeSelf(SerializableObject source, TOriginal target)
+    protected virtual TOriginal OnDeserializeSelf(SerializableObject source)
     {
+        var target = CreateInstance(source);
+
         foreach (var mapping in _mappings)
         {
             mapping.TryRead(target, source.Properties);
         }
+
+        return target;
     }
 
     /// <summary>
@@ -122,12 +133,9 @@ public abstract class BaseObjectMapper<TOriginal> : IObjectMapper
         }
     }
 
-    void IObjectMapper.DeserializeSelf(SerializableObject source, object target)
+    object IObjectMapper.DeserializeSelf(SerializableObject source)
     {
-        if (target is TOriginal original)
-        {
-            OnDeserializeSelf(source, original);
-        }
+        return OnDeserializeSelf(source);
     }
 
     void IObjectMapper.DeserializeComplete(SerializableObject source, object target, SerializationContext context)
