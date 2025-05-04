@@ -162,5 +162,5 @@ public enum TypeMarker : byte
     /// <summary>
     /// <see cref="TypeMarker"/> for <see cref="Serialization.SerializableObject"/>
     /// </summary>
-    SerializableObject
+    SerializableObject = 200,
 }
