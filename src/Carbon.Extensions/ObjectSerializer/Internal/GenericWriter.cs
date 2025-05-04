@@ -1,6 +1,7 @@
 ﻿using HizenLabs.Extensions.ObjectSerializer.Enums;
 using HizenLabs.Extensions.ObjectSerializer.Extensions;
 using HizenLabs.Extensions.ObjectSerializer.Internal.Delegates;
+using HizenLabs.Extensions.ObjectSerializer.Serialization;
 using System;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -66,6 +67,8 @@ internal class GenericWriter<T>
                 else if (objType == TypeMarker.Quaternion && v is Quaternion valueQuaternion) w.Write(valueQuaternion);
                 else if (objType == TypeMarker.Color && v is Color valueColor) w.Write(valueColor);
 
+                else if (objType == TypeMarker.SerializableObject && v is SerializableObject valueSerializableObject) w.Write(valueSerializableObject);
+
                 else throw new NotSupportedException($"Type {objType} is not supported.");
             }
         };
@@ -123,6 +126,8 @@ internal class GenericWriter<T>
         // With GenericArrayReader<T> we at least directly read into the array, but we don't have the type params for that here (nor do we want to add them yet).
         // In general, we should use List<> anyway.
         else if (typeMarker == TypeMarker.Array) Write = (_, _) => throw new Exception("Generic array mappings are not supported. Please use List<> instead.");
+
+        else if (typeMarker == TypeMarker.SerializableObject) Write = (w, v) => w.Write((SerializableObject)(object)v);
 
         else Write = (_, _) => throw new NotSupportedException($"Type {typeof(T)} is not supported.");
     }

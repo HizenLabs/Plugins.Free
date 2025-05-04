@@ -1,5 +1,7 @@
-﻿using HizenLabs.Extensions.ObjectSerializer.Exceptions;
+﻿using HizenLabs.Extensions.ObjectSerializer.Enums;
+using HizenLabs.Extensions.ObjectSerializer.Exceptions;
 using HizenLabs.Extensions.ObjectSerializer.Internal;
+using HizenLabs.Extensions.ObjectSerializer.Serialization;
 using HizenLabs.Extensions.ObjectSerializer.Structs;
 using System;
 using System.Collections.Generic;
@@ -208,6 +210,20 @@ public static class BinaryWriterExtensions
     public static void WriteDictionary<TKey, TValue>(this BinaryWriter writer, Dictionary<TKey, TValue> dict)
     {
         GenericDictionaryWriter<TKey, TValue>.Write(writer, dict);
+    }
+
+    #endregion
+
+    #region Custom Types
+
+    /// <summary>
+    /// Writes a <see cref="SerializableObject"/> to the current stream and advances the stream position by the length of the object.
+    /// </summary>
+    /// <param name="writer">The <see cref="BinaryWriter"/> to write to.</param>
+    /// <param name="obj">The <see cref="SerializableObject"/> to write.</param>
+    public static void Write(this BinaryWriter writer, SerializableObject obj)
+    {
+        obj.Write(writer);
     }
 
     #endregion

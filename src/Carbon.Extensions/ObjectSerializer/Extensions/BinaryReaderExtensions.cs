@@ -1,6 +1,7 @@
 ﻿using Facepunch;
 using HizenLabs.Extensions.ObjectSerializer.Exceptions;
 using HizenLabs.Extensions.ObjectSerializer.Internal;
+using HizenLabs.Extensions.ObjectSerializer.Serialization;
 using HizenLabs.Extensions.ObjectSerializer.Structs;
 using System;
 using System.Collections.Generic;
@@ -247,6 +248,29 @@ public static class BinaryReaderExtensions
         dictionary = GenericDictionaryReader<TKey, TValue>.Read(reader, dictionary);
 
         return dictionary;
+    }
+
+    /// <summary>
+    /// Reads a <see cref="SerializableObject"/> from the current stream and advances the stream position by the size of the object.
+    /// </summary>
+    /// <param name="reader">The <see cref="BinaryReader"/> to read from.</param>
+    /// <returns>The <see cref="SerializableObject"/> read from the stream.</returns>
+    public static SerializableObject ReadSerializableObject(this BinaryReader reader) =>
+        ReadSerializableObject(reader, null);
+
+    /// <summary>
+    /// Reads a <see cref="SerializableObject"/> from the current stream and advances the stream position by the size of the object.
+    /// </summary>
+    /// <param name="reader">The <see cref="BinaryReader"/> to read from.</param>
+    /// <param name="obj">The <see cref="SerializableObject"/> to read into. If null, a new object will be created.</param>
+    /// <returns>The <see cref="SerializableObject"/> read from the stream.</returns>
+    public static SerializableObject ReadSerializableObject(this BinaryReader reader, SerializableObject obj)
+    {
+        obj ??= Pool.Get<SerializableObject>();
+        
+        obj.Read(reader);
+
+        return obj;
     }
 
     #endregion

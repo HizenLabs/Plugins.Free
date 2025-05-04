@@ -118,6 +118,8 @@ internal class GenericReader<T>
         // In general, we should use List<> anyway.
         else if (typeMarker == TypeMarker.Array) Read = _ => throw new Exception("Generic array mappings are not supported. Please use List<> instead.");
 
+        else if (typeMarker == TypeMarker.SerializableObject) Read = r => (T)(object)r.ReadSerializableObject();
+
         else Read = _ => throw new NotSupportedException($"Type '{typeMarker}' is not supported.");
     }
 }
