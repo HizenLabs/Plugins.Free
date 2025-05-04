@@ -1,4 +1,6 @@
 ﻿using Facepunch;
+using HizenLabs.Extensions.ObjectSerializer.Extensions;
+using HizenLabs.Extensions.ObjectSerializer.Mappers;
 using System.Collections.Generic;
 
 namespace HizenLabs.Extensions.ObjectSerializer.Serialization;
@@ -8,16 +10,50 @@ namespace HizenLabs.Extensions.ObjectSerializer.Serialization;
 /// </summary>
 public class SerializationContext : Pool.IPooled
 {
-    public List<SerializableObject> Objects => _objects;
+    /// <summary>
+    /// The list of serializable objects.
+    /// </summary>
+    public IReadOnlyList<SerializableObject> Objects => _objects;
     private List<SerializableObject> _objects;
 
+    /// <summary>
+    /// The index of the next object to be added.
+    /// </summary>
+    public int NextObjectIndex { get; private set; }
+
+    /// <summary>
+    /// Creates a new <see cref="SerializableObject"/> and writes the <paramref name="source"/> to it before being added to the context.
+    /// </summary>
+    /// <typeparam name="T">The type of the object to serialize.</typeparam>
+    /// <param name="source">The object to serialize.</param>
+    public void AddObject<T>(T source)
+    {
+        var obj = Pool.Get<SerializableObject>();
+        obj.Init<T>(NextObjectIndex++);
+
+        var mapper = ObjectMapperFactory.GetMapper<T>();
+        mapper.SerializeSelf(source, obj);
+
+        _objects.Add(obj);
+    }
+
+    /// <summary>
+    /// Returns to the pool and clears the context and its members.
+    /// </summary>
     public void EnterPool()
     {
+        NextObjectIndex = 0;
+
         Pool.Free(ref _objects, true);
     }
 
+    /// <summary>
+    /// Leaves the pool and prepares the context.
+    /// </summary>
     public void LeavePool()
     {
+        NextObjectIndex = 0;
+
         _objects = Pool.Get<List<SerializableObject>>();
     }
 }

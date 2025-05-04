@@ -13,12 +13,12 @@ namespace HizenLabs.Extensions.ObjectSerializer.Serialization;
 public class SerializableObject : Pool.IPooled
 {
     /// <summary>
-    /// The ID for this object. Mainly used for connections like parent, entitylinks, etc.
+    /// The index for this object, relative to the context. Mainly used for connections like parent, entitylinks, etc.
     /// </summary>
-    public Guid ID { get; private set; }
+    public int Index { get; private set; }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="SerializableObject"/> class.
+    /// The type of the object.
     /// </summary>
     public ObjectType Type { get; private set; }
 
@@ -29,12 +29,23 @@ public class SerializableObject : Pool.IPooled
     private Dictionary<string, object> _properties;
 
     /// <summary>
+    /// Initializes the object for serialization.
+    /// </summary>
+    /// <param name="index">The index of the object.</param>
+    /// <typeparam name="T">The type of the object.</typeparam>
+    public void Init<T>(int index)
+    {
+        Index = index;
+        Type = typeof(T).GetObjectType();
+    }
+
+    /// <summary>
     /// Reads from the <see cref="BinaryReader"/> stream into the <see cref="SerializableObject"/>.
     /// </summary>
     /// <param name="reader">The <see cref="BinaryReader"/> to read from.</param>
     public void Read(BinaryReader reader)
     {
-        ID = reader.ReadGuid();
+        Index = reader.ReadInt32();
         Type = reader.ReadEnum<ObjectType>();
         reader.ReadDictionary(_properties);
     }
@@ -45,17 +56,17 @@ public class SerializableObject : Pool.IPooled
     /// <param name="writer">The <see cref="BinaryWriter"/> to write to.</param>
     public void Write(BinaryWriter writer)
     {
-        writer.Write(ID);
+        writer.Write(Index);
         writer.WriteEnum(Type);
         writer.WriteDictionary(_properties);
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="SerializableObject"/> class.
+    /// Resets the object when it returns to the pool.
     /// </summary>
     public void EnterPool()
     {
-        ID = Guid.Empty;
+        Index = -1;
         Type = default;
 
         _properties.DisposeValues();
@@ -63,11 +74,11 @@ public class SerializableObject : Pool.IPooled
     }
 
     /// <summary>
-    /// Leaves the pool and resets the object for reuse.
+    /// Prepares the object for use when leaving the pool.
     /// </summary>
     public void LeavePool()
     {
-        ID = Guid.NewGuid();
+        Index = -1;
         _properties = Pool.Get<Dictionary<string, object>>();
     }
 }

@@ -54,4 +54,36 @@ public abstract class BaseObjectMapper<TOriginal> : IObjectMapper
     protected virtual void OnDeserializeComplete(TOriginal source, SerializableObject target, SerializationContext context)
     {
     }
+
+    void IObjectMapper.SerializeSelf(object source, SerializableObject target)
+    {
+        if (source is TOriginal original)
+        {
+            OnSerializeSelf(original, target);
+        }
+    }
+
+    void IObjectMapper.SerializeComplete(object source, SerializableObject target, SerializationContext context)
+    {
+        if (source is TOriginal original)
+        {
+            OnSerializeComplete(original, target, context);
+        }
+    }
+
+    void IObjectMapper.DeserializeSelf(object source, SerializableObject target)
+    {
+        if (source is TOriginal original)
+        {
+            OnDeserializeSelf(original, target);
+        }
+    }
+
+    void IObjectMapper.DeserializeComplete(object source, SerializableObject target, SerializationContext context)
+    {
+        if (source is TOriginal original)
+        {
+            OnDeserializeComplete(original, target, context);
+        }
+    }
 }

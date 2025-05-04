@@ -541,6 +541,7 @@
     <Compile Include="Enums\ObjectType.cs" />
     <Compile Include="Enums\TypeMarker.cs" />
     <Compile Include="Exceptions\EnumSerializationException.cs" />
+    <Compile Include="Exceptions\ObjectTypeResolverException.cs" />
     <Compile Include="Exceptions\TypeMarkerResolverException.cs" />
     <Compile Include="Exceptions\TypeSerializationException.cs" />
     <Compile Include="Extensions\BinaryReaderExtensions.cs" />
@@ -562,6 +563,9 @@
     <Compile Include="Internal\GenericReader.cs" />
     <Compile Include="Internal\Delegates\GenericTypeResolver.cs" />
     <Compile Include="Internal\GenericWriter.cs" />
+    <Compile Include="Internal\ObjectTypeResolvers\DirectObjectTypeResolver.cs" />
+    <Compile Include="Internal\ObjectTypeResolvers\IObjectTypeResolver.cs" />
+    <Compile Include="Internal\ObjectTypeResolvers\ObjectTypeResolver.cs" />
     <Compile Include="Internal\PooledBuffer.cs" />
     <Compile Include="Internal\TypeMarkerResolvers\ArrayTypeMarkerResolver.cs" />
     <Compile Include="Internal\TypeMarkerResolvers\DirectTypeMarkerResolver.cs" />
