@@ -576,9 +576,7 @@
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="JsonConverters\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>powershell -ExecutionPolicy Bypass -File "$(SolutionDir)../scripts/deploy-extension.ps1" -Name "$(ProjectName)" -TargetFile "$(TargetPath)"</PostBuildEvent>
