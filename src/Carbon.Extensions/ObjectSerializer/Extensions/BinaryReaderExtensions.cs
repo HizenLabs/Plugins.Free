@@ -39,7 +39,7 @@ public static class BinaryReaderExtensions
     /// </remarks>
     public static Guid ReadGuid(this BinaryReader reader)
     {
-        var buffer = SerializationBuffers.Guid.Rent(16);
+        var buffer = SerializationBuffers.GuidPool.Rent(16);
         try
         {
             reader.Read(buffer, 0, 16);
@@ -47,7 +47,7 @@ public static class BinaryReaderExtensions
         }
         finally
         {
-            SerializationBuffers.Guid.Return(buffer);
+            SerializationBuffers.GuidPool.Return(buffer);
         }
     }
 

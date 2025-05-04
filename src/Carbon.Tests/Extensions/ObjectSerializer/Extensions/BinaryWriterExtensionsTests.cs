@@ -70,8 +70,10 @@ public class BinaryWriterExtensionsTests : BinaryReaderWriterTest
 
             _memoryStream.Position = 0;
             byte[] binary = _reader.ReadBytes(16);
-            Guid actual = new(binary);
 
+            CollectionAssert.AreEqual(testValues[i].ToByteArray(), binary);
+
+            var actual = new Guid(binary);
             Assert.AreEqual(testValues[i], actual);
         }
     }
@@ -307,8 +309,9 @@ public class BinaryWriterExtensionsTests : BinaryReaderWriterTest
         _writer.WriteArray(testValues);
         _memoryStream.Position = 0;
 
+        var expectedLength = testValues.Length * sizeof(int);
         var actualLength = _reader.ReadInt32();
-        Assert.AreEqual(testValues.Length, actualLength);
+        Assert.AreEqual(expectedLength, actualLength);
 
         for (int i = 0; i < testValues.Length; i++)
         {

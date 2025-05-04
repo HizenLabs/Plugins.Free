@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System;
+using System.Runtime.InteropServices;
 
 namespace HizenLabs.Extensions.ObjectSerializer.Internal;
 
@@ -29,6 +30,38 @@ internal class GenericArrayWriter<T>
 
             w.Write(buffer, index, count);
         };
+        else if (elementType.IsPrimitive)
+        {
+            int typeSize = Marshal.SizeOf<T>();
+            Write = (w, v, index, count) =>
+            {
+                if (v is not T[] array) throw new ArgumentException("Expected array.", nameof(v));
+
+                int totalBytes = typeSize * count;
+                w.Write(totalBytes);
+
+                var buffer = SerializationBuffers.StreamPool.Rent(SerializationBuffers.StreamBufferSize);
+                try
+                {
+                    int written = 0;
+                    while (written < totalBytes)
+                    {
+                        int remaining = totalBytes - written;
+                        int chunkBytes = Math.Min(SerializationBuffers.StreamBufferSize, remaining);
+
+                        // Copy partial block
+                        Buffer.BlockCopy(array, index * typeSize + written, buffer, 0, chunkBytes);
+
+                        w.Write(buffer, 0, chunkBytes);
+                        written += chunkBytes;
+                    }
+                }
+                finally
+                {
+                    SerializationBuffers.StreamPool.Return(buffer);
+                }
+            };
+        }
         else
         {
             Write = (w, v, index, count) =>

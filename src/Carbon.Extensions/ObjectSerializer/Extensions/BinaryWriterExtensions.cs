@@ -39,24 +39,10 @@ public static class BinaryWriterExtensions
     /// </remarks>
     public static void Write(this BinaryWriter writer, Guid guid)
     {
-        var buffer = SerializationBuffers.Guid.Rent(16);
-        try
-        {
-            unsafe
-            {
-                fixed (byte* ptr = buffer)
-                {
-                    *(Guid*)ptr = guid;
-                }
-            }
-
-            writer.Write(buffer, 0, 16);
-        }
-        finally
-        {
-            SerializationBuffers.Guid.Return(buffer);
-        }
+        var buffer = guid.ToByteArray(); // I don't know if I can avoid allocations while maintaining structure ordering safety
+        writer.Write(buffer, 0, 16);
     }
+
 
     /// <summary>
     /// Writes a <see cref="DateTime"/> value to the current stream and advances the stream position by eight bytes.
