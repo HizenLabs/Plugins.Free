@@ -4,7 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using System.IO;
 
-namespace Carbon.Tests.Integration;
+namespace Carbon.Tests.Extensions.ObjectSerializer.Integration;
 
 /// <summary>
 /// Tests for round-trip serialization tasks.
