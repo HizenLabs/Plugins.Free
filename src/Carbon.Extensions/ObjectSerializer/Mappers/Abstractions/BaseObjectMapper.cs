@@ -1,4 +1,8 @@
-﻿using HizenLabs.Extensions.ObjectSerializer.Serialization;
+﻿using Facepunch.Extend;
+using HizenLabs.Extensions.ObjectSerializer.Serialization;
+using System;
+using System.Collections.Generic;
+using System.Linq.Expressions;
 
 namespace HizenLabs.Extensions.ObjectSerializer.Mappers.Abstractions;
 
@@ -8,12 +12,51 @@ namespace HizenLabs.Extensions.ObjectSerializer.Mappers.Abstractions;
 /// </summary>
 /// <typeparam name="TOriginal">The type of the original object.</typeparam>
 public abstract class BaseObjectMapper<TOriginal> : IObjectMapper
+    where TOriginal : class
 {
+    private readonly List<IObjectDataMapping> _mappings = new();
+
     /// <summary>
-    /// Registers a <see cref="ObjectDataMapping{TObject, TMemberType}"/>This should be done during construction.
+    /// Registers a ObjectDataMapping for serialization/deserialization of specific properties.
     /// </summary>
-    protected void SetupMapping()
+    /// <typeparam name="TMemberType">The type of the member.</typeparam>
+    /// <param name="memberExpression">Expression to get the member value.</param>
+    protected void SetupMapping<TMemberType>(Expression<Func<TOriginal, TMemberType>> memberExpression)
     {
+        var mapping = new ObjectDataMapping<TOriginal, TMemberType>(memberExpression);
+        _mappings.Add(mapping);
+    }
+
+    /// <summary>
+    /// Registers a ObjectDataMapping for serialization/deserialization of specific properties with a condition.
+    /// </summary>
+    /// <typeparam name="TMemberType">The type of the member.</typeparam>
+    /// <param name="memberExpression">Expression to get the member value.</param>
+    /// <param name="condition">Condition to determine if the member should be serialized.</param>
+    protected void SetupMapping<TMemberType>(
+        Expression<Func<TOriginal, TMemberType>> memberExpression, 
+        Func<TOriginal, bool> condition)
+    {
+        var mapping = new ObjectDataMapping<TOriginal, TMemberType>(memberExpression, condition);
+        _mappings.Add(mapping);
+    }
+
+    /// <summary>
+    /// Registers a ObjectDataMapping for serialization/deserialization of specific properties with custom getter/setter.
+    /// </summary>
+    /// <typeparam name="TMemberType">The type of the member.</typeparam>
+    /// <param name="name">The name of the member.</param>
+    /// <param name="getter">Function to get the member value.</param>
+    /// <param name="setter">Function to set the member value.</param>
+    /// <param name="condition">Optional condition to determine if the member should be serialized.</param>
+    protected void SetupMapping<TMemberType>(
+        string name, 
+        Func<TOriginal, TMemberType> getter, 
+        Action<TOriginal, TMemberType> setter, 
+        Func<TOriginal, bool> condition = null)
+    {
+        var mapping = new ObjectDataMapping<TOriginal, TMemberType>(name, getter, setter, condition);
+        _mappings.Add(mapping);
     }
 
     /// <summary>
@@ -24,6 +67,10 @@ public abstract class BaseObjectMapper<TOriginal> : IObjectMapper
     /// <param name="target">The target object to serialize to.</param>
     protected virtual void OnSerializeSelf(TOriginal source, SerializableObject target)
     {
+        foreach (var mapping in _mappings)
+        {
+            mapping.TryWrite(source, target.Properties);
+        }
     }
 
     /// <summary>
@@ -41,8 +88,12 @@ public abstract class BaseObjectMapper<TOriginal> : IObjectMapper
     /// </summary>
     /// <param name="source">The object to deserialize from.</param>
     /// <param name="target">The target object to deserialize to.</param>
-    protected virtual void OnDeserializeSelf(TOriginal source, SerializableObject target)
+    protected virtual void OnDeserializeSelf(SerializableObject source, TOriginal target)
     {
+        foreach (var mapping in _mappings)
+        {
+            mapping.TryRead(target, source.Properties);
+        }
     }
 
     /// <summary>
@@ -51,7 +102,7 @@ public abstract class BaseObjectMapper<TOriginal> : IObjectMapper
     /// <param name="source">The object to deserialize from.</param>
     /// <param name="target">The target object to deserialize to.</param>
     /// <param name="context">The serialization context.</param>
-    protected virtual void OnDeserializeComplete(TOriginal source, SerializableObject target, SerializationContext context)
+    protected virtual void OnDeserializeComplete(SerializableObject source, TOriginal target, SerializationContext context)
     {
     }
 
@@ -71,19 +122,19 @@ public abstract class BaseObjectMapper<TOriginal> : IObjectMapper
         }
     }
 
-    void IObjectMapper.DeserializeSelf(object source, SerializableObject target)
+    void IObjectMapper.DeserializeSelf(SerializableObject source, object target)
     {
-        if (source is TOriginal original)
+        if (target is TOriginal original)
         {
-            OnDeserializeSelf(original, target);
+            OnDeserializeSelf(source, original);
         }
     }
 
-    void IObjectMapper.DeserializeComplete(object source, SerializableObject target, SerializationContext context)
+    void IObjectMapper.DeserializeComplete(SerializableObject source, object target, SerializationContext context)
     {
-        if (source is TOriginal original)
+        if (target is TOriginal original)
         {
-            OnDeserializeComplete(original, target, context);
+            OnDeserializeComplete(source, original, context);
         }
     }
 }

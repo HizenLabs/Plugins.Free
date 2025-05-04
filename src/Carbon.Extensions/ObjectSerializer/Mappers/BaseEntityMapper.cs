@@ -7,4 +7,8 @@ public sealed class BaseEntityMapper : BaseEntityMapper<BaseEntity> { }
 public class BaseEntityMapper<TOriginal> : BaseObjectMapper<TOriginal>
     where TOriginal : BaseEntity
 {
+    public BaseEntityMapper()
+    {
+
+    }
 }
