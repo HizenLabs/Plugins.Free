@@ -24,28 +24,45 @@ internal class GenericDictionaryReader<TKey, TValue>
     /// </summary>
     static GenericDictionaryReader()
     {
-        Read = (reader, dict) =>
+        if (typeof(TValue).CanBeNull())
         {
-            dict ??= Pool.Get<Dictionary<TKey, TValue>>();
-
-            var count = reader.ReadInt32();
-            for (var i = 0; i < count; i++)
+            Read = (reader, dict) =>
             {
-                var key = GenericReader<TKey>.Read(reader);
+                dict ??= Pool.Get<Dictionary<TKey, TValue>>();
 
-                var valueMarker = reader.ReadEnum<TypeMarker>();
-                if (valueMarker == TypeMarker.Null)
+                var count = reader.ReadInt32();
+                for (var i = 0; i < count; i++)
                 {
-                    dict.Add(key, default!);
+                    var key = GenericReader<TKey>.Read(reader);
+                    var valueMarker = reader.ReadEnum<TypeMarker>();
+                    if (valueMarker == TypeMarker.Null)
+                    {
+                        dict.Add(key, default!);
+                    }
+                    else
+                    {
+                        var value = GenericReader<TValue>.Read(reader);
+                        dict.Add(key, value);
+                    }
                 }
-                else
+
+                return dict;
+            };
+        }
+        else // skip TypeMarker for non-nullable types
+        {
+            Read = (reader, dict) =>
+            {
+                dict ??= Pool.Get<Dictionary<TKey, TValue>>();
+                var count = reader.ReadInt32();
+                for (var i = 0; i < count; i++)
                 {
+                    var key = GenericReader<TKey>.Read(reader);
                     var value = GenericReader<TValue>.Read(reader);
                     dict.Add(key, value);
                 }
-            }
-
-            return dict;
-        };
+                return dict;
+            };
+        }
     }
 }

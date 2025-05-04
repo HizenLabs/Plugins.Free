@@ -18,4 +18,20 @@ public static class TypeExtensions
     {
         return TypeMarkerResolver.Resolve(type);
     }
+
+    /// <summary>
+    /// Determines whether the specified type can be null.
+    /// </summary>
+    /// <param name="type">The type to check.</param>
+    /// <returns><c>true</c> if the type can be null; otherwise, <c>false</c>.</returns>
+    public static bool CanBeNull(this Type type)
+    {
+        if (!type.IsValueType)
+            return true;
+
+        if (Nullable.GetUnderlyingType(type) != null)
+            return true;
+
+        return false;
+    }
 }

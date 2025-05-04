@@ -23,24 +23,39 @@ internal class GenericDictionaryWriter<TKey, TValue>
     /// </summary>
     static GenericDictionaryWriter()
     {
-        Write = (writer, dict) =>
+        if (typeof(TValue).CanBeNull())
         {
-            writer.Write(dict.Count);
-            foreach (var item in dict)
+            Write = (writer, dict) =>
             {
-                // Dictionary keys can't be null
-                GenericWriter<TKey>.Write(writer, item.Key);
+                writer.Write(dict.Count);
+                foreach (var item in dict)
+                {
+                    // Dictionary keys can't be null
+                    GenericWriter<TKey>.Write(writer, item.Key);
 
-                if (item.Value is null)
-                {
-                    writer.WriteEnum(TypeMarker.Null);
+                    if (item.Value is null)
+                    {
+                        writer.WriteEnum(TypeMarker.Null);
+                    }
+                    else
+                    {
+                        writer.WriteEnum(item.Value.GetType().GetTypeMarker());
+                        GenericWriter<TValue>.Write(writer, item.Value);
+                    }
                 }
-                else
+            };
+        }
+        else // skip TypeMarker for non-nullable types
+        {
+            Write = (writer, dict) =>
+            {
+                writer.Write(dict.Count);
+                foreach (var item in dict)
                 {
-                    writer.WriteEnum(item.Value.GetType().GetTypeMarker());
+                    GenericWriter<TKey>.Write(writer, item.Key);
                     GenericWriter<TValue>.Write(writer, item.Value);
                 }
-            }
-        };
+            };
+        }
     }
 }
