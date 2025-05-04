@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace HizenLabs.Extensions.ObjectSerializer.Mappers;
 
-internal class ObjectMapperFactory
+internal static class ObjectMapperFactory
 {
     /// <summary>
     /// A dictionary to cache the mappers for different types.
