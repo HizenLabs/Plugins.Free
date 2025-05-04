@@ -5,8 +5,6 @@ using HizenLabs.Extensions.ObjectSerializer.Structs;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using UnityEngine;
 
 namespace HizenLabs.Extensions.ObjectSerializer.Extensions;
@@ -42,25 +40,23 @@ public static class BinaryWriterExtensions
     /// </remarks>
     public static void Write(this BinaryWriter writer, Guid guid)
     {
-        System.Diagnostics.Debug.Assert(Marshal.SizeOf<Guid>() == Marshal.SizeOf<GuidParts>(), $"{nameof(Guid)} and {nameof(GuidParts)} size mismatch!");
+        var buffer = SerializationBuffers.Guid.Rent(16);
+        try
+        {
+            unsafe
+            {
+                fixed (byte* ptr = buffer)
+                {
+                    *(Guid*)ptr = guid;
+                }
+            }
 
-        GuidParts parts = Unsafe.As<Guid, GuidParts>(ref guid);
-        writer.Write((byte)parts._a);
-        writer.Write((byte)(parts._a >> 8));
-        writer.Write((byte)(parts._a >> 16));
-        writer.Write((byte)(parts._a >> 24));
-        writer.Write((byte)parts._b);
-        writer.Write((byte)(parts._b >> 8));
-        writer.Write((byte)parts._c);
-        writer.Write((byte)(parts._c >> 8));
-        writer.Write(parts._d);
-        writer.Write(parts._e);
-        writer.Write(parts._f);
-        writer.Write(parts._g);
-        writer.Write(parts._h);
-        writer.Write(parts._i);
-        writer.Write(parts._j);
-        writer.Write(parts._k);
+            writer.Write(buffer, 0, 16);
+        }
+        finally
+        {
+            SerializationBuffers.Guid.Return(buffer);
+        }
     }
 
     /// <summary>

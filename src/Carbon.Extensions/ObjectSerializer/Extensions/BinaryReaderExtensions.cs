@@ -6,8 +6,6 @@ using HizenLabs.Extensions.ObjectSerializer.Structs;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using UnityEngine;
 
 namespace HizenLabs.Extensions.ObjectSerializer.Extensions;
@@ -17,6 +15,12 @@ namespace HizenLabs.Extensions.ObjectSerializer.Extensions;
 /// </summary>
 public static class BinaryReaderExtensions
 {
+    #region Pooling
+
+    private static ArrayPool<byte> _guidBuffer = new(16);
+
+    #endregion
+
     #region System
 
     /// <summary>
@@ -42,28 +46,16 @@ public static class BinaryReaderExtensions
     /// </remarks>
     public static Guid ReadGuid(this BinaryReader reader)
     {
-        System.Diagnostics.Debug.Assert(Marshal.SizeOf<Guid>() == Marshal.SizeOf<GuidParts>(), $"{nameof(Guid)} and {nameof(GuidParts)} size mismatch!");
-
-        GuidParts parts;
-
-        parts._a = reader.ReadByte()
-                  | (reader.ReadByte() << 8)
-                  | (reader.ReadByte() << 16)
-                  | (reader.ReadByte() << 24);
-
-        parts._b = (short)(reader.ReadByte() | (reader.ReadByte() << 8));
-        parts._c = (short)(reader.ReadByte() | (reader.ReadByte() << 8));
-
-        parts._d = reader.ReadByte();
-        parts._e = reader.ReadByte();
-        parts._f = reader.ReadByte();
-        parts._g = reader.ReadByte();
-        parts._h = reader.ReadByte();
-        parts._i = reader.ReadByte();
-        parts._j = reader.ReadByte();
-        parts._k = reader.ReadByte();
-
-        return Unsafe.As<GuidParts, Guid>(ref parts);
+        var buffer = SerializationBuffers.Guid.Rent(16);
+        try
+        {
+            reader.Read(buffer, 0, 16);
+            return new(buffer);
+        }
+        finally
+        {
+            SerializationBuffers.Guid.Return(buffer);
+        }
     }
 
     /// <summary>
