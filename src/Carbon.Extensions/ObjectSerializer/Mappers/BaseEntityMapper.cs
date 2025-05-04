@@ -1,5 +1,4 @@
 ﻿using HizenLabs.Extensions.ObjectSerializer.Mappers.Abstractions;
-using Unity.Collections;
 
 namespace HizenLabs.Extensions.ObjectSerializer.Mappers;
 

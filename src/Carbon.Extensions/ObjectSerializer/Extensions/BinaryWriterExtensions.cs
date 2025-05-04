@@ -1,5 +1,4 @@
-﻿using HizenLabs.Extensions.ObjectSerializer.Enums;
-using HizenLabs.Extensions.ObjectSerializer.Exceptions;
+﻿using HizenLabs.Extensions.ObjectSerializer.Exceptions;
 using HizenLabs.Extensions.ObjectSerializer.Internal;
 using HizenLabs.Extensions.ObjectSerializer.Serialization;
 using HizenLabs.Extensions.ObjectSerializer.Structs;

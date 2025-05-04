@@ -1,5 +1,4 @@
 ﻿using HizenLabs.Extensions.ObjectSerializer.Serialization;
-using System.Collections.Generic;
 
 namespace HizenLabs.Extensions.ObjectSerializer.Mappers.Abstractions;
 
