@@ -562,7 +562,7 @@
     <Compile Include="Internal\GenericReader.cs" />
     <Compile Include="Internal\Delegates\GenericTypeResolver.cs" />
     <Compile Include="Internal\GenericWriter.cs" />
-    <Compile Include="Internal\SerializationBuffers.cs" />
+    <Compile Include="Internal\PooledBuffer.cs" />
     <Compile Include="Internal\TypeMarkerResolvers\ArrayTypeMarkerResolver.cs" />
     <Compile Include="Internal\TypeMarkerResolvers\DirectTypeMarkerResolver.cs" />
     <Compile Include="Internal\TypeMarkerResolvers\EnumTypeMarkerResolver.cs" />

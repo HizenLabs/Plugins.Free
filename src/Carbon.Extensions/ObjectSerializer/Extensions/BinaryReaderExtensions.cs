@@ -39,16 +39,9 @@ public static class BinaryReaderExtensions
     /// </remarks>
     public static Guid ReadGuid(this BinaryReader reader)
     {
-        var buffer = SerializationBuffers.GuidPool.Rent(16);
-        try
-        {
-            reader.Read(buffer, 0, 16);
-            return new(buffer);
-        }
-        finally
-        {
-            SerializationBuffers.GuidPool.Return(buffer);
-        }
+        using var buffer = new PooledBuffer(16);
+        reader.Read(buffer, 0, 16);
+        return new(buffer);
     }
 
     /// <summary>

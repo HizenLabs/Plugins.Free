@@ -40,25 +40,19 @@ internal class GenericArrayWriter<T>
                 int totalBytes = typeSize * count;
                 w.Write(totalBytes);
 
-                var buffer = SerializationBuffers.StreamPool.Rent(SerializationBuffers.StreamBufferSize);
-                try
+                using var buffer = new PooledBuffer();
+                int written = 0;
+                while (written < totalBytes)
                 {
-                    int written = 0;
-                    while (written < totalBytes)
-                    {
-                        int remaining = totalBytes - written;
-                        int chunkBytes = Math.Min(SerializationBuffers.StreamBufferSize, remaining);
+                    int remaining = totalBytes - written;
+                    int chunkBytes = Math.Min(buffer.Length, remaining);
 
-                        // Copy partial block
-                        Buffer.BlockCopy(array, index * typeSize + written, buffer, 0, chunkBytes);
+                    // Copy partial block
+                    Buffer.BlockCopy(array, index * typeSize + written, buffer, 0, chunkBytes);
 
-                        w.Write(buffer, 0, chunkBytes);
-                        written += chunkBytes;
-                    }
-                }
-                finally
-                {
-                    SerializationBuffers.StreamPool.Return(buffer);
+                    // Write chunk
+                    w.Write(buffer, 0, chunkBytes);
+                    written += chunkBytes;
                 }
             };
         }

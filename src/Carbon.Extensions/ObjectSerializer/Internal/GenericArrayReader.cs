@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Runtime.InteropServices;
 
 namespace HizenLabs.Extensions.ObjectSerializer.Internal;
 
@@ -27,6 +28,36 @@ internal class GenericArrayReader<T>
 
             r.Read(buffer, index, count);
         };
+        else if (elementType.IsPrimitive)
+        {
+            int typeSize = Marshal.SizeOf<T>();
+            Read = (r, v, index, count) =>
+            {
+                if (v is not T[] array) throw new ArgumentException("Expected array.", nameof(v));
+
+                var size = r.ReadInt32();
+                if (size != (count * typeSize)) throw new ArgumentException($"Expected length {count}, but got {size}.");
+
+                using var buffer = new PooledBuffer();
+                int read = 0;
+                while (read < size)
+                {
+                    int remaining = size - read;
+                    int chunkBytes = Math.Min(buffer.Length, remaining);
+
+                    // Read chunk
+                    var readBytes = r.Read(buffer, 0, chunkBytes);
+                    if (readBytes != chunkBytes)
+                    {
+                        throw new EndOfStreamException($"Expected {chunkBytes} bytes, but got {readBytes}.");
+                    }
+
+                    // Copy partial block
+                    Buffer.BlockCopy(buffer, 0, array, index * typeSize + read, chunkBytes);
+                    read += chunkBytes;
+                }
+            };
+        }
         else
         {
             Read = (r, v, index, count) =>

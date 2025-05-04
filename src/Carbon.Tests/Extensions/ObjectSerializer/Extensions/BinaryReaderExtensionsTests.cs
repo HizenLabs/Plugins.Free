@@ -298,7 +298,7 @@ public class BinaryReaderExtensionsTests : BinaryReaderWriterTest
     {
         int[] testValues = new int[] { 1, 2, 3, 5, 7, 11, 13, 17, 19, 23 };
 
-        _writer.Write(testValues.Length);
+        _writer.Write(testValues.Length * sizeof(int));
         for (int i = 0; i < testValues.Length; i++)
         {
             _writer.Write(testValues[i]);
@@ -313,7 +313,9 @@ public class BinaryReaderExtensionsTests : BinaryReaderWriterTest
         Assert.ThrowsException<EndOfStreamException>(() => _reader.ReadByte());
 
         _memoryStream.Position = 0;
-        Assert.ThrowsException<ArgumentException>(() => _reader.ReadArray(actual, 2, 5));
+        var ex = Assert.ThrowsException<ArgumentException>(() => _reader.ReadArray(actual, 2, 5));
+        StringAssert.Contains(ex.Message, "Expected length");
+
     }
 
     /// <summary>
