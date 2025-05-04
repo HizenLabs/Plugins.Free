@@ -1,6 +1,7 @@
 ﻿using Facepunch;
 using HizenLabs.Extensions.ObjectSerializer.Extensions;
 using HizenLabs.Extensions.ObjectSerializer.Mappers;
+using System;
 using System.Collections.Generic;
 
 namespace HizenLabs.Extensions.ObjectSerializer.Serialization;
@@ -8,7 +9,7 @@ namespace HizenLabs.Extensions.ObjectSerializer.Serialization;
 /// <summary>
 /// Represents the context for serialization and deserialization.
 /// </summary>
-public class SerializationContext : Pool.IPooled
+public class SerializationContext : Pool.IPooled, IDisposable
 {
     /// <summary>
     /// The list of serializable objects.
@@ -55,5 +56,14 @@ public class SerializationContext : Pool.IPooled
         NextObjectIndex = 0;
 
         _objects = Pool.Get<List<SerializableObject>>();
+    }
+
+    /// <summary>
+    /// Releases self back into the pool.
+    /// </summary>
+    public void Dispose()
+    {
+        var obj = this;
+        Pool.Free(ref obj);
     }
 }
