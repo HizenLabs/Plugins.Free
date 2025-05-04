@@ -1,4 +1,5 @@
 ﻿using Facepunch.Extend;
+using HizenLabs.Extensions.ObjectSerializer.Exceptions;
 using HizenLabs.Extensions.ObjectSerializer.Serialization;
 using System;
 using System.Collections.Generic;
@@ -119,30 +120,44 @@ public abstract class BaseObjectMapper<TOriginal> : IObjectMapper
 
     void IObjectMapper.SerializeSelf(object source, SerializableObject target)
     {
+        if (source is null) throw new ArgumentNullException(nameof(source));
+        if (target is null) throw new ArgumentNullException(nameof(target));
+
         if (source is TOriginal original)
         {
             OnSerializeSelf(original, target);
         }
+        else throw new ObjectTypeMismatchException(typeof(TOriginal), source.GetType());
     }
 
     void IObjectMapper.SerializeComplete(object source, SerializableObject target, SerializationContext context)
     {
+        if (source is null) throw new ArgumentNullException(nameof(source));
+        if (target is null) throw new ArgumentNullException(nameof(target));
+
         if (source is TOriginal original)
         {
             OnSerializeComplete(original, target, context);
         }
+        else throw new ObjectTypeMismatchException(typeof(TOriginal), source.GetType());
     }
 
     object IObjectMapper.DeserializeSelf(SerializableObject source)
     {
+        if (source is null) throw new ArgumentNullException(nameof(source));
+
         return OnDeserializeSelf(source);
     }
 
     void IObjectMapper.DeserializeComplete(SerializableObject source, object target, SerializationContext context)
     {
+        if (source is null) throw new ArgumentNullException(nameof(source));
+        if (target is null) throw new ArgumentNullException(nameof(target));
+
         if (target is TOriginal original)
         {
             OnDeserializeComplete(source, original, context);
         }
+        else throw new ObjectTypeMismatchException(typeof(TOriginal), source.GetType());
     }
 }
