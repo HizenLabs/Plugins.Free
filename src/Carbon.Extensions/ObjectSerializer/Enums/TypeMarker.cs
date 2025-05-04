@@ -160,12 +160,7 @@ public enum TypeMarker : byte
     Dictionary = 102,
 
     /// <summary>
-    /// <see cref="TypeMarker"/> for <see cref="Item"/>
+    /// <see cref="TypeMarker"/> for <see cref="Serialization.SerializableObject"/>
     /// </summary>
-    SerializableItem = 150,
-
-    /// <summary>
-    /// <see cref="TypeMarker"/> for <see cref="BaseEntity"/>
-    /// </summary>
-    SerializableEntity = 151,
+    SerializableObject
 }
