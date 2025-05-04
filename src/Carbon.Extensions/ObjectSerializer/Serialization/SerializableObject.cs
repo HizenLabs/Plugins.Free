@@ -1,6 +1,7 @@
 ﻿using Facepunch;
 using HizenLabs.Extensions.ObjectSerializer.Enums;
 using HizenLabs.Extensions.ObjectSerializer.Extensions;
+using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -11,6 +12,11 @@ namespace HizenLabs.Extensions.ObjectSerializer.Serialization;
 /// </summary>
 public class SerializableObject : Pool.IPooled
 {
+    /// <summary>
+    /// The ID for this object. Mainly used for connections like parent, entitylinks, etc.
+    /// </summary>
+    public Guid ID { get; private set; }
+
     /// <summary>
     /// Initializes a new instance of the <see cref="SerializableObject"/> class.
     /// </summary>
@@ -28,6 +34,7 @@ public class SerializableObject : Pool.IPooled
     /// <param name="reader">The <see cref="BinaryReader"/> to read from.</param>
     public void Read(BinaryReader reader)
     {
+        ID = reader.ReadGuid();
         Type = reader.ReadEnum<ObjectType>();
         reader.ReadDictionary(_properties);
     }
@@ -38,6 +45,7 @@ public class SerializableObject : Pool.IPooled
     /// <param name="writer">The <see cref="BinaryWriter"/> to write to.</param>
     public void Write(BinaryWriter writer)
     {
+        writer.Write(ID);
         writer.WriteEnum(Type);
         writer.WriteDictionary(_properties);
     }
@@ -47,6 +55,7 @@ public class SerializableObject : Pool.IPooled
     /// </summary>
     public void EnterPool()
     {
+        ID = Guid.Empty;
         Type = default;
 
         _properties.DisposeValues();
@@ -58,6 +67,7 @@ public class SerializableObject : Pool.IPooled
     /// </summary>
     public void LeavePool()
     {
+        ID = Guid.NewGuid();
         _properties = Pool.Get<Dictionary<string, object>>();
     }
 }
