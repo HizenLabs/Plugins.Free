@@ -2,6 +2,7 @@
 using Facepunch;
 using HizenLabs.Extensions.ObjectSerializer.Enums;
 using HizenLabs.Extensions.ObjectSerializer.Serialization;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -13,22 +14,16 @@ namespace Carbon.Plugins;
 [Description("Plugin for testing the ObjectSerializer extension")]
 public class ObjectSerializerTests : CarbonPlugin
 {
-    Dictionary<string, MemoryStream> _streams;
+    Dictionary<string, byte[]> _copyData;
 
     void Init()
     {
-        _streams = Pool.Get<Dictionary<string, MemoryStream>>();
+        _copyData = Pool.Get<Dictionary<string, byte[]>>();
     }
 
     void Unload()
     {
-        foreach (var key in _streams.Keys)
-        {
-            var stream = _streams[key];
-            Pool.FreeUnmanaged(ref stream);
-        }
-
-        Pool.FreeUnmanaged(ref _streams);
+        Pool.FreeUnmanaged(ref _copyData);
     }
 
     [ChatCommand("copy")]
@@ -60,21 +55,16 @@ public class ObjectSerializerTests : CarbonPlugin
 
         player.ChatMessage($"Copied {context.Objects.Count} objects.");
 
-        if (!_streams.TryGetValue(player.UserIDString, out var stream))
-        {
-            stream = Pool.Get<MemoryStream>();
-            _streams[player.UserIDString] = stream;
-        }
-
-        stream.SetLength(0L);
+        using var stream = new MemoryStream();
         context.Save(stream);
+        _copyData[player.UserIDString] = stream.ToArray();
     }
 
     [ChatCommand("paste")]
     private void PasteCommand(BasePlayer player, string command, string[] args)
     {
-        if (!_streams.TryGetValue(player.UserIDString, out var stream)
-            || stream.Length == 0)
+        if (!_copyData.TryGetValue(player.UserIDString, out var copyData)
+            || copyData.Length == 0)
         {
             player.ChatMessage("No save found.");
             return;
@@ -86,6 +76,7 @@ public class ObjectSerializerTests : CarbonPlugin
             return;
         }
 
+        using var stream = new MemoryStream(copyData);
         using var context = Pool.Get<SerializationContext>();
         context.Load(stream);
 
@@ -99,6 +90,20 @@ public class ObjectSerializerTests : CarbonPlugin
         }
 
         player.ChatMessage($"Found building privilege at index {obj.Index}");
+
+        var offset = coords - priv.transform.position;
+        player.ChatMessage($"Offset: {offset}");
+
+        foreach (var o in context.Objects)
+        {
+            if (o.GameObject is BaseEntity entity)
+            {
+                entity.ServerPosition += offset;
+                entity.Spawn();
+
+                entity.SendNetworkUpdateImmediate(true);
+            }
+        }
     }
 
     private bool TryGetPlayerTargetCoordinates(BasePlayer player, out Vector3 coords)

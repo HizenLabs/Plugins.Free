@@ -7,12 +7,12 @@ namespace HizenLabs.Extensions.ObjectSerializer.Mappers;
 
 public sealed class ItemMapper : BaseObjectMapper<Item>
 {
-    private const string _keyItemId = $"_{nameof(Item.info.itemid)}";
-    private const string _keyItemName = $"_{nameof(Item.info.name)}";
-    private const string _keyItemAmount = $"_{nameof(Item.amount)}";
-    private const string _keyItemSkin = $"_{nameof(Item.skin)}";
+    private const string _keyItemId = "_itemId";
+    private const string _keyItemName = "_itemName";
+    private const string _keyItemAmount = "_itemAmount";
+    private const string _keyItemSkin = "_itemSkin";
 
-    private const string _keyParentContainerIndex = $"_parentContainerIdx";
+    private const string _keyParentContainerIndex = "_parentContainerIdx";
 
     public ItemMapper()
     {
@@ -30,7 +30,7 @@ public sealed class ItemMapper : BaseObjectMapper<Item>
 
     protected override Item CreateInstance(SerializableObject source)
     {
-        var itemid = source.Properties[_keyItemId] as int? ?? throw new Exception($"Failed to find '{nameof(Item.info.itemid)}'");
+        var itemid = source.Properties[_keyItemId] as int? ?? throw new Exception($"Failed to find '{_keyItemId}'");
         var amount = source.Properties[_keyItemAmount] as int? ?? 1;
         var skin = source.Properties[_keyItemSkin] as ulong? ?? 0;
 
