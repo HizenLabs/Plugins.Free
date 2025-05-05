@@ -36,21 +36,27 @@ public class SerializableObject : Pool.IPooled
     /// <summary>
     /// Initializes the object for serialization.
     /// </summary>
-    /// <param name="index">The index of the object.</param>
-    public void Init(object source, int index = -1)
+    /// <param name="source">The object to serialize.</param>
+    /// <exception cref="ArgumentNullException">Thrown when the source object is null.</exception>
+    public void Init(object source)
     {
-        if (source is null)
-        {
-            throw new ArgumentNullException(nameof(source), "Source object cannot be null.");
-        }
+        if (source is null) throw new ArgumentNullException(nameof(source), "Source object cannot be null.");
 
         GameObject = source;
-        Type = source.GetType().GetObjectType();
+    }
 
-        if (index > -1)
-        {
-            Index = index;
-        }
+    /// <summary>
+    /// Initializes the object for serialization.
+    /// </summary>
+    /// <typeparam name="T">The type of the object.</typeparam>
+    /// <param name="source">The object to serialize.</param>
+    /// <param name="index">The index of the object.</param>
+    public void Init<T>(T source, int index)
+    {
+        Init(source);
+
+        Type = typeof(T).GetObjectType();
+        Index = index;
     }
 
     /// <summary>

@@ -1,8 +1,11 @@
 ﻿using Facepunch;
 using HizenLabs.Extensions.ObjectSerializer.Enums;
+using HizenLabs.Extensions.ObjectSerializer.Extensions;
 using HizenLabs.Extensions.ObjectSerializer.Mappers;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.IO.Compression;
 using System.Linq;
 
 namespace HizenLabs.Extensions.ObjectSerializer.Serialization;
@@ -65,6 +68,116 @@ public class SerializationContext : Pool.IPooled, IDisposable
 
         obj = _objects.FirstOrDefault(o => o.Index == index);
         return obj != null;
+    }
+
+    /// <summary>
+    /// Loads the context from a file, optionally using GZip compression.
+    /// </summary>
+    /// <param name="filename">The name of the file to load from.</param>
+    /// <param name="compression">True to use GZip compression; otherwise, false.</param>
+    public void Load(string filename, DataFormat dataFormat = DataFormat.Binary)
+    {
+        using var stream = File.OpenRead(filename);
+
+        switch (dataFormat)
+        {
+            case DataFormat.Binary:
+                Read(stream);
+                break;
+
+            case DataFormat.Gzip:
+                ReadGzip(stream);
+                break;
+
+            default:
+                throw new NotImplementedException($"Format {dataFormat} is not implemented yet.");
+        }
+    }
+
+    /// <summary>
+    /// Loads the context from a compressed stream using GZip compression.
+    /// </summary>
+    /// <param name="stream">The compressed stream to load from.</param>
+    public void ReadGzip(Stream stream)
+    {
+        using var gzipStream = new GZipStream(stream, CompressionMode.Decompress);
+        Read(gzipStream);
+    }
+
+    /// <summary>
+    /// Loads the context from a stream.
+    /// </summary>
+    /// <param name="stream">The stream to load from.</param>
+    public void Read(Stream stream)
+    {
+        using var reader = new BinaryReader(stream);
+
+        _objects = reader.ReadList<SerializableObject>();
+
+        NextObjectIndex = _objects.Count > 0 ? _objects.Max(o => o.Index) + 1 : 0;
+
+        foreach (var obj in _objects)
+        {
+            var mapper = ObjectMapperFactory.GetMapperByObjectType(obj.Type);
+            var instance = mapper.DeserializeSelf(obj);
+            obj.Init(instance);
+        }
+
+        foreach (var obj in _objects)
+        {
+            var mapper = ObjectMapperFactory.GetMapperByObjectType(obj.Type);
+            mapper.DeserializeComplete(obj, obj.GameObject, this);
+        }
+    }
+
+    /// <summary>
+    /// Saves the context to a file, optionally using GZip compression.
+    /// </summary>
+    /// <param name="fileName">The name of the file to save to.</param>
+    /// <param name="compression">True to use GZip compression; otherwise, false.</param>
+    public void Save(string fileName, DataFormat dataFormat = DataFormat.Binary)
+    {
+        using var stream = File.Create(fileName);
+
+        switch (dataFormat)
+        {
+            case DataFormat.Binary:
+                Write(stream);
+                break;
+
+            case DataFormat.Gzip:
+                WriteGzip(stream);
+                break;
+
+            default:
+                throw new NotImplementedException($"Format {dataFormat} is not implemented yet.");
+        }
+    }
+
+    /// <summary>
+    /// Saves the context to a compressed stream using GZip compression.
+    /// </summary>
+    /// <param name="stream">The compressed stream to save to.</param>
+    public void WriteGzip(Stream stream)
+    {
+        using var gzipStream = new GZipStream(stream, CompressionMode.Compress);
+        Write(gzipStream);
+    }
+
+    /// <summary>
+    /// Saves the context to a stream.
+    /// </summary>
+    /// <param name="stream">The stream to save to.</param>
+    public void Write(Stream stream)
+    {
+        foreach (var obj in _objects)
+        {
+            var mapper = ObjectMapperFactory.GetMapperByObjectType(obj.Type);
+            mapper.SerializeComplete(obj.GameObject, obj, this);
+        }
+
+        using var writer = new BinaryWriter(stream);
+        writer.WriteList(_objects);
     }
 
     /// <summary>

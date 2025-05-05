@@ -1,4 +1,6 @@
-﻿using HizenLabs.Extensions.ObjectSerializer.Mappers.Abstractions;
+﻿using HizenLabs.Extensions.ObjectSerializer.Enums;
+using HizenLabs.Extensions.ObjectSerializer.Extensions;
+using HizenLabs.Extensions.ObjectSerializer.Mappers.Abstractions;
 using System;
 using System.Collections.Generic;
 
@@ -12,49 +14,34 @@ internal static class ObjectMapperFactory
     /// <remarks>
     /// This is to prevent the order from changing and also modifiying the dictionary during creation.
     /// </remarks>
-    private static readonly Dictionary<Type, IObjectMapper> _mapperCache = new();
-
-    /// <summary>
-    /// A list to register mappers for specific types, ordered from most specific to least specific.
-    /// </summary>
-    private static readonly List<(Type Type, IObjectMapper Mapper)> _registeredMappers = new()
+    private static readonly Dictionary<ObjectType, IObjectMapper> _mapperCache = new()
     {
-        (typeof(Item), new ItemMapper()),
-        (typeof(BaseEntity), new BaseEntityMapper())
+        { ObjectType.Item, new ItemMapper() },
+        { ObjectType.BaseEntity, new BaseEntityMapper() }
     };
 
-    /// <summary>
-    /// Gets the appropriate mapper for the specified type.
+    /// Gets the appropriate mapper for the specified object type.
     /// </summary>
-    /// <typeparam name="T">The type for which to get the mapper.</typeparam>
+    /// <typeparam name="T">The type of the object.</typeparam>
     /// <returns>The mapper for the specified type.</returns>
     public static IObjectMapper GetMapper<T>()
     {
-        var type = typeof(T);
-        if (!_mapperCache.TryGetValue(type, out var mapper))
-        {
-            mapper = CreateMapper(type);
-            _mapperCache[type] = mapper;
-        }
-
-        return mapper;
+        var objectType = typeof(T).GetObjectType();
+        return GetMapperByObjectType(objectType);
     }
 
     /// <summary>
-    /// Creates a new mapper for the specified type.
+    /// Gets the appropriate mapper for the specified object type.
     /// </summary>
-    /// <param name="type">The type for which to create the mapper.</param>
-    /// <returns>The newly created mapper.</returns>
-    private static IObjectMapper CreateMapper(Type type)
+    /// <param name="objectType">The object type to get a mapper for.</param>
+    /// <returns>The mapper for the specified object type.</returns>
+    public static IObjectMapper GetMapperByObjectType(ObjectType objectType)
     {
-        foreach (var (mappingType, mapper) in _registeredMappers)
+        if (_mapperCache.TryGetValue(objectType, out var mapper))
         {
-            if (mappingType.IsAssignableFrom(type))
-            {
-                return mapper;
-            }
+            return mapper;
         }
 
-        throw new NotSupportedException($"The type {type} is not supported for serialization.");
+        throw new NotSupportedException($"No mapper found for object type {objectType}");
     }
 }

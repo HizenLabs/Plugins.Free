@@ -538,6 +538,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Enums\DataFormat.cs" />
     <Compile Include="Enums\ObjectType.cs" />
     <Compile Include="Enums\TypeMarker.cs" />
     <Compile Include="Exceptions\EnumSerializationException.cs" />

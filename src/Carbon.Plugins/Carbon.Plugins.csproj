@@ -719,7 +719,14 @@
     <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.UI.Drawing.Snapshots.cs" />
     <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.UI.Handlers.cs" />
     <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.PersistantBase.cs" />
+    <Compile Include="Active\ObjectSerializerTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Carbon.Extensions\ObjectSerializer\ObjectSerializer.csproj">
+      <Project>{0f9b4405-b1ed-4025-b95b-ea8f9d9d5160}</Project>
+      <Name>ObjectSerializer</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
