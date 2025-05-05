@@ -719,6 +719,7 @@
     <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.UI.Drawing.Snapshots.cs" />
     <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.UI.Handlers.cs" />
     <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.PersistantBase.cs" />
+    <Compile Include="Active\CopyPasteTests.cs" />
     <Compile Include="Active\ObjectSerializerTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

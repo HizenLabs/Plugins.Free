@@ -1,4 +1,5 @@
 ﻿// Reference: HizenLabs.Extensions.ObjectSerializer
+using Carbon.Components;
 using Facepunch;
 using HizenLabs.Extensions.ObjectSerializer.Enums;
 using HizenLabs.Extensions.ObjectSerializer.Serialization;
@@ -26,7 +27,7 @@ public class ObjectSerializerTests : CarbonPlugin
         Pool.FreeUnmanaged(ref _copyData);
     }
 
-    [ChatCommand("copy")]
+    [ChatCommand("copyobj")]
     private void TestCommand(BasePlayer player, string command, string[] args)
     {
         var target = GetPlayerTargetEntity(player);
@@ -60,7 +61,7 @@ public class ObjectSerializerTests : CarbonPlugin
         _copyData[player.UserIDString] = stream.ToArray();
     }
 
-    [ChatCommand("paste")]
+    [ChatCommand("pasteobj")]
     private void PasteCommand(BasePlayer player, string command, string[] args)
     {
         if (!_copyData.TryGetValue(player.UserIDString, out var copyData)
@@ -75,6 +76,17 @@ public class ObjectSerializerTests : CarbonPlugin
             player.ChatMessage("No target coordinates found.");
             return;
         }
+
+        using var cui = CreateCUI();
+
+        var parent = cui.v2.CreateParent(
+            CUI.ClientPanels.Overall,
+            position: LuiPosition.MiddleCenter,
+            name: "myTestContainer");
+
+        parent.SetDestroy("myTestContainer"); // <-- this is important ! clean up the previous parent, must match 'name'
+
+        cui.v2.SendUi(player);
 
         using var stream = new MemoryStream(copyData);
         using var context = Pool.Get<SerializationContext>();
