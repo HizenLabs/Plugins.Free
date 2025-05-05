@@ -4,6 +4,9 @@ param (
 
     [Parameter(Mandatory = $false, HelpMessage = "Path to the carbon\managed directory")]
     [string]$SourceCarbonPath = $null,
+	
+    [Parameter(Mandatory = $false, HelpMessage = "Path to the carbon\developer\patched_assemblies directory")]
+	[string]$SourceCarbonPatchedPath = $null,
 
     [string]$DestinationPath = "$PSScriptRoot\..\src\managed"
 )
@@ -11,6 +14,11 @@ param (
 if (!$SourceCarbonPath)
 {
     $SourceCarbonPath = Join-Path $SourcePath "..\..\carbon\managed"
+}
+
+if (!$SourceCarbonPatchedPath)
+{
+    $SourceCarbonPatchedPath = Join-Path $SourceCarbonPath "..\developer\patched_assemblies"
 }
 
 $rustManagedLibs = @(
@@ -53,6 +61,10 @@ $carbonManagedLibs = @(
     "Carbon.UniTask.dll"
 );
 
+$carbonPatchedLibs = @(
+    "*.*"
+);
+
 if (Test-Path $DestinationPath)
 {
     Get-ChildItem -Path $DestinationPath -File | Remove-Item -Force
@@ -77,6 +89,17 @@ foreach ($pattern in $rustManagedLibs)
 foreach ($pattern in $carbonManagedLibs)
 {
     $files = Get-ChildItem -Path $SourceCarbonPath -Filter $pattern -File
+    foreach ($file in $files)
+    {
+        Copy-Item -Path $file.FullName -Destination (Join-Path $DestinationPath $file.Name) -Force
+        Write-Host "Updating: $($file.Name) -> $($DestinationPath)"
+        $copied++
+    }
+}
+
+foreach ($pattern in $carbonPatchedLibs)
+{
+    $files = Get-ChildItem -Path $SourceCarbonPatchedPath -Filter $pattern -File
     foreach ($file in $files)
     {
         Copy-Item -Path $file.FullName -Destination (Join-Path $DestinationPath $file.Name) -Force
