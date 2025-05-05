@@ -23,6 +23,11 @@ public class SerializableObject : Pool.IPooled
     public ObjectType Type { get; private set; }
 
     /// <summary>
+    /// The actual game object reference.
+    /// </summary>
+    public object GameObject { get; private set; }
+
+    /// <summary>
     /// The properties of the object.
     /// </summary>
     public Dictionary<string, object> Properties => _properties;
@@ -32,11 +37,20 @@ public class SerializableObject : Pool.IPooled
     /// Initializes the object for serialization.
     /// </summary>
     /// <param name="index">The index of the object.</param>
-    /// <typeparam name="T">The type of the object.</typeparam>
-    public void Init<T>(int index)
+    public void Init(object source, int index = -1)
     {
-        Index = index;
-        Type = typeof(T).GetObjectType();
+        if (source is null)
+        {
+            throw new ArgumentNullException(nameof(source), "Source object cannot be null.");
+        }
+
+        GameObject = source;
+        Type = source.GetType().GetObjectType();
+
+        if (index > -1)
+        {
+            Index = index;
+        }
     }
 
     /// <summary>

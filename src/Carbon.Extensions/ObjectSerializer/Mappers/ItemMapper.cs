@@ -1,4 +1,5 @@
-﻿using HizenLabs.Extensions.ObjectSerializer.Mappers.Abstractions;
+﻿using HizenLabs.Extensions.ObjectSerializer.Enums;
+using HizenLabs.Extensions.ObjectSerializer.Mappers.Abstractions;
 using HizenLabs.Extensions.ObjectSerializer.Serialization;
 using System;
 
@@ -10,6 +11,8 @@ public sealed class ItemMapper : BaseObjectMapper<Item>
     private const string _keyItemName = $"_{nameof(Item.info.name)}";
     private const string _keyItemAmount = $"_{nameof(Item.amount)}";
     private const string _keyItemSkin = $"_{nameof(Item.skin)}";
+
+    private const string _keyParentContainerIndex = $"_parentContainerIdx";
 
     public ItemMapper()
     {
@@ -42,5 +45,50 @@ public sealed class ItemMapper : BaseObjectMapper<Item>
         target.Properties[_keyItemSkin] = source.skin;
 
         base.OnSerializeSelf(source, target);
+    }
+
+    protected override void OnSerializeComplete(Item source, SerializableObject target, SerializationContext context)
+    {
+        base.OnSerializeComplete(source, target, context);
+
+        if (source.parent != null)
+        {
+            foreach (var obj in context.Find(ObjectType.Item, ObjectType.BaseEntity))
+            {
+                if (obj.GameObject is Item item
+                    && item.contents == source.parent)
+                {
+                    target.Properties[_keyParentContainerIndex] = obj.Index;
+                    break;
+                }
+
+                if (obj.GameObject is StorageContainer container
+                    && container.inventory == source.parent)
+                {
+                    target.Properties[_keyParentContainerIndex] = obj.Index;
+                    break;
+                }
+            }
+        }
+    }
+
+    protected override void OnDeserializeComplete(SerializableObject source, Item target, SerializationContext context)
+    {
+        base.OnDeserializeComplete(source, target, context);
+
+        if (source.Properties.TryGetValue(_keyParentContainerIndex, out var parentItemIndexObj)
+            && parentItemIndexObj is int parentItemIndex
+            && context.TryFindByIndex(parentItemIndex, out var parentItemObj))
+        {
+            if (parentItemObj.GameObject is Item parentItem)
+            {
+                target.SetParent(parentItem.contents);
+            }
+            else if (parentItemObj.GameObject is StorageContainer container)
+            {
+                target.SetParent(container.inventory);
+            }
+        }
+
     }
 }

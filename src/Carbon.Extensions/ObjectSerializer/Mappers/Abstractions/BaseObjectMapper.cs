@@ -1,5 +1,4 @@
-﻿using Facepunch.Extend;
-using HizenLabs.Extensions.ObjectSerializer.Exceptions;
+﻿using HizenLabs.Extensions.ObjectSerializer.Exceptions;
 using HizenLabs.Extensions.ObjectSerializer.Serialization;
 using System;
 using System.Collections.Generic;
