@@ -74,15 +74,25 @@ public class SerializationContext : Pool.IPooled, IDisposable
     /// Loads the context from a file, optionally using GZip compression.
     /// </summary>
     /// <param name="filename">The name of the file to load from.</param>
-    /// <param name="compression">True to use GZip compression; otherwise, false.</param>
+    /// <param name="dataFormat">The format of the data in the file.</param>
     public void Load(string filename, DataFormat dataFormat = DataFormat.Binary)
     {
         using var stream = File.OpenRead(filename);
+        Load(stream, dataFormat);
+    }
 
+    /// <summary>
+    /// Loads the context from a stream.
+    /// </summary>
+    /// <param name="stream">The stream to load from.</param>
+    /// <param name="dataFormat">The format of the data in the stream.</param>
+    /// <exception cref="NotImplementedException">Thrown when the specified format is not implemented.</exception>
+    public void Load(Stream stream, DataFormat dataFormat = DataFormat.Binary)
+    {
         switch (dataFormat)
         {
             case DataFormat.Binary:
-                Read(stream);
+                ReadBinary(stream);
                 break;
 
             case DataFormat.Gzip:
@@ -98,17 +108,17 @@ public class SerializationContext : Pool.IPooled, IDisposable
     /// Loads the context from a compressed stream using GZip compression.
     /// </summary>
     /// <param name="stream">The compressed stream to load from.</param>
-    public void ReadGzip(Stream stream)
+    internal void ReadGzip(Stream stream)
     {
         using var gzipStream = new GZipStream(stream, CompressionMode.Decompress);
-        Read(gzipStream);
+        ReadBinary(gzipStream);
     }
 
     /// <summary>
-    /// Loads the context from a stream.
+    /// Reads the context from a stream.
     /// </summary>
-    /// <param name="stream">The stream to load from.</param>
-    public void Read(Stream stream)
+    /// <param name="stream">The stream to read from.</param>
+    internal void ReadBinary(Stream stream)
     {
         using var reader = new BinaryReader(stream);
 
@@ -134,15 +144,25 @@ public class SerializationContext : Pool.IPooled, IDisposable
     /// Saves the context to a file, optionally using GZip compression.
     /// </summary>
     /// <param name="fileName">The name of the file to save to.</param>
-    /// <param name="compression">True to use GZip compression; otherwise, false.</param>
+    /// <param name="dataFormat">The format of the data in the file.</param>
     public void Save(string fileName, DataFormat dataFormat = DataFormat.Binary)
     {
         using var stream = File.Create(fileName);
+        Save(stream);
+    }
 
+    /// <summary>
+    /// Saves the context to a stream.
+    /// </summary>
+    /// <param name="stream">The stream to save to.</param>
+    /// <param name="dataFormat">The format of the data in the stream.</param>
+    /// <exception cref="NotImplementedException">Thrown when the specified format is not implemented.</exception>
+    public void Save(Stream stream, DataFormat dataFormat = DataFormat.Binary)
+    {
         switch (dataFormat)
         {
             case DataFormat.Binary:
-                Write(stream);
+                WriteBinary(stream);
                 break;
 
             case DataFormat.Gzip:
@@ -158,17 +178,17 @@ public class SerializationContext : Pool.IPooled, IDisposable
     /// Saves the context to a compressed stream using GZip compression.
     /// </summary>
     /// <param name="stream">The compressed stream to save to.</param>
-    public void WriteGzip(Stream stream)
+    internal void WriteGzip(Stream stream)
     {
         using var gzipStream = new GZipStream(stream, CompressionMode.Compress);
-        Write(gzipStream);
+        WriteBinary(gzipStream);
     }
 
     /// <summary>
-    /// Saves the context to a stream.
+    /// Writes the context to a stream.
     /// </summary>
-    /// <param name="stream">The stream to save to.</param>
-    public void Write(Stream stream)
+    /// <param name="stream">The stream to write to.</param>
+    internal void WriteBinary(Stream stream)
     {
         foreach (var obj in _objects)
         {

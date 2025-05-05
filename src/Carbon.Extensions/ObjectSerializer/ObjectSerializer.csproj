@@ -565,6 +565,7 @@
     <Compile Include="Internal\GenericReader.cs" />
     <Compile Include="Internal\Delegates\GenericTypeResolver.cs" />
     <Compile Include="Internal\GenericWriter.cs" />
+    <Compile Include="Internal\ObjectTypeResolvers\BaseEntityFallbackResolver.cs" />
     <Compile Include="Internal\ObjectTypeResolvers\DirectObjectTypeResolver.cs" />
     <Compile Include="Internal\ObjectTypeResolvers\IObjectTypeResolver.cs" />
     <Compile Include="Internal\ObjectTypeResolvers\ObjectTypeResolver.cs" />

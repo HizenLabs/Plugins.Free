@@ -15,7 +15,8 @@ internal static class ObjectTypeResolver
     /// </summary>
     private static readonly IObjectTypeResolver[] _resolvers = new IObjectTypeResolver[]
     {
-        new DirectObjectTypeResolver()
+        new DirectObjectTypeResolver(),
+        new BaseEntityFallbackResolver()
     };
 
     /// <summary>
