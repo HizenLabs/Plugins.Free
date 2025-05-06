@@ -1,14 +1,9 @@
-﻿using Carbon.Components;
-using Facepunch;
+﻿using Facepunch;
 using ProtoBuf;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using UnityEngine;
-using static Carbon.Cache;
-using UnityEngine.UIElements;
-using Oxide.Game.Rust.Cui;
 
 namespace Carbon.Plugins;
 

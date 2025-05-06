@@ -1,9 +1,7 @@
 ﻿// Reference: HizenLabs.Extensions.ObjectSerializer
 using Carbon.Components;
 using Facepunch;
-using HizenLabs.Extensions.ObjectSerializer.Enums;
 using HizenLabs.Extensions.ObjectSerializer.Serialization;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
