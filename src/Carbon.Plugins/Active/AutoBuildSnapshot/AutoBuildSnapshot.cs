@@ -1,4 +1,4 @@
-﻿namespace Carbon.Plugins.Active.AutoBuildSnapshot;
+﻿namespace Carbon.Plugins;
 
 /// <summary>
 /// Creates snapshots of user bases which can then be rolled back to at a later date.

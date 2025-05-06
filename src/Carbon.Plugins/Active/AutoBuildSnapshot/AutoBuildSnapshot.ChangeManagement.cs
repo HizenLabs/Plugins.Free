@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Carbon.Plugins.Active.AutoBuildSnapshot;
+namespace Carbon.Plugins;
 
 public partial class AutoBuildSnapshot
 {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Carbon.Plugins.Active.AutoBuildSnapshot;
+namespace Carbon.Plugins;
 
 public partial class AutoBuildSnapshot
 {

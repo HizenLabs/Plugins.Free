@@ -1,9 +1,8 @@
-﻿using Facepunch;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 
-namespace Carbon.Plugins.Active.AutoBuildSnapshot;
+namespace Carbon.Plugins;
 
 #pragma warning disable IDE1006 // Naming Styles
 public partial class AutoBuildSnapshot
