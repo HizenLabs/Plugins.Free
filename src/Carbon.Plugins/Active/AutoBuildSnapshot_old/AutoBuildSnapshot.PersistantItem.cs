@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Carbon.Plugins;
 
-public partial class AutoBuildSnapshot
+public partial class AutoBuildSnapshot_old
 {
     /// <summary>
     /// Represents a persistent item, which is a simplified version of the Base Item.

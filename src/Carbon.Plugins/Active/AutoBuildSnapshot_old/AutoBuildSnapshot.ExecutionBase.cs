@@ -5,7 +5,7 @@ using System.Diagnostics;
 
 namespace Carbon.Plugins;
 
-public partial class AutoBuildSnapshot
+public partial class AutoBuildSnapshot_old
 {
     private abstract class ExecutionBase : Pool.IPooled
     {

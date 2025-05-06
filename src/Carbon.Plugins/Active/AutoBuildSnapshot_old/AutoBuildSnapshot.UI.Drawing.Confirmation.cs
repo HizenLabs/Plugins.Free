@@ -5,7 +5,7 @@ namespace Carbon.Plugins;
 
 #pragma warning disable IDE0001 // Simplify names
 
-public partial class AutoBuildSnapshot
+public partial class AutoBuildSnapshot_old
 {
     /// <summary>
     /// Shows a confirmation dialog to the player.
@@ -137,7 +137,7 @@ public partial class AutoBuildSnapshot
                 container: buttonsArea,
                 position: new(0.55f, 0.2f, 0.85f, 0.8f),
                 offset: LuiOffset.None,
-                command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandConfirmationCancel)}",
+                command: $"{nameof(AutoBuildSnapshot_old)}.{nameof(CommandConfirmationCancel)}",
                 color: "0.5 0.3 0.3 1"
             );
 

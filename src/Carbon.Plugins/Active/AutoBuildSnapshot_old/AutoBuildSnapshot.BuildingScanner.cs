@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Carbon.Plugins;
 
-public partial class AutoBuildSnapshot
+public partial class AutoBuildSnapshot_old
 {
     /// <summary>
     /// Math for finding and scanning <see cref="BuildingPrivlidge"/> zones and gathering entities.

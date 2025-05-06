@@ -7,7 +7,7 @@ using System.Reflection;
 
 namespace Carbon.Plugins;
 
-public partial class AutoBuildSnapshot
+public partial class AutoBuildSnapshot_old
 {
     internal interface IPropertyMapping
     {

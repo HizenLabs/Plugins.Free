@@ -8,7 +8,7 @@ namespace Carbon.Plugins;
 
 #pragma warning disable IDE0001 // Simplify names
 
-public partial class AutoBuildSnapshot
+public partial class AutoBuildSnapshot_old
 {
     /// <summary>
     /// Sends the main UI to the player.
@@ -44,7 +44,7 @@ public partial class AutoBuildSnapshot
                 container: tabsPanel,
                 position: new(0, 0, .5f, 1),
                 offset: LuiOffset.None,
-                command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandMainMenuTabRecords)}",
+                command: $"{nameof(AutoBuildSnapshot_old)}.{nameof(CommandMainMenuTabRecords)}",
                 color: tab == MenuTab.Records ? highlightColor : defaultColor
             );
 
@@ -64,7 +64,7 @@ public partial class AutoBuildSnapshot
                 container: tabsPanel,
                 position: new(.5f, 0, 1, 1),
                 offset: LuiOffset.None,
-                command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandMainMenuTabLogs)}",
+                command: $"{nameof(AutoBuildSnapshot_old)}.{nameof(CommandMainMenuTabLogs)}",
                 color: tab == MenuTab.Logs ? highlightColor : defaultColor
             );
 
@@ -197,7 +197,7 @@ public partial class AutoBuildSnapshot
                         container: recordItem,
                         position: new(.65f, .2f, .8f, .8f),
                         offset: LuiOffset.None,
-                        command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandGlobalTeleport)} {pos.x} {pos.y} {pos.z}",
+                        command: $"{nameof(AutoBuildSnapshot_old)}.{nameof(CommandGlobalTeleport)} {pos.x} {pos.y} {pos.z}",
                         color: "0.3 0.5 0.3 1"
                     );
 
@@ -217,7 +217,7 @@ public partial class AutoBuildSnapshot
                         container: recordItem,
                         position: new(.82f, .2f, .97f, .8f),
                         offset: LuiOffset.None,
-                        command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandMainMenuOpenSnapshots)} {record.NetworkID}",
+                        command: $"{nameof(AutoBuildSnapshot_old)}.{nameof(CommandMainMenuOpenSnapshots)} {record.NetworkID}",
                         color: "0.3 0.3 0.5 1"
                     );
 
@@ -243,7 +243,7 @@ public partial class AutoBuildSnapshot
                             container: contentPanel,
                             position: new(.96f, .9f, .99f, .95f),
                             offset: LuiOffset.None,
-                            command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandMainMenuScrollRecords)} -1",
+                            command: $"{nameof(AutoBuildSnapshot_old)}.{nameof(CommandMainMenuScrollRecords)} -1",
                             color: "0.3 0.3 0.3 1"
                         );
 
@@ -266,7 +266,7 @@ public partial class AutoBuildSnapshot
                             container: contentPanel,
                             position: new(.96f, .05f, .99f, .1f),
                             offset: LuiOffset.None,
-                            command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandMainMenuScrollRecords)} 1",
+                            command: $"{nameof(AutoBuildSnapshot_old)}.{nameof(CommandMainMenuScrollRecords)} 1",
                             color: "0.3 0.3 0.3 1"
                         );
 
@@ -359,7 +359,7 @@ public partial class AutoBuildSnapshot
                 container: contentPanel,
                 position: new(.85f, .91f, .98f, .98f),
                 offset: LuiOffset.None,
-                command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandMainMenuClearLogs)}",
+                command: $"{nameof(AutoBuildSnapshot_old)}.{nameof(CommandMainMenuClearLogs)}",
                 color: "0.5 0.3 0.3 1"
             );
 

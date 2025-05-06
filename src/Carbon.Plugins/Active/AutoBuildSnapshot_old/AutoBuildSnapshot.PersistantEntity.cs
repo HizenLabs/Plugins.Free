@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace Carbon.Plugins;
 
-public partial class AutoBuildSnapshot
+public partial class AutoBuildSnapshot_old
 {
     /// <summary>
     /// Represents a persistent entity, which just uses the prefabID and coords.

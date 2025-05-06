@@ -9,7 +9,7 @@ using System.Reflection;
 
 namespace Carbon.Plugins;
 
-public partial class AutoBuildSnapshot
+public partial class AutoBuildSnapshot_old
 {
     /// <summary>
     /// Helper class for binary serialization and deserialization

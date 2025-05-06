@@ -11,7 +11,7 @@ namespace Carbon.Plugins;
 /// <summary>
 /// Consolidating common drawing functions for all the menus.
 /// </summary>
-public partial class AutoBuildSnapshot
+public partial class AutoBuildSnapshot_old
 {
     private Dictionary<MenuLayer, string> _menuLayerIdLookup;
     private Dictionary<ulong, List<Guid>> _snapshotGuids;
@@ -87,7 +87,7 @@ public partial class AutoBuildSnapshot
                 container: header,
                 position: new(.965f, .15f, .99f, .85f),
                 offset: new(4, 0, 4, 0),
-                command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandGlobalMenuClose)}",
+                command: $"{nameof(AutoBuildSnapshot_old)}.{nameof(CommandGlobalMenuClose)}",
                 color: ".6 .2 .2 .9"
             );
 

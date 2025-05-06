@@ -6,7 +6,7 @@ using System.IO;
 
 namespace Carbon.Plugins;
 
-public partial class AutoBuildSnapshot
+public partial class AutoBuildSnapshot_old
 {
     internal abstract class PersistantBase<TObject> : Pool.IPooled
         where TObject : class

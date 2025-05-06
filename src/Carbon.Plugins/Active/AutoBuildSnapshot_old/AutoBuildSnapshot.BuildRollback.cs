@@ -6,7 +6,7 @@ using System;
 
 namespace Carbon.Plugins;
 
-public partial class AutoBuildSnapshot
+public partial class AutoBuildSnapshot_old
 {
     private class BuildRollback : ExecutionBase
     {

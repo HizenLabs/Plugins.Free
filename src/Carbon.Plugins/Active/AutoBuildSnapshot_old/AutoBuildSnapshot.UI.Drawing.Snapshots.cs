@@ -9,7 +9,7 @@ namespace Carbon.Plugins;
 
 #pragma warning disable IDE0001 // Simplify names
 
-public partial class AutoBuildSnapshot
+public partial class AutoBuildSnapshot_old
 {
     /// <summary>
     /// Sends the snapshots menu to the player.
@@ -59,7 +59,7 @@ public partial class AutoBuildSnapshot
                     container: header,
                     position: new(.88f, .15f, .962f, .85f),
                     offset: LuiOffset.None,
-                    command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsNavigateBack)}",
+                    command: $"{nameof(AutoBuildSnapshot_old)}.{nameof(CommandSnapshotsNavigateBack)}",
                     color: "0.3 0.3 0.6 0.9"
                 );
 
@@ -249,7 +249,7 @@ public partial class AutoBuildSnapshot
                     container: snapshotList,
                     position: new(0, yMin, 1, yMax),
                     offset: new(0, 2, 0, -2),
-                    command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsSelect)} {meta.ID}",
+                    command: $"{nameof(AutoBuildSnapshot_old)}.{nameof(CommandSnapshotsSelect)} {meta.ID}",
                     color: isSelected ? "0.2 0.4 0.6 0.8" : (i % 2 == 0 ? "0.2 0.2 0.2 0.5" : "0.25 0.25 0.25 0.5")
                 )
                 .AddCursor();
@@ -277,7 +277,7 @@ public partial class AutoBuildSnapshot
                         container: leftPanel,
                         position: new(.9f, .95f, .98f, .99f),
                         offset: LuiOffset.None,
-                        command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsScroll)} -1",
+                        command: $"{nameof(AutoBuildSnapshot_old)}.{nameof(CommandSnapshotsScroll)} -1",
                         color: "0.3 0.3 0.3 1"
                     );
 
@@ -300,7 +300,7 @@ public partial class AutoBuildSnapshot
                         container: leftPanel,
                         position: new(.9f, .01f, .98f, .05f),
                         offset: LuiOffset.None,
-                        command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsScroll)} 1",
+                        command: $"{nameof(AutoBuildSnapshot_old)}.{nameof(CommandSnapshotsScroll)} 1",
                         color: "0.3 0.3 0.3 1"
                     );
 
@@ -491,7 +491,7 @@ public partial class AutoBuildSnapshot
                     container: buildingItem,
                     position: new(.7f, .2f, .95f, .8f),
                     offset: LuiOffset.None,
-                    command: $"{nameof(AutoBuildSnapshot)}.{nameof(CommandGlobalTeleport)} {pos.x} {pos.y} {pos.z}",
+                    command: $"{nameof(AutoBuildSnapshot_old)}.{nameof(CommandGlobalTeleport)} {pos.x} {pos.y} {pos.z}",
                     color: "0.3 0.5 0.3 1"
                 );
 
@@ -594,7 +594,7 @@ public partial class AutoBuildSnapshot
                     container: buttonPanel,
                     position: position,
                     offset: LuiOffset.None,
-                    command: $"{nameof(AutoBuildSnapshot)}.{commandName} {handle.Meta.ID}",
+                    command: $"{nameof(AutoBuildSnapshot_old)}.{commandName} {handle.Meta.ID}",
                     color: color
                 );
         }

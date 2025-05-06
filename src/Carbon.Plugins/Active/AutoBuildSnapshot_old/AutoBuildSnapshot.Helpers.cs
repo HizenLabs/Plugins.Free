@@ -7,7 +7,7 @@ using Cysharp.Threading.Tasks;
 
 namespace Carbon.Plugins;
 
-public partial class AutoBuildSnapshot
+public partial class AutoBuildSnapshot_old
 {
     /// <summary>
     /// Generates an id for the entity based on prefab and location that should persist between server restarts.

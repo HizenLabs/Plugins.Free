@@ -700,25 +700,25 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.BuildingScanner.cs" />
-    <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.BuildSnapshot.cs" />
-    <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.ExecutionBase.cs" />
-    <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.Helpers.cs" />
-    <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.BuildRollback.cs" />
-    <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.PropertyMapping.cs" />
-    <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.PersistantItem.cs" />
-    <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.SerializationHelper.cs" />
-    <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.SnapshotHandle.cs" />
-    <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.ChangeManagement.cs" />
-    <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.cs" />
-    <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.UI.Drawing.cs" />
-    <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.PersistantEntity.cs" />
-    <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.UI.cs" />
-    <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.UI.Drawing.Confirmation.cs" />
-    <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.UI.Drawing.Main.cs" />
-    <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.UI.Drawing.Snapshots.cs" />
-    <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.UI.Handlers.cs" />
-    <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.PersistantBase.cs" />
+    <Compile Include="Active\AutoBuildSnapshot_old\AutoBuildSnapshot.BuildingScanner.cs" />
+    <Compile Include="Active\AutoBuildSnapshot_old\AutoBuildSnapshot.BuildSnapshot.cs" />
+    <Compile Include="Active\AutoBuildSnapshot_old\AutoBuildSnapshot.ExecutionBase.cs" />
+    <Compile Include="Active\AutoBuildSnapshot_old\AutoBuildSnapshot.Helpers.cs" />
+    <Compile Include="Active\AutoBuildSnapshot_old\AutoBuildSnapshot.BuildRollback.cs" />
+    <Compile Include="Active\AutoBuildSnapshot_old\AutoBuildSnapshot.PropertyMapping.cs" />
+    <Compile Include="Active\AutoBuildSnapshot_old\AutoBuildSnapshot.PersistantItem.cs" />
+    <Compile Include="Active\AutoBuildSnapshot_old\AutoBuildSnapshot.SerializationHelper.cs" />
+    <Compile Include="Active\AutoBuildSnapshot_old\AutoBuildSnapshot.SnapshotHandle.cs" />
+    <Compile Include="Active\AutoBuildSnapshot_old\AutoBuildSnapshot.ChangeManagement.cs" />
+    <Compile Include="Active\AutoBuildSnapshot_old\AutoBuildSnapshot.cs" />
+    <Compile Include="Active\AutoBuildSnapshot_old\AutoBuildSnapshot.UI.Drawing.cs" />
+    <Compile Include="Active\AutoBuildSnapshot_old\AutoBuildSnapshot.PersistantEntity.cs" />
+    <Compile Include="Active\AutoBuildSnapshot_old\AutoBuildSnapshot.UI.cs" />
+    <Compile Include="Active\AutoBuildSnapshot_old\AutoBuildSnapshot.UI.Drawing.Confirmation.cs" />
+    <Compile Include="Active\AutoBuildSnapshot_old\AutoBuildSnapshot.UI.Drawing.Main.cs" />
+    <Compile Include="Active\AutoBuildSnapshot_old\AutoBuildSnapshot.UI.Drawing.Snapshots.cs" />
+    <Compile Include="Active\AutoBuildSnapshot_old\AutoBuildSnapshot.UI.Handlers.cs" />
+    <Compile Include="Active\AutoBuildSnapshot_old\AutoBuildSnapshot.PersistantBase.cs" />
     <Compile Include="Active\CopyPasteTests.cs" />
     <Compile Include="Active\ObjectSerializerTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -728,6 +728,9 @@
       <Project>{0f9b4405-b1ed-4025-b95b-ea8f9d9d5160}</Project>
       <Name>ObjectSerializer</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Active\AutoBuildSnapshot\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

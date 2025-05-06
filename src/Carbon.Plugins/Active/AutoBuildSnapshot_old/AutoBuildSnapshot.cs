@@ -18,11 +18,11 @@ namespace Carbon.Plugins;
 
 [Info("AutoBuildSnapshot", "hizenxyz", "0.0.20")]
 [Description("Automatically backs up a player's base when they build to it, allowing it to be restored later.")]
-public partial class AutoBuildSnapshot : CarbonPlugin
+public partial class AutoBuildSnapshot_old : CarbonPlugin
 {
     #region Fields
 
-    private static AutoBuildSnapshot _instance;
+    private static AutoBuildSnapshot_old _instance;
 
     /// <summary>
     /// The default distance to scan for targets when running player commands.
@@ -389,7 +389,7 @@ public partial class AutoBuildSnapshot : CarbonPlugin
             /// <param name="command">The command to check.</param>
             /// <param name="plugin">The plugin instance.</param>
             /// <returns>True if the user has permission, false otherwise.</returns>
-            public bool UserHasPermission(BasePlayer player, CommandSetting command, AutoBuildSnapshot plugin) =>
+            public bool UserHasPermission(BasePlayer player, CommandSetting command, AutoBuildSnapshot_old plugin) =>
                 plugin.permission.UserHasPermission(player.UserIDString, command.Permission)
                 || plugin.permission.UserHasPermission(player.UserIDString, AdminPermission);
         }
@@ -511,13 +511,13 @@ public partial class AutoBuildSnapshot : CarbonPlugin
     /// </summary>
     private class AutoBuildSnapshotLang
     {
-        private readonly AutoBuildSnapshot _abs;
+        private readonly AutoBuildSnapshot_old _abs;
 
         /// <summary>
         /// Creates a new instance of the AutoBuildSnapshotLang class.
         /// </summary>
         /// <param name="abs">The AutoBuildSnapshot instance.</param>
-        public AutoBuildSnapshotLang(AutoBuildSnapshot abs)
+        public AutoBuildSnapshotLang(AutoBuildSnapshot_old abs)
         {
             _abs = abs;
 

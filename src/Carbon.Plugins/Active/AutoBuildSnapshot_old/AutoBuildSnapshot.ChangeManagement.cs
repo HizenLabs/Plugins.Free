@@ -8,7 +8,7 @@ namespace Carbon.Plugins;
 
 #pragma warning disable IDE0001 // fully qualifying method params due to issues with codegen
 
-public partial class AutoBuildSnapshot
+public partial class AutoBuildSnapshot_old
 {
     /// <summary>
     /// Initializes the timer to monitor builds.

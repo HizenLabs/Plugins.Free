@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Carbon.Plugins;
 
-public partial class AutoBuildSnapshot
+public partial class AutoBuildSnapshot_old
 {
     #region Global Menu Actions
 
@@ -12,7 +12,7 @@ public partial class AutoBuildSnapshot
     /// Closes the entire menu.
     /// </summary>
     /// <param name="player">The player to close the menu for.</param>
-    [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.{nameof(CommandGlobalMenuClose)}")]
+    [ProtectedCommand($"{nameof(AutoBuildSnapshot_old)}.{nameof(CommandGlobalMenuClose)}")]
     private void CommandGlobalMenuClose(BasePlayer player) =>
         NavigateMenu(player, MenuLayer.Closed);
 
@@ -22,7 +22,7 @@ public partial class AutoBuildSnapshot
     /// <param name="player">The player to teleport.</param>
     /// <param name="command">The command that was executed.</param>
     /// <param name="args">The command arguments (target type and ID).</param>
-    [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.{nameof(CommandGlobalTeleport)}")]
+    [ProtectedCommand($"{nameof(AutoBuildSnapshot_old)}.{nameof(CommandGlobalTeleport)}")]
     private void CommandGlobalTeleport(BasePlayer player, string command, string[] args)
     {
         if (!UserHasPermission(player, _config.Commands.AdminPermission)) return;
@@ -44,11 +44,11 @@ public partial class AutoBuildSnapshot
 
     #region Main Menu Navigation
 
-    [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.{nameof(CommandMainMenuTabRecords)}")]
+    [ProtectedCommand($"{nameof(AutoBuildSnapshot_old)}.{nameof(CommandMainMenuTabRecords)}")]
     private void CommandMainMenuTabRecords(BasePlayer player) =>
         RefreshMenuWithTab(player, MenuTab.Records);
 
-    [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.{nameof(CommandMainMenuTabLogs)}")]
+    [ProtectedCommand($"{nameof(AutoBuildSnapshot_old)}.{nameof(CommandMainMenuTabLogs)}")]
     private void CommandMainMenuTabLogs(BasePlayer player) =>
         RefreshMenuWithTab(player, MenuTab.Logs);
 
@@ -56,7 +56,7 @@ public partial class AutoBuildSnapshot
 
     #region Main Menu Actions
 
-    [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.{nameof(CommandMainMenuOpenSnapshots)}")]
+    [ProtectedCommand($"{nameof(AutoBuildSnapshot_old)}.{nameof(CommandMainMenuOpenSnapshots)}")]
     private void CommandMainMenuOpenSnapshots(BasePlayer player, string command, string[] args)
     {
         if (args.Length == 0) return;
@@ -67,7 +67,7 @@ public partial class AutoBuildSnapshot
         }
     }
 
-    [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.{nameof(CommandMainMenuScrollRecords)}")]
+    [ProtectedCommand($"{nameof(AutoBuildSnapshot_old)}.{nameof(CommandMainMenuScrollRecords)}")]
     private void CommandMainMenuScrollRecords(BasePlayer player, string command, string[] args)
     {
         if (args.Length == 0) return;
@@ -86,7 +86,7 @@ public partial class AutoBuildSnapshot
         }
     }
 
-    [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.{nameof(CommandMainMenuClearLogs)}")]
+    [ProtectedCommand($"{nameof(AutoBuildSnapshot_old)}.{nameof(CommandMainMenuClearLogs)}")]
     private void CommandMainMenuClearLogs(BasePlayer player)
     {
         if (!UserHasPermission(player, _config.Commands.AdminPermission)) return;
@@ -101,13 +101,13 @@ public partial class AutoBuildSnapshot
     #region Snapshot Navigation
 
     // Command handlers for the snapshots UI
-    [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsNavigateBack)}")]
+    [ProtectedCommand($"{nameof(AutoBuildSnapshot_old)}.{nameof(CommandSnapshotsNavigateBack)}")]
     private void CommandSnapshotsNavigateBack(BasePlayer player)
     {
         CuiHelper.DestroyUi(player, _snapshotMenuId);
     }
 
-    [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsSelect)}")]
+    [ProtectedCommand($"{nameof(AutoBuildSnapshot_old)}.{nameof(CommandSnapshotsSelect)}")]
     private void CommandSnapshotsSelect(BasePlayer player, string command, string[] args)
     {
         if (args.Length == 0)
@@ -129,7 +129,7 @@ public partial class AutoBuildSnapshot
         }
     }
 
-    [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsScroll)}")]
+    [ProtectedCommand($"{nameof(AutoBuildSnapshot_old)}.{nameof(CommandSnapshotsScroll)}")]
     private void CommandSnapshotsScroll(BasePlayer player, string command, string[] args)
     {
         if (args.Length == 0)
@@ -161,7 +161,7 @@ public partial class AutoBuildSnapshot
 
     #region Snapshot Actions
 
-    [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsPreviewZones)}")]
+    [ProtectedCommand($"{nameof(AutoBuildSnapshot_old)}.{nameof(CommandSnapshotsPreviewZones)}")]
     private void CommandSnapshotsPreviewZones(BasePlayer player)
     {
         if (!UserHasPermission(player, _config.Commands.AdminPermission)) return;
@@ -174,7 +174,7 @@ public partial class AutoBuildSnapshot
         }
     }
 
-    [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsPreviewRollback)}")]
+    [ProtectedCommand($"{nameof(AutoBuildSnapshot_old)}.{nameof(CommandSnapshotsPreviewRollback)}")]
     private void CommandSnapshotsPreviewRollback(BasePlayer player)
     {
         if (!UserHasPermission(player, _config.Commands.AdminPermission)) return;
@@ -187,7 +187,7 @@ public partial class AutoBuildSnapshot
         }
     }
 
-    [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.{nameof(CommandSnapshotsRollback)}")]
+    [ProtectedCommand($"{nameof(AutoBuildSnapshot_old)}.{nameof(CommandSnapshotsRollback)}")]
     private void CommandSnapshotsRollback(BasePlayer player)
     {
         if (!UserHasPermission(player, _config.Commands.AdminPermission)) return;
@@ -198,7 +198,7 @@ public partial class AutoBuildSnapshot
             NavigateMenu(player, MenuLayer.ConfirmationDialog, true, false,
                 "Confirm Rollback",
                 $"Are you sure you want to rollback to the snapshot from {handle.Meta.TimestampUTC:yyyy-MM-dd HH:mm:ss}?",
-                $"{nameof(AutoBuildSnapshot)}.{nameof(CommandConfirmationRollback)} {confirmationCode}"
+                $"{nameof(AutoBuildSnapshot_old)}.{nameof(CommandConfirmationRollback)} {confirmationCode}"
             );
         }
     }
@@ -208,7 +208,7 @@ public partial class AutoBuildSnapshot
     #region Confirmation Dialog Actions
 
     // Command handlers for confirmation dialog
-    [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.{nameof(CommandConfirmationCancel)}")]
+    [ProtectedCommand($"{nameof(AutoBuildSnapshot_old)}.{nameof(CommandConfirmationCancel)}")]
     private void CommandConfirmationCancel(BasePlayer player)
     {
         if (TryGetSelectedSnapshotHandle(player, out var handle))
@@ -219,7 +219,7 @@ public partial class AutoBuildSnapshot
         CloseConfirmationDialog(player);
     }
 
-    [ProtectedCommand($"{nameof(AutoBuildSnapshot)}.{nameof(CommandConfirmationRollback)}")]
+    [ProtectedCommand($"{nameof(AutoBuildSnapshot_old)}.{nameof(CommandConfirmationRollback)}")]
     private void CommandConfirmationRollback(BasePlayer player, string command, string[] args)
     {
         if (args.Length == 0)

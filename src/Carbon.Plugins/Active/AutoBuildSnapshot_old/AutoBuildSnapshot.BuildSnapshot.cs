@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace Carbon.Plugins;
 
-public partial class AutoBuildSnapshot
+public partial class AutoBuildSnapshot_old
 {
     /// <summary>
     /// Represents all of the elements within set of zones.
@@ -18,7 +18,7 @@ public partial class AutoBuildSnapshot
     /// </summary>
     private class BuildSnapshot : ExecutionBase
     {
-        private AutoBuildSnapshot _plugin;
+        private AutoBuildSnapshot_old _plugin;
         private Action<bool, BuildSnapshot> _resultCallback;
 
         private Dictionary<BuildRecord, List<BaseEntity>> _buildingEntities;
@@ -59,7 +59,7 @@ public partial class AutoBuildSnapshot
             _linkedRecords = Pool.Get<List<BuildRecord>>();
         }
 
-        public static BuildSnapshot Create(AutoBuildSnapshot plugin, BuildRecord record, Action<bool, BuildSnapshot> resultCallback)
+        public static BuildSnapshot Create(AutoBuildSnapshot_old plugin, BuildRecord record, Action<bool, BuildSnapshot> resultCallback)
         {
             var snapshot = Pool.Get<BuildSnapshot>();
             snapshot.Init(plugin, record, resultCallback);
@@ -71,7 +71,7 @@ public partial class AutoBuildSnapshot
         /// This will gather all TC in radius as well.
         /// </summary>
         /// <param name="buildingPrivlidge"></param>
-        public void Init(AutoBuildSnapshot plugin, BuildRecord record, Action<bool, BuildSnapshot> resultCallback)
+        public void Init(AutoBuildSnapshot_old plugin, BuildRecord record, Action<bool, BuildSnapshot> resultCallback)
         {
             _plugin = plugin;
             _resultCallback = resultCallback;
