@@ -1,11 +1,105 @@
-﻿using Newtonsoft.Json;
+﻿using Facepunch;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 
 namespace Carbon.Plugins.Active.AutoBuildSnapshot;
 
+#pragma warning disable IDE1006 // Naming Styles
 public partial class AutoBuildSnapshot
 {
+    #region Localization
+
+    #region Overrides
+
+    protected override void LoadDefaultMessages()
+    {
+        base.LoadDefaultMessages();
+
+        Localizer.Init(this);
+    }
+
+    private Localizer Text => Localizer.Instance;
+
+    #endregion
+
+    private class Localizer
+    {
+        public static Localizer Instance { get; } = new();
+
+        private AutoBuildSnapshot _plugin;
+
+        public LocalizedText this[BasePlayer player] => LocalizedText.For(_plugin, player);
+
+        public static void Init(AutoBuildSnapshot plugin)
+        {
+            Instance._plugin = plugin;
+        }
+
+        public void InitPlayer()
+        {
+            // player logs in
+        }
+
+        public void UnloadPlayer()
+        {
+            // player logs out
+        }
+
+        public class LocalizedText : ILanguageSet, Pool.IPooled
+        {
+            private AutoBuildSnapshot _plugin;
+            private BasePlayer _player;
+
+            public static LocalizedText For(AutoBuildSnapshot plugin, BasePlayer player)
+            {
+                var langSet = Pool.Get<LocalizedText>();
+                return langSet;
+            }
+
+            /// <summary>
+            /// Gets a localized message by its name.
+            /// </summary>
+            /// <param name="messageName">The name of the message to retrieve.</param>
+            /// <returns>The localized message.</returns>
+            public string Get(string messageName)
+            {
+                return _plugin.lang.GetMessage(nameof(error_no_permission), _plugin, _player.UserIDString);
+            }
+
+
+            public string error_no_permission => Get(nameof(error_no_permission));
+
+            /// <summary>
+            /// Releases the resources used by this instance.
+            /// </summary>
+            public void EnterPool()
+            {
+                _plugin = null;
+                _player = null;
+            }
+
+            /// <summary>
+            /// Gets a new instance from the pool.
+            /// </summary>
+            public void LeavePool() { }
+        }
+
+        public class LanguageSet_EN : ILanguageSet
+        {
+            public const string Code = "en";
+
+            public string error_no_permission { get; }
+        }
+
+        public interface ILanguageSet
+        {
+            string error_no_permission { get; }
+        }
+    }
+
+    #endregion
+
     #region Settings
 
     #region Config Overrides
