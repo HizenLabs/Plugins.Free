@@ -7,13 +7,17 @@
 [Description("Creates snapshots of user bases which can then be rolled back to at a later date.")]
 public partial class AutoBuildSnapshot : CarbonPlugin
 {
+    private static AutoBuildSnapshot _instance;
+
     /// <summary>
     /// Initializes the plugin and obtains resources from the pool.
     /// </summary>
     void Init()
     {
-        Helpers.Init(this);
-        ChangeManagement.Init(this);
+        _instance = this;
+
+        Helpers.Init();
+        ChangeManagement.Init();
     }
 
     /// <summary>
@@ -23,6 +27,8 @@ public partial class AutoBuildSnapshot : CarbonPlugin
     {
         ChangeManagement.Unload();
         Helpers.Unload();
+
+        _instance = null;
     }
 
     void OnEntitySpawned(BaseNetworkable networkable)

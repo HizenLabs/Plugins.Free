@@ -11,16 +11,14 @@ public partial class AutoBuildSnapshot
     /// </summary>
     private static class Helpers
     {
-        private static AutoBuildSnapshot _plugin;
         private static List<string> _logs;
 
         /// <summary>
         /// Initializes the helper with the plugin instance and obtains resources from the pool.
         /// </summary>
         /// <param name="plugin"></param>
-        public static void Init(AutoBuildSnapshot plugin)
+        public static void Init()
         {
-            _plugin = plugin;
             _logs = Pool.Get<List<string>>();
         }
 
@@ -29,7 +27,6 @@ public partial class AutoBuildSnapshot
         /// </summary>
         public static void Unload()
         {
-            _plugin = null;
             Pool.FreeUnmanaged(ref _logs);
         }
 
@@ -40,15 +37,15 @@ public partial class AutoBuildSnapshot
         /// <param name="player">The player to send the message to (optional).</param>
         public static void Log(string message, BasePlayer player = null)
         {
-            if (_plugin == null) return;
+            if (_instance == null) return;
 
             if (player != null)
             {
-                _plugin.SendReply(player, message);
+                _instance.SendReply(player, message);
                 message = $"[Sent: {player.displayName}] {message}";
             }
 
-            _plugin.Puts(message);
+            _instance.Puts(message);
             _logs.Add(message);
         }
     }

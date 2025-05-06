@@ -10,92 +10,51 @@ public partial class AutoBuildSnapshot
 {
     #region Localization
 
-    #region Overrides
-
+    /// <summary>
+    /// Loads the default localized messages.
+    /// </summary>
     protected override void LoadDefaultMessages()
     {
         base.LoadDefaultMessages();
 
-        Localizer.Init(this);
+        Localizer.RegisterMessages();
     }
 
-    private Localizer Text => Localizer.Instance;
-
-    #endregion
-
-    private class Localizer
+    /// <summary>
+    /// Handles localization resources for the plugin.
+    /// </summary>
+    private static class Localizer
     {
-        public static Localizer Instance { get; } = new();
-
-        private AutoBuildSnapshot _plugin;
-
-        public LocalizedText this[BasePlayer player] => LocalizedText.For(_plugin, player);
-
-        public static void Init(AutoBuildSnapshot plugin)
+        /// <summary>
+        /// Registers the default localized messages.
+        /// </summary>
+        public static void RegisterMessages()
         {
-            Instance._plugin = plugin;
-        }
-
-        public void InitPlayer()
-        {
-            // player logs in
-        }
-
-        public void UnloadPlayer()
-        {
-            // player logs out
-        }
-
-        public class LocalizedText : ILanguageSet, Pool.IPooled
-        {
-            private AutoBuildSnapshot _plugin;
-            private BasePlayer _player;
-
-            public static LocalizedText For(AutoBuildSnapshot plugin, BasePlayer player)
+            _instance.lang.RegisterMessages(new()
             {
-                var langSet = Pool.Get<LocalizedText>();
-                return langSet;
-            }
-
-            /// <summary>
-            /// Gets a localized message by its name.
-            /// </summary>
-            /// <param name="messageName">The name of the message to retrieve.</param>
-            /// <returns>The localized message.</returns>
-            public string Get(string messageName)
-            {
-                return _plugin.lang.GetMessage(nameof(error_no_permission), _plugin, _player.UserIDString);
-            }
-
-
-            public string error_no_permission => Get(nameof(error_no_permission));
-
-            /// <summary>
-            /// Releases the resources used by this instance.
-            /// </summary>
-            public void EnterPool()
-            {
-                _plugin = null;
-                _player = null;
-            }
-
-            /// <summary>
-            /// Gets a new instance from the pool.
-            /// </summary>
-            public void LeavePool() { }
+                [nameof(LangKeys.error_no_permission)] = "You do not have permission to use this command.",
+            },
+            _instance, "en");
         }
 
-        public class LanguageSet_EN : ILanguageSet
+        /// <summary>
+        /// Retrieves a localized message based on the provided key and player.
+        /// </summary>
+        /// <param name="langKey">The key for the localized message.</param>
+        /// <param name="player">The player to retrieve the message for.</param>
+        /// <returns>The localized message.</returns>
+        public static string Text(LangKeys langKey, BasePlayer player)
         {
-            public const string Code = "en";
-
-            public string error_no_permission { get; }
+            return _instance.lang.GetMessage(langKey.ToString(), _instance, player.UserIDString);
         }
+    }
 
-        public interface ILanguageSet
-        {
-            string error_no_permission { get; }
-        }
+    private enum LangKeys
+    {
+        /// <summary>
+        /// You do not have permission to use this command.
+        /// </summary>
+        error_no_permission,
     }
 
     #endregion

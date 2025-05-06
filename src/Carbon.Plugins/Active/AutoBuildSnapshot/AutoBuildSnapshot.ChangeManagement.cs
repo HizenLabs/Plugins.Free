@@ -17,7 +17,7 @@ public partial class AutoBuildSnapshot
         /// Initializes the change management system.
         /// </summary>
         /// <param name="plugin">The plugin instance.</param>
-        public static void Init(AutoBuildSnapshot plugin)
+        public static void Init()
         {
             _recordings = Pool.Get<Dictionary<ulong, BaseRecording>>();
         }
