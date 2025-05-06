@@ -316,17 +316,6 @@ public partial class AutoBuildSnapshot
             /// </summary>
             [JsonProperty("Rollback")]
             public CommandSetting Rollback { get; set; } = new(SettingDefaults.Commands.Rollback);
-
-            /// <summary>
-            /// Checks if the user has permission to run the command.
-            /// </summary>
-            /// <param name="player">The player to check.</param>
-            /// <param name="command">The command to check.</param>
-            /// <param name="plugin">The plugin instance.</param>
-            /// <returns>True if the user has permission, false otherwise.</returns>
-            public bool UserHasPermission(BasePlayer player, CommandSetting command, AutoBuildSnapshot_old plugin) =>
-                plugin.permission.UserHasPermission(player.UserIDString, command.Permission)
-                || plugin.permission.UserHasPermission(player.UserIDString, AdminPermission);
         }
 
         /// <summary>
