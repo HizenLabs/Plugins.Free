@@ -700,6 +700,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.cs" />
+    <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.Helpers.cs" />
+    <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.UserPreference.cs" />
     <Compile Include="Active\AutoBuildSnapshot_old\AutoBuildSnapshot.BuildingScanner.cs" />
     <Compile Include="Active\AutoBuildSnapshot_old\AutoBuildSnapshot.BuildSnapshot.cs" />
     <Compile Include="Active\AutoBuildSnapshot_old\AutoBuildSnapshot.ExecutionBase.cs" />
@@ -729,9 +732,7 @@
       <Name>ObjectSerializer</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Active\AutoBuildSnapshot\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>powershell -ExecutionPolicy Bypass -File "$(SolutionDir)../scripts/deploy-plugins.ps1"</PostBuildEvent>
