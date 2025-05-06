@@ -702,7 +702,6 @@
   <ItemGroup>
     <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.ChangeManagement.cs" />
     <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.cs" />
-    <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.Extensions.cs" />
     <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.Helpers.cs" />
     <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.UserPreference.cs" />
     <Compile Include="Active\AutoBuildSnapshot_old\AutoBuildSnapshot.BuildingScanner.cs" />
