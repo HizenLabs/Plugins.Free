@@ -1,9 +1,6 @@
 ﻿using Facepunch;
-using Melanchall.DryWetMidi.Multimedia;
-using Network;
 using System;
 using System.Collections.Generic;
-using static Carbon.Plugins.AutoBuildSnapshot_old;
 
 namespace Carbon.Plugins.Active.AutoBuildSnapshot;
 
