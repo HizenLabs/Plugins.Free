@@ -700,6 +700,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.ChangeManagement.cs" />
     <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.cs" />
     <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.Helpers.cs" />
     <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.UserPreference.cs" />
