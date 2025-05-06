@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 
 namespace Carbon.Plugins.Active.AutoBuildSnapshot;
@@ -7,82 +8,196 @@ public partial class AutoBuildSnapshot
 {
     #region Settings
 
+    #region Config Overrides
+
+    /// <summary>
+    /// Loads the configuration.
+    /// </summary>
+    protected override void LoadConfig()
+    {
+        base.LoadConfig();
+
+        Settings.Init(this);
+    }
+
+    /// <summary>
+    /// Loads the default configuration.
+    /// </summary>
+    protected override void LoadDefaultConfig()
+    {
+        base.LoadDefaultConfig();
+
+        Settings.InitDefault(this);
+    }
+
+    /// <summary>
+    /// Saves the configuration.
+    /// </summary>
+    protected override void SaveConfig()
+    {
+        base.SaveConfig();
+
+        Settings.Save(this);
+    }
+
+    #endregion
+
+    /// <summary>
+    /// Handles the AutoBuildSnapshot settings and defaults.
+    /// </summary>
     /// <summary>
     /// Handles the AutoBuildSnapshot settings and defaults.
     /// </summary>
     private static class Settings
     {
+        private static AutoBuildSnapshotConfig _config;
+
+        /// <inheritdoc cref="AutoBuildSnapshotConfig.GeneralSettings"/>
+        public static AutoBuildSnapshotConfig.GeneralSettings General => _config.General;
+
+        /// <inheritdoc cref="AutoBuildSnapshotConfig.MultiTCSettings"/>
+        public static AutoBuildSnapshotConfig.MultiTCSettings MultiTC => _config.MultiTC;
+
+        /// <inheritdoc cref="AutoBuildSnapshotConfig.AdvancedSettings"/>
+        public static AutoBuildSnapshotConfig.AdvancedSettings Advanced => _config.Advanced;
+
+        /// <inheritdoc cref="AutoBuildSnapshotConfig.Commands"/>
+        public static AutoBuildSnapshotConfig.CommandSettingCollection Commands => _config.Commands;
+
         /// <summary>
-        /// The default settings for the AutoBuildSnapshot plugin.
+        /// Initializes the settings by reading the configuration from the file or creating a default one if it fails.
         /// </summary>
-        public static class Defaults
+        /// <param name="plugin">The plugin instance.</param>
+        public static void Init(AutoBuildSnapshot plugin)
         {
-            /// <inheritdoc cref="AutoBuildSnapshotConfig.General"/>
-            public static class General
+            _config = ReadConfigOrCreateDefault(plugin);
+
+            plugin.SaveConfig();
+        }
+
+        /// <summary>
+        /// Initializes the settings with default values and saves them to the file.
+        /// </summary>
+        /// <param name="plugin">The plugin instance.</param>
+        public static void InitDefault(AutoBuildSnapshot plugin)
+        {
+            _config = CreateDefault();
+
+            plugin.SaveConfig();
+        }
+
+        /// <summary>
+        /// Reads the configuration from the file or creates a default one if it fails.
+        /// </summary>
+        /// <param name="plugin">The plugin instance.</param>
+        /// <returns>The configuration object.</returns>
+        private static AutoBuildSnapshotConfig ReadConfigOrCreateDefault(AutoBuildSnapshot plugin)
+        {
+            try
             {
-                /// <inheritdoc cref="AutoBuildSnapshotConfig.GeneralSettings.BuildMonitorInterval"/>
-                public const int BuildMonitorInterval = 600;
-
-                /// <inheritdoc cref="AutoBuildSnapshotConfig.GeneralSettings.DelayBetweenSaves"/>
-                public const int DelayBetweenSaves = 3600;
-
-                /// <inheritdoc cref="AutoBuildSnapshotConfig.GeneralSettings.SnapshotRetentionPeriodHours"/>
-                public const int SnapshotRetentionPeriodHours = 720;
-
-                /// <inheritdoc cref="AutoBuildSnapshotConfig.GeneralSettings.IncludeGroundResources"/>
-                public const bool IncludeGroundResources = true;
-
-                /// <inheritdoc cref="AutoBuildSnapshotConfig.GeneralSettings.IncludeNonAuthorizedDeployables"/>
-                public const bool IncludeNonAuthorizedDeployables = true;
+                return plugin.Config.ReadObject<AutoBuildSnapshotConfig>()
+                    ?? throw new Exception("Config is null");
             }
-
-            /// <inheritdoc cref="AutoBuildSnapshotConfig.MultiTC"/>
-            public static class MultiTC
+            catch (Exception ex)
             {
-                /// <inheritdoc cref="AutoBuildSnapshotConfig.MultiTCSettings.Mode"/>
-                public const MultiTCMode Mode = MultiTCMode.Disabled;
+                Helpers.Log($"Failed to load config: {ex.Message}, creating from default.");
 
-                /// <inheritdoc cref="AutoBuildSnapshotConfig.MultiTCSettings.ScanRadius"/>
-                public const float ScanRadius = 80;
+                return CreateDefault();
             }
+        }
 
-            /// <inheritdoc cref="AutoBuildSnapshotConfig.Commands"/>
-            public static class Commands
-            {
-                /// <inheritdoc cref="AutoBuildSnapshotConfig.CommandSettingCollection.AdminPermission"/>
-                public const string AdminPermission = "abs.admin";
+        /// <summary>
+        /// Creates a default <see cref="AutoBuildSnapshotConfig"/> instance.
+        /// </summary>
+        /// <returns>The default instance.</returns>
+        private static AutoBuildSnapshotConfig CreateDefault()
+        {
+            return new();
+        }
 
-                /// <summary>
-                /// The default name and permission for the <see cref="AutoBuildSnapshotConfig.CommandSettingCollection.ToggleMenu"/> command.
-                /// </summary>
-                public const string ToggleMenu = "abs.menu";
+        /// <summary>
+        /// Saves the configuration to the file.
+        /// </summary>
+        /// <param name="plugin">The plugin instance.</param>
+        public static void Save(AutoBuildSnapshot plugin)
+        {
+            plugin.Config.WriteObject(_config, true);
+        }
+    }
 
-                /// <summary>
-                /// The default name and permission for the <see cref="AutoBuildSnapshotConfig.CommandSettingCollection.Backup"/> command.
-                /// </summary>
-                public const string Backup = "abs.backup";
+    /// <summary>
+    /// The default settings for the AutoBuildSnapshot plugin.
+    /// </summary>
+    private static class SettingDefaults
+    {
+        /// <inheritdoc cref="AutoBuildSnapshotConfig.General"/>
+        public static class General
+        {
+            /// <inheritdoc cref="AutoBuildSnapshotConfig.GeneralSettings.BuildMonitorInterval"/>
+            public const int BuildMonitorInterval = 600;
 
-                /// <summary>
-                /// The default name and permission for the <see cref="AutoBuildSnapshotConfig.CommandSettingCollection.Rollback"/> command.
-                /// </summary>
-                public const string Rollback = "abs.rollback";
-            }
+            /// <inheritdoc cref="AutoBuildSnapshotConfig.GeneralSettings.DelayBetweenSaves"/>
+            public const int DelayBetweenSaves = 3600;
 
-            /// <inheritdoc cref="AutoBuildSnapshotConfig.Advanced"/>
-            public static class Advanced
-            {
-                /// <inheritdoc cref="AutoBuildSnapshotConfig.AdvancedSettings.FoundationPrivilegeRadius"/>
-                public const float FoundationPrivRadius = 40;
+            /// <inheritdoc cref="AutoBuildSnapshotConfig.GeneralSettings.SnapshotRetentionPeriodHours"/>
+            public const int SnapshotRetentionPeriodHours = 720;
 
-                /// <inheritdoc cref="AutoBuildSnapshotConfig.AdvancedSettings.MaxSaveFailRetries"/>
-                public const int MaxSaveFailRetries = 3;
+            /// <inheritdoc cref="AutoBuildSnapshotConfig.GeneralSettings.IncludeGroundResources"/>
+            public const bool IncludeGroundResources = true;
 
-                /// <inheritdoc cref="AutoBuildSnapshotConfig.AdvancedSettings.MaxStepDuration"/>
-                public const int MaxStepDuration = 50;
+            /// <inheritdoc cref="AutoBuildSnapshotConfig.GeneralSettings.IncludeNonAuthorizedDeployables"/>
+            public const bool IncludeNonAuthorizedDeployables = true;
+        }
 
-                /// <inheritdoc cref="AutoBuildSnapshotConfig.AdvancedSettings.MaxScanZoneRadius"/>
-                public const float MaxScanZoneRadius = 100;
-            }
+        /// <inheritdoc cref="AutoBuildSnapshotConfig.MultiTC"/>
+        public static class MultiTC
+        {
+            /// <inheritdoc cref="AutoBuildSnapshotConfig.MultiTCSettings.Mode"/>
+            public const MultiTCMode Mode = MultiTCMode.Disabled;
+
+            /// <inheritdoc cref="AutoBuildSnapshotConfig.MultiTCSettings.ScanRadius"/>
+            public const float ScanRadius = 80;
+        }
+
+        /// <inheritdoc cref="AutoBuildSnapshotConfig.Commands"/>
+        public static class Commands
+        {
+            /// <inheritdoc cref="AutoBuildSnapshotConfig.CommandSettingCollection.AdminPermission"/>
+            public const string AdminPermission = "abs.admin";
+
+            /// <summary>
+            /// The default name and permission for the <see cref="AutoBuildSnapshotConfig.CommandSettingCollection.ToggleMenu"/> command.
+            /// </summary>
+            public const string ToggleMenu = "abs.menu";
+
+            /// <summary>
+            /// The default name and permission for the <see cref="AutoBuildSnapshotConfig.CommandSettingCollection.Backup"/> command.
+            /// </summary>
+            public const string Backup = "abs.backup";
+
+            /// <summary>
+            /// The default name and permission for the <see cref="AutoBuildSnapshotConfig.CommandSettingCollection.Rollback"/> command.
+            /// </summary>
+            public const string Rollback = "abs.rollback";
+        }
+
+        /// <inheritdoc cref="AutoBuildSnapshotConfig.Advanced"/>
+        public static class Advanced
+        {
+            /// <inheritdoc cref="AutoBuildSnapshotConfig.AdvancedSettings.FoundationPrivilegeRadius"/>
+            public const float FoundationPrivRadius = 40;
+
+            /// <inheritdoc cref="AutoBuildSnapshotConfig.AdvancedSettings.MaxSaveFailRetries"/>
+            public const int MaxSaveFailRetries = 3;
+
+            /// <inheritdoc cref="AutoBuildSnapshotConfig.AdvancedSettings.MaxStepDuration"/>
+            public const int MaxStepDuration = 50;
+
+            /// <inheritdoc cref="AutoBuildSnapshotConfig.AdvancedSettings.MaxScanZoneRadius"/>
+            public const float MaxScanZoneRadius = 100;
+
+            /// <inheritdoc cref="AutoBuildSnapshotConfig.AdvancedSettings.DataSaveFormat"/>
+            public const DataFormat DataSaveFormat = DataFormat.GZip;
         }
     }
 
@@ -96,60 +211,60 @@ public partial class AutoBuildSnapshot
         /// </summary>
         [JsonProperty("General Settings")]
         public GeneralSettings General { get; init; } = new();
+
         /// <summary>
         /// The settings for multi-TC buildings.
         /// </summary>
         [JsonProperty("Multi-TC Settings")]
         public MultiTCSettings MultiTC { get; init; } = new();
 
+        /// <summary>
+        /// The alias and permission settings for each of the commands.
+        /// </summary>
         [JsonProperty("Command Settings")]
         public CommandSettingCollection Commands { get; set; } = new();
 
         /// <summary>
-        /// Fine tune settings for performance.
+        /// Fine tuned settings for performance.
         /// </summary>
         [JsonProperty("Advanced Settings (Caution: Changes may cause lag)")]
         public AdvancedSettings Advanced { get; init; } = new();
 
-        /// <summary>
-        /// The general settings category.
-        /// </summary>
+        /// <inheritdoc cref="General"/>
         public class GeneralSettings
         {
             /// <summary>
             /// The interval, in seconds, to check if snapshots are needed.
             /// </summary>
             [JsonProperty("Update Check Interval (seconds)")]
-            public float BuildMonitorInterval { get; set; } = Settings.Defaults.General.BuildMonitorInterval;
+            public float BuildMonitorInterval { get; set; } = SettingDefaults.General.BuildMonitorInterval;
 
             /// <summary>
             /// The minimum delay between snapshots.
             /// </summary>
             [JsonProperty("Delay Between Snapshots (seconds)")]
-            public float DelayBetweenSaves { get; set; } = Settings.Defaults.General.DelayBetweenSaves;
+            public float DelayBetweenSaves { get; set; } = SettingDefaults.General.DelayBetweenSaves;
 
             /// <summary>
             /// The number of hours to keep snapshots before they are deleted.
             /// </summary>
             [JsonProperty("Snapshot Retention Period (hours)")]
-            public int SnapshotRetentionPeriodHours { get; set; } = Settings.Defaults.General.SnapshotRetentionPeriodHours;
+            public int SnapshotRetentionPeriodHours { get; set; } = SettingDefaults.General.SnapshotRetentionPeriodHours;
 
             /// <summary>
             /// Whether to include ground resources in the backup that are not player-owned.
             /// </summary>
             [JsonProperty("Include Ground Resources")]
-            public bool IncludeGroundResources { get; set; } = Settings.Defaults.General.IncludeGroundResources;
+            public bool IncludeGroundResources { get; set; } = SettingDefaults.General.IncludeGroundResources;
 
             /// <summary>
             /// Whether to include non-authorized deployables in the backup.
             /// </summary>
             [JsonProperty("Include Non-Authorized Deployables")]
-            public bool IncludeNonAuthorizedDeployables { get; set; } = Settings.Defaults.General.IncludeNonAuthorizedDeployables;
+            public bool IncludeNonAuthorizedDeployables { get; set; } = SettingDefaults.General.IncludeNonAuthorizedDeployables;
         }
 
-        /// <summary>
-        /// The settings for multi-TC buildings.
-        /// </summary>
+        /// <inheritdoc cref="MultiTC"/>
         public class MultiTCSettings
         {
             /// <summary>
@@ -162,17 +277,15 @@ public partial class AutoBuildSnapshot
                 ["Disabled"] = MultiTCMode.Disabled
             };
 
-            /// <summary>
-            /// Whether to try to link multiple TCs together when they are in the same area.
-            /// </summary>
+            /// <inheritdoc cref="MultiTCMode"/>
             [JsonProperty("Multi-TC Snapshots Mode")]
-            public MultiTCMode Mode { get; set; } = Settings.Defaults.MultiTC.Mode;
+            public MultiTCMode Mode { get; set; } = SettingDefaults.MultiTC.Mode;
 
             /// <summary>
             /// The radius to scan for other TCs when trying to link multiple TCs together.
             /// </summary>
             [JsonProperty("Multi-TC Scan Radius (Automatic Mode)")]
-            public float ScanRadius { get; set; } = Settings.Defaults.MultiTC.ScanRadius;
+            public float ScanRadius { get; set; } = SettingDefaults.MultiTC.ScanRadius;
         }
 
         /// <summary>
@@ -184,25 +297,25 @@ public partial class AutoBuildSnapshot
             /// Name of the admin permission to grant permission to all commands.
             /// </summary>
             [JsonProperty("Admin Permission")]
-            public string AdminPermission { get; set; } = Settings.Defaults.Commands.AdminPermission;
+            public string AdminPermission { get; set; } = SettingDefaults.Commands.AdminPermission;
 
             /// <summary>
             /// Settings for the toggle menu command.
             /// </summary>
             [JsonProperty("Toggle Menu")]
-            public CommandSetting ToggleMenu { get; set; } = new(Settings.Defaults.Commands.ToggleMenu);
+            public CommandSetting ToggleMenu { get; set; } = new(SettingDefaults.Commands.ToggleMenu);
 
             /// <summary>
             /// Settings for the manual backup command.
             /// </summary>
             [JsonProperty("Backup (manual)")]
-            public CommandSetting Backup { get; set; } = new(Settings.Defaults.Commands.Backup);
+            public CommandSetting Backup { get; set; } = new(SettingDefaults.Commands.Backup);
 
             /// <summary>
             /// Settings for the rollback command.
             /// </summary>
             [JsonProperty("Rollback")]
-            public CommandSetting Rollback { get; set; } = new(Settings.Defaults.Commands.Rollback);
+            public CommandSetting Rollback { get; set; } = new(SettingDefaults.Commands.Rollback);
 
             /// <summary>
             /// Checks if the user has permission to run the command.
@@ -242,9 +355,7 @@ public partial class AutoBuildSnapshot
             public string Permission { get; set; }
         }
 
-        /// <summary>
-        /// Fine tune settings for performance.
-        /// </summary>
+        /// <inheritdoc cref="Advanced"/>
         public class AdvancedSettings
         {
             /// <summary>
@@ -252,27 +363,27 @@ public partial class AutoBuildSnapshot
             /// We also want to allow users to change in-case they have plugins or something using a different radius.
             /// </summary>
             [JsonProperty("Foundation Privilege Radius")]
-            public float FoundationPrivilegeRadius { get; set; } = Settings.Defaults.Advanced.FoundationPrivRadius;
+            public float FoundationPrivilegeRadius { get; set; } = SettingDefaults.Advanced.FoundationPrivRadius;
 
             /// <summary>
             /// The maximum number of retries to save a snapshot before giving up.
             /// </summary>
             [JsonProperty("Max Retry Attempts on Failure")]
-            public int MaxSaveFailRetries { get; set; } = Settings.Defaults.Advanced.MaxSaveFailRetries;
+            public int MaxSaveFailRetries { get; set; } = SettingDefaults.Advanced.MaxSaveFailRetries;
 
             /// <summary>
             /// The maximum duration, in milliseconds, that we can process a step 
             /// before yielding it to the game loop (may step into the next frame).
             /// </summary>
             [JsonProperty("Max Step Duration (ms)")]
-            public int MaxStepDuration { get; set; } = Settings.Defaults.Advanced.MaxStepDuration;
+            public int MaxStepDuration { get; set; } = SettingDefaults.Advanced.MaxStepDuration;
 
             /// <summary>
             /// The maximum radius to create zones before splitting them up.
             /// This is used when scanning entities for snapshots.
             /// </summary>
             [JsonProperty("Max Zone Scan Radius")]
-            public float MaxScanZoneRadius { get; set; } = Settings.Defaults.Advanced.MaxScanZoneRadius;
+            public float MaxScanZoneRadius { get; set; } = SettingDefaults.Advanced.MaxScanZoneRadius;
 
             /// <summary>
             /// List of data formats that can be used to save the snapshot data.
@@ -283,17 +394,11 @@ public partial class AutoBuildSnapshot
             {
                 ["Binary"] = DataFormat.Binary,
                 ["Binary (GZip Compressed)"] = DataFormat.GZip,
-                /*
-                ["Json"] = DataFormat.Json,
-                ["Json (Expanded)"] = DataFormat.JsonExpanded
-                */
             };
 
-            /// <summary>
-            /// The type to use when saving the snapshot data.
-            /// </summary>
+            /// <inheritdoc cref="DataFormat"/>
             [JsonProperty("Data Save Format")]
-            public DataFormat DataSaveFormat { get; set; } = DataFormat.GZip;
+            public DataFormat DataSaveFormat { get; set; } = SettingDefaults.Advanced.DataSaveFormat;
         }
     }
 
