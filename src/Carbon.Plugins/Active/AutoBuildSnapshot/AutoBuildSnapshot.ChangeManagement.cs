@@ -236,6 +236,11 @@ public partial class AutoBuildSnapshot
                 BaseTC = priv;
                 Building = priv.GetBuilding();
 
+                if (IsValid)
+                {
+                    HandleChange(priv, ChangeAction.Create);
+                }
+
                 return IsValid;
             }
 
