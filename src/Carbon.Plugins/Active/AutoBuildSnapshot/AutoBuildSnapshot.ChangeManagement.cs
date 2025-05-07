@@ -93,7 +93,7 @@ public partial class AutoBuildSnapshot
         {
             var tc = entity.GetBuildingPrivilege();
 
-            if (TryGetRecording(tc, out var recording))
+            if (tc && TryGetRecording(tc, out var recording))
             {
                 recording.HandleChange(entity, action, player);
             }
@@ -105,7 +105,7 @@ public partial class AutoBuildSnapshot
         /// <param name="priv">The tool cupboard to record.</param>
         private static void StartRecording(BuildingPrivlidge priv)
         {
-            if (TryGetRecording(priv, out _)) return;
+            if (!priv || TryGetRecording(priv, out _)) return;
 
             var recording = Pool.Get<BaseRecording>();
 
@@ -124,7 +124,7 @@ public partial class AutoBuildSnapshot
         /// <param name="priv">The tool cupboard to stop recording.</param>
         private static void StopRecording(BuildingPrivlidge priv)
         {
-            if (TryGetRecording(priv, out var recording))
+            if (priv && TryGetRecording(priv, out var recording))
             {
                 _recordings.Remove(recording.Id);
 
@@ -141,6 +141,12 @@ public partial class AutoBuildSnapshot
         /// <returns>True if the recording was found, false otherwise.</returns>
         private static bool TryGetRecording(BuildingPrivlidge priv, out BaseRecording recording)
         {
+            if (!priv)
+            {
+                recording = null;
+                return false;
+            }
+
             var recordingId = GetEntityId(priv);
 
             return _recordings.TryGetValue(recordingId, out recording);

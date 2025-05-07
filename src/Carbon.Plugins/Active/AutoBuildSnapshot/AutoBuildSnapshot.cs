@@ -19,6 +19,8 @@ public partial class AutoBuildSnapshot : CarbonPlugin
     /// </summary>
     void Init()
     {
+        Puts("Begin initializing...");
+
         _instance = this;
 
         Helpers.Init();

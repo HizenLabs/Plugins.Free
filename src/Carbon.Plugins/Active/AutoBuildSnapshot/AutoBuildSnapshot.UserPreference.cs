@@ -17,7 +17,7 @@ public partial class AutoBuildSnapshot
     {
         base.LoadDefaultMessages();
 
-        Localizer.RegisterMessages(lang);
+        Localizer.RegisterMessages(this);
     }
 
     /// <summary>
@@ -28,9 +28,9 @@ public partial class AutoBuildSnapshot
         /// <summary>
         /// Registers the default localized messages.
         /// </summary>
-        public static void RegisterMessages(Lang lang)
+        public static void RegisterMessages(CarbonPlugin plugin)
         {
-            lang.RegisterMessages(new()
+            plugin.lang.RegisterMessages(new()
             {
                 [nameof(LangKeys.error_no_permission)] = "You do not have permission to use this command.",
                 [nameof(LangKeys.error_save_fail)] = "Failed to save base {0} at position {1}: {2}",
@@ -41,7 +41,7 @@ public partial class AutoBuildSnapshot
                 [nameof(LangKeys.error_save_file_exists)] = "The save file at '{0}' already exists.",
                 [nameof(LangKeys.error_recording_locked)] = "Failed to obtain a lock on the recording.",
             },
-            _instance, "en");
+            plugin, "en");
         }
 
         /// <summary>
@@ -53,7 +53,7 @@ public partial class AutoBuildSnapshot
         public static string GetFormat(BasePlayer player, LangKeys langKey)
         {
             var key = langKey.ToString();
-            var userId = player.UserIDString;
+            var userId = player?.UserIDString;
 
             return _instance.lang.GetMessage(key, _instance, userId);
         }
