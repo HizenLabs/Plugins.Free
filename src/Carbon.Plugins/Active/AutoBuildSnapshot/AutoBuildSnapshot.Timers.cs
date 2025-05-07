@@ -91,13 +91,14 @@ public partial class AutoBuildSnapshot
             }
 
             // Check if the recording has any pending changes
-            if (recording.PendingRecords.Any())
+            if (!recording.PendingRecords.Any())
             {
                 return;
             }
 
             // Check if the recording was saved recently
-            if (recording.LastSuccessfulSaveTime > DateTime.UtcNow.AddSeconds(-Settings.General.DelayBetweenSaves))
+            var timeSinceLastSave = DateTime.UtcNow - recording.LastSuccessfulSaveTime;
+            if (timeSinceLastSave.TotalSeconds < Settings.General.DelayBetweenSaves)
             {
                 return;
             }
