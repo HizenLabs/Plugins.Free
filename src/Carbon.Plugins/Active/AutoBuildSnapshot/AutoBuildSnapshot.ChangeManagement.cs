@@ -20,12 +20,27 @@ public partial class AutoBuildSnapshot
         private static Dictionary<ulong, BaseRecording> _recordings;
 
         /// <summary>
+        /// The dictionary of locks, where the key is the tool cupboard net id and the value is the recording lock instance.
+        /// </summary>
+        private static Dictionary<ulong, RecordingLock> _locks;
+
+        /// <summary>
         /// Initializes the change management system.
         /// </summary>
         /// <param name="plugin">The plugin instance.</param>
         public static void Init()
         {
             _recordings = Pool.Get<Dictionary<ulong, BaseRecording>>();
+            _locks = Pool.Get<Dictionary<ulong, RecordingLock>>();
+
+            var buildings = BaseNetworkable.serverEntities.OfType<BuildingPrivlidge>();
+            Helpers.Log(LangKeys.message_init_recordings, null, buildings.Count());
+
+            foreach (var tc in buildings)
+            {
+                StartRecording(tc);
+            }
+
             ChangeMonitor.Start();
         }
 
@@ -35,6 +50,8 @@ public partial class AutoBuildSnapshot
         public static void Unload()
         {
             ChangeMonitor.Stop();
+
+            Pool.Free(ref _locks, true);
             Pool.Free(ref _recordings, true);
         }
 
@@ -168,13 +185,19 @@ public partial class AutoBuildSnapshot
             /// <summary>
             /// The list of changes that have been made to this record since the last save.
             /// </summary>
-            public IEnumerable<ChangeRecord> PendingRecords => ChangeRecords
-                .Where(cr => cr.TimeStamp > LastSuccessfulSaveTime);
+            public IEnumerable<ChangeRecord> PendingRecords
+            {
+                get
+                {
+                    var lastSaveTime = LastSuccessfulSaveTime;
+                    return ChangeRecords.Where(cr => cr.TimeStamp > lastSaveTime);
+                }
+            }
 
             /// <summary>
             /// The time of the last change made to this recording.
             /// </summary>
-            public ChangeRecord LastChangeRecord => ChangeRecords.Reverse().FirstOrDefault();
+            public ChangeRecord LastChangeRecord => _changeRecords.Count > 0 ? _changeRecords[^1] : null;
 
             /// <summary>
             /// The list of save attempts for this recording.
@@ -185,7 +208,7 @@ public partial class AutoBuildSnapshot
             /// <summary>
             /// The time of the last save attempt for this recording.
             /// </summary>
-            public SaveAttempt LastSaveAttempt => SaveAttempts.Reverse().FirstOrDefault();
+            public SaveAttempt LastSaveAttempt => _saveAttempts.Count > 0 ? _saveAttempts[^1] : null;
 
             /// <summary>
             /// The time of the last successful save attempt for this recording.
@@ -218,8 +241,7 @@ public partial class AutoBuildSnapshot
             /// <param name="player">Optionally, the player that made the change.</param>
             public void HandleChange(BaseEntity entity, ChangeAction action, BasePlayer player = null)
             {
-                var changeRecord = Pool.Get<ChangeRecord>();
-                changeRecord.Init(entity, action, player);
+                var changeRecord = ChangeRecord.Create(entity, action, player);
 
                 _changeRecords.Add(changeRecord);
             }
@@ -238,6 +260,8 @@ public partial class AutoBuildSnapshot
                 var saveAttempt = Pool.Get<SaveAttempt>();
                 try
                 {
+                    using var recordingLock = CreateLock(player);
+
                     await SaveManager.SaveAsync(this, player);
 
                     saveAttempt.UpdateResult(true);
@@ -252,6 +276,22 @@ public partial class AutoBuildSnapshot
                 {
                     _saveAttempts.Add(saveAttempt);
                 }
+            }
+
+            /// <summary>
+            /// Creates a lock for the recording to prevent concurrent access.
+            /// </summary>
+            /// <param name="player">The player requesting the lock.</param>
+            /// <returns>The created lock.</returns>
+            /// <exception cref="LocalizedException">Thrown if the recording is already locked.</exception>
+            private RecordingLock CreateLock(BasePlayer player)
+            {
+                if (!RecordingLock.TryCreate(this, out var recordingLock))
+                {
+                    throw new LocalizedException(LangKeys.error_recording_locked, player);
+                }
+
+                return recordingLock;
             }
 
             /// <summary>
@@ -273,6 +313,87 @@ public partial class AutoBuildSnapshot
             {
                 _changeRecords = Pool.Get<List<ChangeRecord>>();
                 _saveAttempts = Pool.Get<List<SaveAttempt>>();
+            }
+        }
+
+        /// <summary>
+        /// Represents a lock for a recording, used to prevent concurrent access to the recording.
+        /// </summary>
+        internal class RecordingLock : IDisposable, Pool.IPooled
+        {
+            private static object _lock = new();
+
+            /// <summary>
+            /// The state of the lock.
+            /// </summary>
+            public bool IsLocked { get; private set; }
+
+            /// <summary>
+            /// The recording that this lock is associated with.
+            /// </summary>
+            public BaseRecording Recording { get; private set; }
+
+            /// <summary>
+            /// Creates a lock for the given recording and returns it.
+            /// </summary>
+            /// <param name="recording">The recording to lock.</param>
+            /// <returns>The created lock.</returns>
+            public static bool TryCreate(BaseRecording recording, out RecordingLock recordingLock)
+            {
+                recordingLock = null;
+
+                lock (_lock)
+                {
+                    if (_locks.ContainsKey(recording.Id))
+                    {
+                        return false;
+                    }
+
+                    recordingLock = Pool.Get<RecordingLock>();
+                    recordingLock.Recording = recording;
+
+                    _locks.Add(recording.Id, recordingLock);
+
+                    return true;
+                }
+            }
+
+            /// <summary>
+            /// Releases the lock on the recording.
+            /// </summary>
+            public void Dispose()
+            {
+                var obj = this;
+                Pool.Free(ref obj);
+            }
+
+            /// <summary>
+            /// Enters the pool and frees up resources.
+            /// </summary>
+            public void EnterPool()
+            {
+                if (Recording.IsValid)
+                {
+                    lock (_lock)
+                    {
+                        if (_locks.TryGetValue(Recording.Id, out var existing)
+                            && existing == this)
+                        {
+                            _locks.Remove(Recording.Id);
+                        }
+                    }
+                }
+
+                IsLocked = false;
+                Recording = null;
+            }
+
+            /// <summary>
+            /// Leaves the pool and sets up the recording lock.
+            /// </summary>
+            public void LeavePool()
+            {
+                IsLocked = true;
             }
         }
 
@@ -302,17 +423,19 @@ public partial class AutoBuildSnapshot
             public BasePlayer Player { get; private set; }
 
             /// <summary>
-            /// Initializes the change record with the given parameters.
+            /// Creates a change record with the given parameters.
             /// </summary>
             /// <param name="entity">The entity that was changed.</param>
             /// <param name="action">The action that was performed.</param>
             /// <param name="player">Optionally, the player that made the change.</param>
             /// <returns>True if the change record was successfully initialized, false otherwise.</returns>
-            public void Init(BaseEntity entity, ChangeAction action, BasePlayer player = null)
+            public static ChangeRecord Create(BaseEntity entity, ChangeAction action, BasePlayer player = null)
             {
-                Action = action;
-                Entity = entity;
-                Player = player;
+                var changeRecord = Pool.Get<ChangeRecord>();
+                changeRecord.Entity = entity;
+                changeRecord.Action = action;
+                changeRecord.Player = player;
+                return changeRecord;
             }
 
             /// <summary>

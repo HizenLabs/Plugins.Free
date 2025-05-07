@@ -1,4 +1,7 @@
-﻿namespace Carbon.Plugins;
+﻿using Oxide.Core;
+using System.IO;
+
+namespace Carbon.Plugins;
 
 /// <summary>
 /// Creates snapshots of user bases which can then be rolled back to at a later date.
@@ -8,6 +11,8 @@
 public partial class AutoBuildSnapshot : CarbonPlugin
 {
     private static AutoBuildSnapshot _instance;
+
+    private static string BackupDirectory => Path.Combine(Interface.Oxide.DataDirectory, "abs_backups");
 
     /// <summary>
     /// Called when a plugin initializes (setting up on plugin load).
