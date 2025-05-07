@@ -32,6 +32,10 @@ public partial class AutoBuildSnapshot
             _instance.lang.RegisterMessages(new()
             {
                 [nameof(LangKeys.error_no_permission)] = "You do not have permission to use this command.",
+                [nameof(LangKeys.error_save_fail)] = "Failed to save base {0} at position {1}: {2}",
+                [nameof(LangKeys.error_save_baserecording_invalid)] = "BaseRecording is not valid.",
+                [nameof(LangKeys.error_save_no_entities_found)] = "No entities found for saving.",
+                [nameof(LangKeys.message_save_begin)] = "Begin saving base {0} at position {1}...",
             },
             _instance, "en");
         }
@@ -70,12 +74,35 @@ public partial class AutoBuildSnapshot
         /// <param name="langKey">The key for the localized message.</param>
         /// <param name="args">The arguments to format the message with.</param>
         /// <returns>The formatted localized message.</returns>
-        public static string Text(BasePlayer player, LangKeys langKey, params string[] args)
+        public static string Text(LangKeys langKey, BasePlayer player = null, params object[] args)
         {
             var format = GetFormat(player, langKey);
 
             return string.Format(format, args);
         }
+    }
+
+    /// <summary>
+    /// Represents a localized exception.
+    /// </summary>
+    private class LocalizedException : Exception
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LocalizedException"/> class with the specified language key and player.
+        /// </summary>
+        /// <param name="langKey">The language key for the exception message.</param>
+        /// <param name="player">The player to send the message to (optional).</param>
+        /// <param name="args">The arguments to format the message with.</param>
+        public LocalizedException(LangKeys langKey, BasePlayer player = null, params object[] args)
+            : base(Localizer.Text(langKey, player, args))
+        {
+            LangKey = langKey;
+        }
+
+        /// <summary>
+        /// Gets the language key used for the localized exception message.
+        /// </summary>
+        public LangKeys LangKey { get; }
     }
 
     private enum LangKeys
@@ -84,6 +111,26 @@ public partial class AutoBuildSnapshot
         /// You do not have permission to use this command.
         /// </summary>
         error_no_permission,
+
+        /// <summary>
+        /// Failed to save base {0} at position {1}: {2}
+        /// </summary>
+        error_save_fail,
+
+        /// <summary>
+        /// BaseRecording is not valid.
+        /// </summary>
+        error_save_baserecording_invalid,
+
+        /// <summary>
+        /// No entities found for saving.
+        /// </summary>
+        error_save_no_entities_found,
+
+        /// <summary>
+        /// Begin saving base {0} at position {1}...
+        /// </summary>
+        message_save_begin,
     }
 
     #endregion

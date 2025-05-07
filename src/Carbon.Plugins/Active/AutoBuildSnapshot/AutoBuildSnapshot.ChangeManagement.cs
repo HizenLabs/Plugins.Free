@@ -1,6 +1,8 @@
-﻿using Facepunch;
+﻿using Cysharp.Threading.Tasks;
+using Facepunch;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Carbon.Plugins;
 
@@ -11,6 +13,10 @@ public partial class AutoBuildSnapshot
     /// </summary>
     private static class ChangeManagement
     {
+        /// <summary>
+        /// The dictionary of recordings, where the key is the tool cupboard net id and the value is the recording instance.
+        /// </summary>
+        public static IReadOnlyDictionary<ulong, BaseRecording> Recordings => _recordings;
         private static Dictionary<ulong, BaseRecording> _recordings;
 
         /// <summary>
@@ -20,6 +26,7 @@ public partial class AutoBuildSnapshot
         public static void Init()
         {
             _recordings = Pool.Get<Dictionary<ulong, BaseRecording>>();
+            ChangeMonitor.Start();
         }
 
         /// <summary>
@@ -27,6 +34,7 @@ public partial class AutoBuildSnapshot
         /// </summary>
         public static void Unload()
         {
+            ChangeMonitor.Stop();
             Pool.Free(ref _recordings, true);
         }
 
@@ -68,7 +76,7 @@ public partial class AutoBuildSnapshot
         {
             var tc = entity.GetBuildingPrivilege();
 
-            if (TryGetRecording(tc, out var recordingId, out var recording))
+            if (TryGetRecording(tc, out var recording))
             {
                 recording.HandleChange(entity, action, player);
             }
@@ -80,7 +88,7 @@ public partial class AutoBuildSnapshot
         /// <param name="priv">The tool cupboard to record.</param>
         private static void StartRecording(BuildingPrivlidge priv)
         {
-            if (TryGetRecording(priv, out var recordingId, out _)) return;
+            if (TryGetRecording(priv, out _)) return;
 
             var recording = Pool.Get<BaseRecording>();
 
@@ -90,7 +98,7 @@ public partial class AutoBuildSnapshot
                 return;
             }
 
-            _recordings.Add(recordingId, recording);
+            _recordings.Add(recording.Id, recording);
         }
 
         /// <summary>
@@ -99,9 +107,9 @@ public partial class AutoBuildSnapshot
         /// <param name="priv">The tool cupboard to stop recording.</param>
         private static void StopRecording(BuildingPrivlidge priv)
         {
-            if (TryGetRecording(priv, out var recordingId, out var recording))
+            if (TryGetRecording(priv, out var recording))
             {
-                _recordings.Remove(recordingId);
+                _recordings.Remove(recording.Id);
 
                 Pool.Free(ref recording);
             }
@@ -114,18 +122,33 @@ public partial class AutoBuildSnapshot
         /// <param name="recordingId">The ID of the recording.</param>
         /// <param name="recording">The recording associated with the tool cupboard.</param>
         /// <returns>True if the recording was found, false otherwise.</returns>
-        private static bool TryGetRecording(BuildingPrivlidge priv, out ulong recordingId, out BaseRecording recording)
+        private static bool TryGetRecording(BuildingPrivlidge priv, out BaseRecording recording)
         {
-            recordingId = priv.net.ID.Value;
+            var recordingId = GetEntityId(priv);
 
             return _recordings.TryGetValue(recordingId, out recording);
         }
 
         /// <summary>
+        /// Gets the ID of the entity. This is not persistant as IDs are pooled and reused.
+        /// </summary>
+        /// <param name="entity">The entity to get the ID for.</param>
+        /// <returns>The ID of the entity.</returns>
+        private static ulong GetEntityId(BaseEntity entity)
+        {
+            return entity.net.ID.Value;
+        }
+
+        /// <summary>
         /// Represents a recording of a tool cupboard and its associated building.
         /// </summary>
-        private class BaseRecording : Pool.IPooled
+        internal class BaseRecording : Pool.IPooled
         {
+            /// <summary>
+            /// The id of the base recording (tc net id).
+            /// </summary>
+            public ulong Id => GetEntityId(BaseTC);
+
             /// <summary>
             /// The base tool cupboard this recording is tracking.
             /// </summary>
@@ -139,8 +162,35 @@ public partial class AutoBuildSnapshot
             /// <summary>
             /// The list of changes that have been made to this record since the last save.
             /// </summary>
-            public IReadOnlyList<ChangeRecord> ChangeLog => _changeLog;
-            private List<ChangeRecord> _changeLog;
+            public IReadOnlyList<ChangeRecord> ChangeRecords => _changeRecords;
+            private List<ChangeRecord> _changeRecords;
+
+            /// <summary>
+            /// The list of changes that have been made to this record since the last save.
+            /// </summary>
+            public IEnumerable<ChangeRecord> PendingRecords => ChangeRecords
+                .Where(cr => cr.TimeStamp > LastSuccessfulSaveTime);
+
+            /// <summary>
+            /// The time of the last change made to this recording.
+            /// </summary>
+            public ChangeRecord LastChangeRecord => ChangeRecords.Reverse().FirstOrDefault();
+
+            /// <summary>
+            /// The list of save attempts for this recording.
+            /// </summary>
+            public IReadOnlyList<SaveAttempt> SaveAttempts => _saveAttempts;
+            private List<SaveAttempt> _saveAttempts;
+
+            /// <summary>
+            /// The time of the last save attempt for this recording.
+            /// </summary>
+            public SaveAttempt LastSaveAttempt => SaveAttempts.Reverse().FirstOrDefault();
+
+            /// <summary>
+            /// The time of the last successful save attempt for this recording.
+            /// </summary>
+            public DateTime LastSuccessfulSaveTime => LastSaveAttempt?.EndTime ?? DateTime.MinValue;
 
             /// <summary>
             /// Indicates whether the recording is valid and can be used.
@@ -171,7 +221,37 @@ public partial class AutoBuildSnapshot
                 var changeRecord = Pool.Get<ChangeRecord>();
                 changeRecord.Init(entity, action, player);
 
-                _changeLog.Add(changeRecord);
+                _changeRecords.Add(changeRecord);
+            }
+
+            /// <summary>
+            /// Attempts to save the current state of the recording.
+            /// </summary>
+            /// <returns>A task representing the asynchronous save operation.</returns>
+            public async UniTask AttemptSaveAsync(BasePlayer player = null)
+            {
+                // TODO: check permissions
+                if (player != null)
+                {
+                }
+
+                var saveAttempt = Pool.Get<SaveAttempt>();
+                try
+                {
+                    await SaveManager.SaveAsync(this, player);
+
+                    saveAttempt.UpdateResult(true);
+                }
+                catch (Exception ex)
+                {
+                    Helpers.Log(LangKeys.error_save_fail, player, Id, BaseTC.ServerPosition, ex.Message);
+
+                    saveAttempt.UpdateResult(ex);
+                }
+                finally
+                {
+                    _saveAttempts.Add(saveAttempt);
+                }
             }
 
             /// <summary>
@@ -182,7 +262,8 @@ public partial class AutoBuildSnapshot
                 BaseTC = null;
                 Building = null;
 
-                Pool.Free(ref _changeLog, true);
+                Pool.Free(ref _changeRecords, true);
+                Pool.Free(ref _saveAttempts, true);
             }
 
             /// <summary>
@@ -190,19 +271,20 @@ public partial class AutoBuildSnapshot
             /// </summary>
             public void LeavePool()
             {
-                _changeLog = Pool.Get<List<ChangeRecord>>();
+                _changeRecords = Pool.Get<List<ChangeRecord>>();
+                _saveAttempts = Pool.Get<List<SaveAttempt>>();
             }
         }
 
         /// <summary>
         /// Represents a change record for an entity.
         /// </summary>
-        private class ChangeRecord : Pool.IPooled
+        internal class ChangeRecord : Pool.IPooled
         {
             /// <summary>
             /// The time that the change was made.
             /// </summary>
-            public DateTime Time { get; private set; }
+            public DateTime TimeStamp { get; private set; }
 
             /// <summary>
             /// The entity that was changed.
@@ -238,7 +320,7 @@ public partial class AutoBuildSnapshot
             /// </summary>
             public void EnterPool()
             {
-                Time = default;
+                TimeStamp = default;
                 Action = default;
                 Entity = null;
                 Player = null;
@@ -249,7 +331,78 @@ public partial class AutoBuildSnapshot
             /// </summary>
             public void LeavePool()
             {
-                Time = DateTime.UtcNow;
+                TimeStamp = DateTime.UtcNow;
+            }
+        }
+
+        /// <summary>
+        /// Represents a save attempt for a recording.
+        /// </summary>
+        internal class SaveAttempt : Pool.IPooled
+        {
+            /// <summary>
+            /// The time that the save attempt started.
+            /// </summary>
+            public DateTime StartTime { get; private set; }
+
+            /// <summary>
+            /// The time that the save attempt ended.
+            /// </summary>
+            public DateTime EndTime { get; private set; }
+
+            /// <summary>
+            /// The duration of the save attempt.
+            /// </summary>
+            public TimeSpan Duration => EndTime - StartTime;
+
+            /// <summary>
+            /// Whether the save attempt was successful or not.
+            /// </summary>
+            public bool Success { get; private set; }
+
+            /// <summary>
+            /// The exception that occurred during the save attempt, if any.
+            /// </summary>
+            public Exception Exception { get; private set; }
+
+            /// <summary>
+            /// Updates the result of the save attempt with the given exception.
+            /// </summary>
+            /// <param name="ex">The exception that occurred during the save attempt.</param>
+            public void UpdateResult(Exception ex)
+            {
+                Exception = ex;
+
+                UpdateResult(false);
+            }
+
+            /// <summary>
+            /// Updates the result of the save attempt with the given success status.
+            /// </summary>
+            /// <param name="success">Whether the save attempt was successful or not.</param>
+            public void UpdateResult(bool success)
+            {
+                Success = success;
+                EndTime = DateTime.UtcNow;
+            }
+
+            /// <summary>
+            /// Enters the pool and frees up resources.
+            /// </summary>
+            public void EnterPool()
+            {
+                StartTime = default;
+                EndTime = default;
+                Success = false;
+                Exception = null;
+            }
+
+            /// <summary>
+            /// Leaves the pool and sets up the save attempt.
+            /// </summary>
+            public void LeavePool()
+            {
+                StartTime = DateTime.UtcNow;
             }
         }
     }
