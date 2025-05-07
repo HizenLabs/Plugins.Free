@@ -37,14 +37,44 @@ public partial class AutoBuildSnapshot
         }
 
         /// <summary>
-        /// Retrieves a localized message based on the provided key and player.
+        /// Gets the localized message format for the specified key and player.
         /// </summary>
+        /// <param name="player">The player to get the message for.</param>
         /// <param name="langKey">The key for the localized message.</param>
-        /// <param name="player">The player to retrieve the message for.</param>
-        /// <returns>The localized message.</returns>
-        public static string Text(LangKeys langKey, BasePlayer player)
+        /// <returns>The localized message format.</returns>
+        public static string GetFormat(BasePlayer player, LangKeys langKey)
         {
-            return _instance.lang.GetMessage(langKey.ToString(), _instance, player.UserIDString);
+            var key = langKey.ToString();
+            var userId = player.UserIDString;
+
+            return _instance.lang.GetMessage(key, _instance, userId);
+        }
+
+        /// <summary>
+        /// Sends a reply to the player with the localized message.
+        /// </summary>
+        /// <param name="player">The player to send the message to.</param>
+        /// <param name="langKey">The key for the localized message.</param>
+        /// <param name="args">The arguments to format the message with.</param>
+        public static void SendReply(BasePlayer player, LangKeys langKey, params string[] args)
+        {
+            var format = GetFormat(player, langKey);
+
+            _instance.SendReply(player, format, args);
+        }
+
+        /// <summary>
+        /// Gets the localized message format for the specified key and player, and formats it with the provided arguments.
+        /// </summary>
+        /// <param name="player">The player to get the message for.</param>
+        /// <param name="langKey">The key for the localized message.</param>
+        /// <param name="args">The arguments to format the message with.</param>
+        /// <returns>The formatted localized message.</returns>
+        public static string Text(BasePlayer player, LangKeys langKey, params string[] args)
+        {
+            var format = GetFormat(player, langKey);
+
+            return string.Format(format, args);
         }
     }
 
@@ -377,6 +407,10 @@ public partial class AutoBuildSnapshot
         {
             public CommandSetting() { }
 
+            /// <summary>
+            /// Creates a new command setting with the specified name and permission.
+            /// </summary>
+            /// <param name="name"></param>
             public CommandSetting(string name)
             {
                 Alias = name;
@@ -451,6 +485,9 @@ public partial class AutoBuildSnapshot
     /// </remarks>
     private enum MultiTCMode
     {
+        /// <summary>
+        /// Multi-TC mode is disabled.
+        /// </summary>
         Disabled = 0,
         // Manual = 1,
         // Automatic = 2
@@ -461,7 +498,13 @@ public partial class AutoBuildSnapshot
     /// </summary>
     private enum DataFormat
     {
+        /// <summary>
+        /// Binary format.
+        /// </summary>
         Binary = 0,
+        /// <summary>
+        /// GZip compressed binary format.
+        /// </summary>
         GZip = 1,
     }
 

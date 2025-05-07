@@ -259,9 +259,21 @@ public partial class AutoBuildSnapshot
     /// </summary>
     private enum ChangeAction
     {
+        /// <summary>
+        /// The entity was created.
+        /// </summary>
         Create,
+        /// <summary>
+        /// The entity was updated.
+        /// </summary>
         Update,
+        /// <summary>
+        /// The entity was decayed.
+        /// </summary>
         Decay,
+        /// <summary>
+        /// The entity was killed.
+        /// </summary>
         Kill
     }
 }
