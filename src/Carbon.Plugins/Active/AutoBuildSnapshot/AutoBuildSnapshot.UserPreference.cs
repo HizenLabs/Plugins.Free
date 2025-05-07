@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Oxide.Core.Libraries;
 using System;
 using System.Collections.Generic;
 
@@ -16,7 +17,7 @@ public partial class AutoBuildSnapshot
     {
         base.LoadDefaultMessages();
 
-        Localizer.RegisterMessages();
+        Localizer.RegisterMessages(lang);
     }
 
     /// <summary>
@@ -27,9 +28,9 @@ public partial class AutoBuildSnapshot
         /// <summary>
         /// Registers the default localized messages.
         /// </summary>
-        public static void RegisterMessages()
+        public static void RegisterMessages(Lang lang)
         {
-            _instance.lang.RegisterMessages(new()
+            lang.RegisterMessages(new()
             {
                 [nameof(LangKeys.error_no_permission)] = "You do not have permission to use this command.",
                 [nameof(LangKeys.error_save_fail)] = "Failed to save base {0} at position {1}: {2}",
