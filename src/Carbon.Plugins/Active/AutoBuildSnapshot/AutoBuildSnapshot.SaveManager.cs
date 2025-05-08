@@ -31,15 +31,16 @@ public partial class AutoBuildSnapshot
             Helpers.Log(LangKeys.message_save_begin, player, recording.Id, recording.BaseTC.ServerPosition);
 
             using var entities = Pool.Get<PooledList<BaseEntity>>();
-            await FindEntitiesForSaveAsync(recording, entities, player);
+            using var zones = Pool.Get<PooledList<Vector3>>();
+            await FindEntitiesForSaveAsync(recording, entities, zones, player);
 
             if (entities.Count == 0)
             {
                 throw new LocalizedException(LangKeys.error_save_no_entities_found, player);
             }
 
-            var meta = await SaveMetaDataAsync(recording, entities, player);
-            await SaveEntitiesAsync(meta, entities, player);
+            var meta = await SaveMetaDataAsync(recording, entities, zones, player);
+            await SaveEntitiesAsync(meta, entities, zones, player);
         }
 
         /// <summary>
@@ -51,15 +52,18 @@ public partial class AutoBuildSnapshot
         private static async UniTask FindEntitiesForSaveAsync(
             ChangeManagement.BaseRecording recording, 
             List<BaseEntity> entities,
+            List<Vector3> zones,
             BasePlayer player = null)
         {
-            using var foundations = Pool.Get<PooledList<BuildingBlock>>();
-            foundations.AddRange(recording.Building.buildingBlocks);
+            foreach (var block in recording.Building.buildingBlocks)
+            {
+                zones.Add(block.ServerPosition);
+            }
 
             int processed = 0;
-            foreach (var block in foundations)
+            foreach (var zone in zones)
             {
-                processed = await FindEntitiesForFoundation(entities, block, Settings.Advanced.FoundationPrivilegeRadius, Masks.BaseEntities, processed);
+                processed = await FindEntitiesForFoundation(entities, zone, Settings.Advanced.FoundationPrivilegeRadius, Masks.BaseEntities, processed);
             }
         }
 
@@ -72,12 +76,12 @@ public partial class AutoBuildSnapshot
         /// <param name="layerMask">The layer mask to use for the search.</param>
         private static async UniTask<int> FindEntitiesForFoundation(
             List<BaseEntity> entities,
-            BuildingBlock block,
+            Vector3 zone,
             float radius,
             int layerMask,
             int processed)
         {
-            var colliders = Physics.OverlapSphere(block.ServerPosition, radius, layerMask);
+            var colliders = Physics.OverlapSphere(zone, radius, layerMask);
             foreach (var collider in colliders)
             {
                 var entity = collider.GetComponentInParent<BaseEntity>();
@@ -105,9 +109,10 @@ public partial class AutoBuildSnapshot
         private static async UniTask<MetaInfo> SaveMetaDataAsync(
             ChangeManagement.BaseRecording recording,
             List<BaseEntity> entities,
+            List<Vector3> zones,
             BasePlayer player = null)
         {
-            var meta = MetaInfo.Create(recording, entities);
+            var meta = MetaInfo.Create(recording, entities, zones);
             var metaFilePath = meta.GetFilePath();
 
             EnsureValidSaveFile(metaFilePath, player);
@@ -131,6 +136,7 @@ public partial class AutoBuildSnapshot
         private static async UniTask SaveEntitiesAsync(
             MetaInfo meta,
             List<BaseEntity> entities,
+            List<Vector3> zones,
             BasePlayer player = null)
         {
             var binFilePath = meta.GetDataFilePath();
@@ -147,9 +153,82 @@ public partial class AutoBuildSnapshot
             using var buffer = Pool.Get<BufferStream>().Initialize();  // Ensure proper initialization
             copyPasteEntityInfo.ToProto(buffer);
 
-            var segment = buffer.GetBuffer();
             using var writer = File.Create(binFilePath);
-            writer.Write(segment.Array, segment.Offset, segment.Count);
+
+            await WriteBlockZonesAsync(writer, zones);
+
+            var segment = buffer.GetBuffer();
+            await writer.WriteAsync(segment.Array, segment.Offset, segment.Count);
+        }
+
+        /// <summary>
+        /// Writes the block data to the file stream.
+        /// </summary>
+        /// <param name="writer">The file stream to write to.</param>
+        /// <param name="zones">The list of building blocks to write.</param>
+        private static async UniTask WriteBlockZonesAsync(FileStream writer, List<Vector3> zones)
+        {
+            var blockBufferSize = sizeof(int) + sizeof(float) + (zones.Count * DataLength.Vector3); // payload size + radius + (zones * size)
+            var blockBuffer = BufferStream.Shared.ArrayPool.Rent(blockBufferSize);
+            try
+            {
+                int bufferOffset = 0;
+
+                int payloadSize = blockBufferSize - sizeof(int);
+                Helpers.WriteInt32(blockBuffer, payloadSize, ref bufferOffset);
+
+                Helpers.WriteSingle(blockBuffer, Settings.Advanced.FoundationPrivilegeRadius, ref bufferOffset);
+
+                for (int i = 0; i < zones.Count; i++)
+                {
+                    Helpers.WriteVector3(blockBuffer, zones[i], ref bufferOffset);
+                }
+
+                await writer.WriteAsync(blockBuffer, 0, blockBufferSize);
+            }
+            finally
+            {
+                BufferStream.Shared.ArrayPool.Return(blockBuffer);
+            }
+        }
+
+        /// <summary>
+        /// Reads the block zones from the file stream.
+        /// </summary>
+        /// <param name="reader">The file stream to read from.</param>
+        /// <param name="zones">The list to store the read zones.</param>
+        /// <returns>The radius of the zones.</returns>
+        private static async UniTask<float> ReadBlockZoneData(FileStream reader, List<Vector3> zones)
+        {
+            var buffer = BufferStream.Shared.ArrayPool.Rent(sizeof(int));
+            try
+            {
+                await reader.ReadAsync(buffer, 0, sizeof(int));
+
+                int offset = 0;
+                int payloadSize = Helpers.ReadInt32(buffer, ref offset);
+
+                BufferStream.Shared.ArrayPool.Return(buffer);
+                buffer = BufferStream.Shared.ArrayPool.Rent(payloadSize);
+
+                await reader.ReadAsync(buffer, 0, payloadSize);
+
+                offset = 0;
+                var radius = Helpers.ReadSingle(buffer, ref offset);
+
+                var count = (payloadSize - offset) / DataLength.Vector3;
+                for (int i = 0; i < count; i++)
+                {
+                    var zone = Helpers.ReadVector3(buffer, ref offset);
+                    zones.Add(zone);
+                }
+
+                return radius;
+            }
+            finally
+            {
+                BufferStream.Shared.ArrayPool.Return(buffer);
+            }
         }
 
         /// <summary>
@@ -253,6 +332,11 @@ public partial class AutoBuildSnapshot
         public int OriginalEntityCount { get; init; }
 
         /// <summary>
+        /// The number of zones (priv radius spheres surrounding foundations) in the save.
+        /// </summary>
+        public int ZoneCount { get; init; }
+
+        /// <summary>
         /// The name of the metadata file associated with the save.
         /// </summary>
         public string GetFilePath()
@@ -297,7 +381,7 @@ public partial class AutoBuildSnapshot
         /// </summary>
         /// <param name="recording">The recording to create the metadata from.</param>
         /// <returns>A new instance of MetaInfo.</returns>
-        public static MetaInfo Create(ChangeManagement.BaseRecording recording, List<BaseEntity> entities)
+        public static MetaInfo Create(ChangeManagement.BaseRecording recording, List<BaseEntity> entities, List<Vector3> zones)
         {
             return new MetaInfo
             {
@@ -305,7 +389,8 @@ public partial class AutoBuildSnapshot
                 TimeStamp = DateTime.UtcNow,
                 OriginPosition = recording.BaseTC.ServerPosition,
                 OriginRotation = recording.BaseTC.ServerRotation,
-                OriginalEntityCount = entities.Count
+                OriginalEntityCount = entities.Count,
+                ZoneCount = zones.Count
             };
         }
     }

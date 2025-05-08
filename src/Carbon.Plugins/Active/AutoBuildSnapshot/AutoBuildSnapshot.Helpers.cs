@@ -1,6 +1,7 @@
 ﻿using Facepunch;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 namespace Carbon.Plugins;
@@ -64,6 +65,110 @@ public partial class AutoBuildSnapshot
 
             _instance.Puts(format);
             _logs.Add(format);
+        }
+
+        /// <summary>
+        /// Reads an integer value from a byte array at the specified offset and updates the offset.
+        /// </summary>
+        /// <param name="buffer">The byte array to read from.</param>
+        /// <param name="offset">The offset in the byte array to start reading from.</param>
+        /// <returns>The integer value read from the byte array.</returns>
+        public static int ReadInt32(byte[] buffer, ref int offset)
+        {
+            int value;
+            unsafe
+            {
+                fixed (byte* ptr = &buffer[offset])
+                {
+                    value = *(int*)ptr;
+                }
+            }
+            offset += sizeof(int);
+            return value;
+        }
+
+        /// <summary>
+        /// Writes a string to a byte array at the specified offset and updates the offset.
+        /// </summary>
+        /// <param name="buffer">The byte array to write to.</param>
+        /// <param name="value">The string value to write.</param>
+        /// <param name="offset">The offset in the byte array to start writing at.</param>
+        public static void WriteInt32(byte[] buffer, int value, ref int offset)
+        {
+            unsafe
+            {
+                fixed (byte* ptr = &buffer[offset])
+                {
+                    *(int*)ptr = value;
+                }
+            }
+            offset += sizeof(int);
+        }
+
+        /// <summary>
+        /// Reads a float value from a byte array at the specified offset and updates the offset.
+        /// </summary>
+        /// <param name="buffer">The byte array to read from.</param>
+        /// <param name="offset">The offset in the byte array to start reading from.</param>
+        /// <returns>The float value read from the byte array.</returns>
+        public static float ReadSingle(byte[] buffer, ref int offset)
+        {
+            float value;
+            unsafe
+            {
+                fixed (byte* ptr = &buffer[offset])
+                {
+                    value = *(float*)ptr;
+                }
+            }
+            offset += sizeof(float);
+            return value;
+        }
+
+        /// <summary>
+        /// Writes a float value to a byte array at the specified offset and updates the offset.
+        /// </summary>
+        /// <param name="buffer">The byte array to write to.</param>
+        /// <param name="value">The float value to write.</param>
+        /// <param name="offset">The offset in the byte array to start writing at.</param>
+        /// <returns>The number of bytes written.</returns>
+        public static void WriteSingle(byte[] buffer, float value, ref int offset)
+        {
+            unsafe
+            {
+                fixed (byte* ptr = &buffer[offset])
+                {
+                    *(float*)ptr = value;
+                }
+            }
+            offset += sizeof(float);
+        }
+
+        /// <summary>
+        /// Reads a Vector3 value from a byte array at the specified offset and updates the offset.
+        /// </summary>
+        /// <param name="buffer">The byte array to read from.</param>
+        /// <param name="offset">The offset in the byte array to start reading from.</param>
+        /// <returns>The Vector3 value read from the byte array.</returns>
+        public static Vector3 ReadVector3(byte[] buffer, ref int offset)
+        {
+            var x = ReadSingle(buffer, ref offset);
+            var y = ReadSingle(buffer, ref offset);
+            var z = ReadSingle(buffer, ref offset);
+            return new Vector3(x, y, z);
+        }
+
+        /// <summary>
+        /// Writes a Vector3 value to a byte array at the specified offset and updates the offset.
+        /// </summary>
+        /// <param name="buffer">The byte array to write to.</param>
+        /// <param name="value">The Vector3 value to write.</param>
+        /// <param name="offset">The offset in the byte array to start writing at.</param>
+        public static void WriteVector3(byte[] buffer, Vector3 value, ref int offset)
+        {
+            WriteSingle(buffer, value.x, ref offset);
+            WriteSingle(buffer, value.y, ref offset);
+            WriteSingle(buffer, value.z, ref offset);
         }
     }
 
@@ -165,5 +270,12 @@ public partial class AutoBuildSnapshot
         void Pool.IPooled.LeavePool()
         {
         }
+    }
+
+    private static class DataLength
+    {
+        public const int Int32 = sizeof(int);
+        public const int Single = sizeof(float);
+        public const int Vector3 = Single * 3;
     }
 }

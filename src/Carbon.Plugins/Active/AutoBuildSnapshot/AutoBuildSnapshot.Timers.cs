@@ -68,6 +68,8 @@ public partial class AutoBuildSnapshot
                 foreach (var recording in recordings)
                 {
                     await HandlePendingChangesAsync(recording.Key, recording.Value);
+
+                    await UniTask.Yield();
                 }
             }
             finally
