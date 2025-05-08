@@ -38,10 +38,16 @@ public partial class AutoBuildSnapshot
                 [nameof(LangKeys.message_init_recordings)] = "Initialize found {0} building(s) to track",
                 [nameof(LangKeys.message_save_begin)] = "Begin saving base {0} at position {1}...",
                 [nameof(LangKeys.error_save_file_exists)] = "The save file at '{0}' already exists.",
-                [nameof(LangKeys.error_recording_locked)] = "Failed to obtain a lock on the recording.",
+                [nameof(LangKeys.error_recording_locked)] = "The base is currently locked for processing. Please try again later.",
                 [nameof(LangKeys.error_must_face_target)] = "Must be facing building and be within {0} meters.",
                 [nameof(LangKeys.error_building_priv_missing)] = "Entity is not part of building privilege.",
                 [nameof(LangKeys.error_building_null)] = "Could not find building (check returned null).",
+                [nameof(LangKeys.error_command_args_length)] = "Expected {0} argument(s), but got {1} arguments.",
+                [nameof(LangKeys.error_command_arg_parse_fail)] = "The argument at index '{0}' could not be parsed as '{1}', value: '{2}'.",
+                [nameof(LangKeys.error_recording_not_found)] = "Could not find recording with id '{0}'.",
+                [nameof(LangKeys.error_backup_failed)] = "Backup command for base {0} failed, reason unknown.",
+                [nameof(LangKeys.error_backup_failed_exception)] = "Backup command for base {0} failed, reason: {1}",
+                [nameof(LangKeys.message_backup_success)] = "Backup command for base {0} completed in: {1}",
             },
             plugin, "en");
         }
@@ -154,9 +160,39 @@ public partial class AutoBuildSnapshot
         error_building_null,
 
         /// <summary>
-        /// Failed to obtain a lock on the recording.
+        /// The base is currently locked for processing. Please try again later.
         /// </summary>
         error_recording_locked,
+
+        /// <summary>
+        /// Expected {0} argument(s), but got {1} arguments.
+        /// </summary>
+        error_command_args_length,
+
+        /// <summary>
+        /// The argument at index '{0}' could not be parsed as '{1}', value: '{2}'
+        /// </summary>
+        error_command_arg_parse_fail,
+
+        /// <summary>
+        /// Could not find recording with id '{0}'.
+        /// </summary>
+        error_recording_not_found,
+
+        /// <summary>
+        /// Backup command for base {0} failed, reason unknown.
+        /// </summary>
+        error_backup_failed,
+
+        /// <summary>
+        /// Backup command for base {0} failed, reason: {1}
+        /// </summary>
+        error_backup_failed_exception,
+
+        /// <summary>
+        /// Backup command for base {0} completed in: {1}
+        /// </summary>
+        message_backup_success,
 
         /// <summary>
         /// Initialize found {0} building(s) to track
@@ -485,6 +521,16 @@ public partial class AutoBuildSnapshot
             /// </summary>
             [JsonProperty("Rollback")]
             public CommandSetting Rollback { get; set; } = new(SettingDefaults.Commands.Rollback);
+
+            /// <summary>
+            /// Checks if the player has the admin permission, allowing them to run all commands.
+            /// </summary>
+            /// <param name="player">The player to check.</param>
+            /// <returns>True if the player has permission, false otherwise.</returns>
+            public bool HasAdminPermission(BasePlayer player)
+            {
+                return _instance.permission.UserHasPermission(player.UserIDString, AdminPermission);
+            }
         }
 
         /// <summary>
@@ -515,6 +561,17 @@ public partial class AutoBuildSnapshot
             /// </summary>
             [JsonProperty("Permission")]
             public string Permission { get; set; }
+
+            /// <summary>
+            /// Checks if the player has permission to run the command.
+            /// </summary>
+            /// <param name="player">The player to check.</param>
+            /// <returns>True if the player has permission, false otherwise.</returns>
+            public bool HasPermission(BasePlayer player)
+            {
+                return _instance.permission.UserHasPermission(player.UserIDString, Permission)
+                    || Settings.Commands.HasAdminPermission(player);
+            }
         }
 
         /// <inheritdoc cref="Advanced"/>

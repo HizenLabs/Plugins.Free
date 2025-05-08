@@ -261,16 +261,13 @@ public partial class AutoBuildSnapshot
             /// Attempts to save the current state of the recording.
             /// </summary>
             /// <returns>A task representing the asynchronous save operation.</returns>
-            public async UniTask AttemptSaveAsync(BasePlayer player = null)
+            public async UniTask<SaveAttempt> AttemptSaveAsync(BasePlayer player = null)
             {
-                // TODO: check permissions
-                if (player != null)
-                {
-                }
-
                 var saveAttempt = Pool.Get<SaveAttempt>();
                 try
                 {
+                    saveAttempt.Init(this, player);
+
                     using var recordingLock = CreateLock(player);
 
                     await SaveManager.SaveAsync(this, player);
@@ -287,6 +284,8 @@ public partial class AutoBuildSnapshot
                 {
                     _saveAttempts.Add(saveAttempt);
                 }
+
+                return saveAttempt;
             }
 
             /// <summary>
@@ -490,6 +489,16 @@ public partial class AutoBuildSnapshot
             public TimeSpan Duration => EndTime - StartTime;
 
             /// <summary>
+            /// The id of the base that was saved.
+            /// </summary>
+            public ulong RecordingId { get; private set; }
+
+            /// <summary>
+            /// The player that initiated the save attempt (if any).
+            /// </summary>
+            public BasePlayer Player { get; private set; }
+
+            /// <summary>
             /// Whether the save attempt was successful or not.
             /// </summary>
             public bool Success { get; private set; }
@@ -498,6 +507,22 @@ public partial class AutoBuildSnapshot
             /// The exception that occurred during the save attempt, if any.
             /// </summary>
             public Exception Exception { get; private set; }
+
+            /// <summary>
+            /// Initializes the save attempt with the given player.
+            /// </summary>
+            /// <param name="player">The player that initiated the save attempt.</param>
+            public void Init(BaseRecording recording, BasePlayer player = null)
+            {
+                if (player != null && !Settings.Commands.Backup.HasPermission(player))
+                {
+                    throw new LocalizedException(LangKeys.error_no_permission, player);
+                }
+
+                RecordingId = recording.Id;
+                Player = player;
+                StartTime = DateTime.UtcNow;
+            }
 
             /// <summary>
             /// Updates the result of the save attempt with the given exception.
@@ -536,7 +561,6 @@ public partial class AutoBuildSnapshot
             /// </summary>
             public void LeavePool()
             {
-                StartTime = DateTime.UtcNow;
             }
         }
     }

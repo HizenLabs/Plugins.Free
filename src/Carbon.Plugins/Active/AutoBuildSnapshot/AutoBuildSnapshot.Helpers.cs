@@ -1,6 +1,7 @@
 ﻿using Facepunch;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using UnityEngine;
 
 namespace Carbon.Plugins;
@@ -262,6 +263,34 @@ public partial class AutoBuildSnapshot
         private static Ray GetPlayerEyesRay(BasePlayer player)
         {
             return new(player.eyes.position, player.eyes.HeadForward());
+        }
+
+        #endregion
+
+        #region Misc
+
+        /// <summary>
+        /// Tries to parse a string into a specified type.
+        /// </summary>
+        /// <typeparam name="T">The type to parse the string into.</typeparam>
+        /// <param name="input">The string to parse.</param>
+        /// <param name="value">The parsed value of type T.</param>
+        /// <returns>True if the parsing was successful; otherwise, false.</returns>
+        public static bool TryParse<T>(string input, out T value)
+        {
+            try
+            {
+                var converter = TypeDescriptor.GetConverter(typeof(T));
+                if (converter != null && converter.IsValid(input))
+                {
+                    value = (T)converter.ConvertFromString(input);
+                    return true;
+                }
+            }
+            catch { }
+
+            value = default;
+            return false;
         }
 
         #endregion
