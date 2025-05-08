@@ -272,10 +272,24 @@ public partial class AutoBuildSnapshot
         }
     }
 
+    /// <summary>
+    /// Simply holds the length (in bytes) of the data types used in the plugin.
+    /// </summary>
     private static class DataLength
     {
+        /// <summary>
+        /// Length of the int data type.
+        /// </summary>
         public const int Int32 = sizeof(int);
+
+        /// <summary>
+        /// Length of the float data type.
+        /// </summary>
         public const int Single = sizeof(float);
+
+        /// <summary>
+        /// Length of the Vector3 data type.
+        /// </summary>
         public const int Vector3 = Single * 3;
     }
 }
