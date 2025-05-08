@@ -1,6 +1,12 @@
-﻿using Newtonsoft.Json;
+﻿using Carbon.Components;
+using Carbon.Modules;
+using Facepunch;
+using Newtonsoft.Json;
+using Oxide.Core;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 namespace Carbon.Plugins;
 
@@ -48,6 +54,13 @@ public partial class AutoBuildSnapshot
                 [nameof(LangKeys.error_backup_failed)] = "Backup command for base {0} failed, reason unknown.",
                 [nameof(LangKeys.error_backup_failed_exception)] = "Backup command for base {0} failed, reason: {1}",
                 [nameof(LangKeys.message_backup_success)] = "Backup command for base {0} completed in: {1}",
+                [nameof(LangKeys.menu_title)] = "Auto Build Snapshot",
+                [nameof(LangKeys.menu_close)] = "Close",
+                [nameof(LangKeys.menu_options)] = "Options",
+                [nameof(LangKeys.menu_options_title)] = "Menu Options",
+                [nameof(LangKeys.menu_options_theme)] = "Theme",
+                [nameof(LangKeys.menu_options_fontsize)] = "Font Size",
+                [nameof(LangKeys.menu_options_fonttype)] = "Font Type",
             },
             plugin, "en");
         }
@@ -203,6 +216,41 @@ public partial class AutoBuildSnapshot
         /// Begin saving base {0} at position {1}...
         /// </summary>
         message_save_begin,
+
+        /// <summary>
+        /// Auto Build Snapshot
+        /// </summary>
+        menu_title,
+
+        /// <summary>
+        /// Close
+        /// </summary>
+        menu_close,
+
+        /// <summary>
+        /// Options
+        /// </summary>
+        menu_options,
+
+        /// <summary>
+        /// Menu Options
+        /// </summary>
+        menu_options_title,
+
+        /// <summary>
+        /// Theme
+        /// </summary>
+        menu_options_theme,
+
+        /// <summary>
+        /// Font Size
+        /// </summary>
+        menu_options_fontsize,
+
+        /// <summary>
+        /// Font Type
+        /// </summary>
+        menu_options_fonttype
     }
 
     #endregion
@@ -636,6 +684,375 @@ public partial class AutoBuildSnapshot
         /// GZip compressed binary format.
         /// </summary>
         GZip = 1,
+    }
+
+    #endregion
+
+    #region User Preference (ui settings)
+
+    private static class UserPreference
+    {
+        private static string _userPreferenceDir;
+        private static Dictionary<ulong, UserPreferenceData> _userPreferences;
+
+        public static void Init()
+        {
+            _userPreferenceDir = Path.Combine(Interface.Oxide.DataDirectory, "abs_userprefs");
+
+            if (!Directory.Exists(_userPreferenceDir))
+            {
+                Directory.CreateDirectory(_userPreferenceDir);
+            }
+
+            _userPreferences = Pool.Get<Dictionary<ulong, UserPreferenceData>>();
+        }
+
+        public static void Unload()
+        {
+            Pool.FreeUnmanaged(ref _userPreferences);
+        }
+
+        public static UserPreferenceData For(BasePlayer player)
+        {
+            if (_userPreferences.TryGetValue(player.userID, out var data))
+            {
+                return data;
+            }
+
+            var userPreferenceFile = GetUserPreferenceFile(player);
+            if (File.Exists(userPreferenceFile))
+            {
+                try
+                {
+                    var json = File.ReadAllText(userPreferenceFile);
+                    data = JsonConvert.DeserializeObject<UserPreferenceData>(json);
+                    _userPreferences[player.userID] = data;
+
+                    if (data == null)
+                    {
+                        throw new Exception("Failed to deserialize user preference data.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Helpers.Log($"Failed to load user preference data for {player.displayName}: {ex.Message}");
+                }
+            }
+
+            data ??= CreateDefault(player);
+
+            return data;
+        }
+
+        /// <summary>
+        /// Creates a default user preference data object for the specified player.
+        /// </summary>
+        /// <param name="player">The player to create the preference data for.</param>
+        /// <returns>The default user preference data object.</returns>
+        private static UserPreferenceData CreateDefault(BasePlayer player)
+        {
+            var data = new UserPreferenceData();
+            Save(player, data);
+            return data;
+        }
+
+        /// <summary>
+        /// Saves the user preference data for the specified player.
+        /// </summary>
+        /// <param name="player">The player to save the preference data for.</param>
+        /// <param name="data">The user preference data to save.</param>
+        private static void Save(BasePlayer player, UserPreferenceData data)
+        {
+            var filePath = GetUserPreferenceFile(player);
+            var json = JsonConvert.SerializeObject(data, Formatting.Indented);
+            File.WriteAllText(filePath, json);
+
+            _userPreferences[player.userID] = data;
+        }
+
+        /// <summary>
+        /// Gets the path to the user preference file for the specified player.
+        /// </summary>
+        /// <param name="player">The player to get the preference file for.</param>
+        /// <returns>The path to the user preference file.</returns>
+        private static string GetUserPreferenceFile(BasePlayer player)
+        {
+            var filename = $"{player.UserIDString}.json";
+            return Path.Combine(_userPreferenceDir, filename);
+        }
+
+        /// <summary>
+        /// Updates the user preference data for the specified player.
+        /// </summary>
+        /// <param name="player">The player to update the preference data for.</param>
+        /// <param name="modal">The modal containing the updated settings data.</param>
+        public static void Update(BasePlayer player, ModalModule.Modal modal)
+        {
+            var colorPalette = modal.Get<ColorPaletteOptions>(nameof(UserPreferenceData.ColorPalette));
+            var fontSize = modal.Get<FontSizeOptions>(nameof(UserPreferenceData.FontSize));
+            var fontType = modal.Get<FontTypeOptions>(nameof(UserPreferenceData.FontType));
+
+            var userPreference = For(player);
+            userPreference.ColorPaletteOption = colorPalette;
+            userPreference.FontSizeOption = fontSize;
+            userPreference.FontTypeOption = fontType;
+
+            Save(player, userPreference);
+        }
+    }
+
+
+    private class UserPreferenceData
+    {
+        [JsonIgnore]
+        public ColorPalette ColorPalette { get; private set; }
+
+        public ColorPaletteOptions ColorPaletteOption
+        {
+            get => _colorPaletteOptions;
+            set => SetColorPalette(value);
+        }
+        private ColorPaletteOptions _colorPaletteOptions;
+
+        [JsonIgnore]
+        public FontSize FontSize { get; private set; }
+
+        public FontSizeOptions FontSizeOption
+        {
+            get => _fontSizeOptions;
+            set => SetFontSize(value);
+        }
+        private FontSizeOptions _fontSizeOptions;
+
+        [JsonIgnore]
+        public FontType FontType { get; private set; }
+
+        public FontTypeOptions FontTypeOption
+        {
+            get => _fontTypeOptions;
+            set => SetFontType(value);
+        }
+        private FontTypeOptions _fontTypeOptions;
+
+        public UserPreferenceData() : this(ColorPaletteOptions.Light, FontSizeOptions.Medium, FontTypeOptions.Roboto)
+        {
+        }
+
+        public UserPreferenceData(ColorPaletteOptions colorPalette, FontSizeOptions fontSize, FontTypeOptions fontType)
+        {
+            ColorPaletteOption = colorPalette;
+            FontSizeOption = fontSize;
+            FontTypeOption = fontType;
+        }
+
+        private void SetColorPalette(ColorPaletteOptions option)
+        {
+            ColorPalette = option switch
+            {
+                ColorPaletteOptions.Light => ColorPalettes.Light,
+                ColorPaletteOptions.Dark => ColorPalettes.Dark,
+                ColorPaletteOptions.HighContrast => ColorPalettes.HighContrast,
+                _ => throw new ArgumentOutOfRangeException(nameof(option), option, null)
+            };
+            _colorPaletteOptions = option;
+        }
+
+        private void SetFontSize(FontSizeOptions option)
+        {
+            FontSize = option switch
+            {
+                FontSizeOptions.Small => FontSizes.Small,
+                FontSizeOptions.Medium => FontSizes.Medium,
+                FontSizeOptions.Large => FontSizes.Large,
+                _ => throw new ArgumentOutOfRangeException(nameof(option), option, null)
+            };
+            _fontSizeOptions = option;
+        }
+
+        private void SetFontType(FontTypeOptions option)
+        {
+            FontType = option switch
+            {
+                FontTypeOptions.Roboto => FontTypes.Roboto,
+                _ => throw new ArgumentOutOfRangeException(nameof(option), option, null)
+            };
+            _fontTypeOptions = option;
+        }
+    }
+
+    public enum ColorPaletteOptions
+    {
+        Light,
+        Dark,
+        HighContrast
+    }
+
+    public enum FontSizeOptions
+    {
+        Small,
+        Medium,
+        Large
+    }
+
+    public enum FontTypeOptions
+    {
+        Roboto,
+    }
+
+    public static class ColorPalettes
+    {
+        public static string[] Options { get; } = Enum
+            .GetValues(typeof(ColorPaletteOptions))
+            .Cast<ColorPaletteOptions>()
+            .Select(option => option.ToString())
+            .ToArray();
+
+        public static readonly ColorPalette Light = new()
+        {
+            Primary = "0.55 0.40 0.85 1.0",
+            OnPrimary = "1.0 1.0 1.0 1.0",
+            Background = "0 0 0 0.2",
+            OnBackground = "0.90 0.88 0.90 1.0",
+            Surface = "0.90 0.90 0.92 0.97",
+            OnSurface = "0.12 0.12 0.14 1.0",
+            SurfaceRed = "0.95 0.30 0.30 1.0",
+            OnSurfaceRed = "1.0 1.0 1.0 1.0",
+            SurfaceGreen = "0.30 0.80 0.35 1.0",
+            OnSurfaceGreen = "1.0 1.0 1.0 1.0",
+            SurfaceBlue = "0.35 0.65 0.95 1.0",
+            OnSurfaceBlue = "1.0 1.0 1.0 1.0",
+            SurfaceAmber = "0.95 0.70 0.20 1.0",
+            OnSurfaceAmber = "0.1 0.1 0.1 1.0",
+            Button = "0.70 0.60 0.95 1.0",
+            OnButton = "0.1 0.1 0.1 1.0",
+            HighlightItem = "0.70 0.60 0.95 0.3",
+            OnHighlightItem = "0.30 0.20 0.50 1.0",
+            Outline = "0 0 0 1"
+        };
+
+        public static readonly ColorPalette Dark = new()
+        {
+            Primary = "0.85 0.76 1.0 1.0",
+            OnPrimary = "0.18 0.10 0.40 1.0",
+            Background = "0 0 0 0.2",
+            OnBackground = "0.90 0.88 0.90 1.0",
+            Surface = "0.12 0.12 0.14 0.97",
+            OnSurface = "0.92 0.90 0.95 1.0",
+            SurfaceRed = "0.90 0.25 0.25 1.0",
+            OnSurfaceRed = "1.0 1.0 1.0 1.0",
+            SurfaceGreen = "0.25 0.85 0.30 1.0",
+            OnSurfaceGreen = "0.1 0.1 0.1 1.0",
+            SurfaceBlue = "0.30 0.70 0.95 1.0",
+            OnSurfaceBlue = "0.1 0.1 0.1 1.0",
+            SurfaceAmber = "0.95 0.75 0.20 1.0",
+            OnSurfaceAmber = "0.1 0.1 0.1 1.0",
+            Button = "0.9 0.9 0.9 0.3",
+            OnButton = "0.1 0.1 0.1 1.0",
+            HighlightItem = "0.60 0.50 0.90 0.8",
+            OnHighlightItem = "1.0 1.0 1.0 1.0",
+            Outline = "0 0 0 1",
+        };
+
+        public static readonly ColorPalette HighContrast = new()
+        {
+            Primary = "1.0 1.0 1.0 1.0",
+            OnPrimary = "0.0 0.0 0.0 1.0",
+            Background = "0.0 0.0 0.0 1.0",
+            OnBackground = "1.0 1.0 1.0 1.0",
+            Surface = "0.1 0.1 0.1 1.0",
+            OnSurface = "1.0 1.0 1.0 1.0",
+            SurfaceRed = "1.0 0.0 0.0 1.0",
+            OnSurfaceRed = "1.0 1.0 1.0 1.0",
+            SurfaceGreen = "0.0 1.0 0.0 1.0",
+            OnSurfaceGreen = "0.0 0.0 0.0 1.0",
+            SurfaceBlue = "0.0 0.5 1.0 1.0",
+            OnSurfaceBlue = "1.0 1.0 1.0 1.0",
+            SurfaceAmber = "1.0 0.8 0.0 1.0",
+            OnSurfaceAmber = "0.0 0.0 0.0 1.0",
+            Button = "0.8 0.8 0.0 1.0",
+            OnButton = "0.0 0.0 0.0 1.0",
+            HighlightItem = "0.8 0.8 0.0 1.0",
+            OnHighlightItem = "0.0 0.0 0.0 1.0",
+            Outline = "0 0 0 1"
+        };
+    }
+
+    public class ColorPalette
+    {
+        public required string Primary { get; init; }
+        public required string OnPrimary { get; init; }
+        public required string Background { get; init; }
+        public required string OnBackground { get; init; }
+        public required string Surface { get; init; }
+        public required string OnSurface { get; init; }
+        public required string SurfaceRed { get; init; }
+        public required string OnSurfaceRed { get; init; }
+        public required string SurfaceGreen { get; init; }
+        public required string OnSurfaceGreen { get; init; }
+        public required string SurfaceBlue { get; init; }
+        public required string OnSurfaceBlue { get; init; }
+        public required string SurfaceAmber { get; init; }
+        public required string OnSurfaceAmber { get; init; }
+        public required string Button { get; init; }
+        public required string OnButton { get; init; }
+        public required string HighlightItem { get; init; }
+        public required string OnHighlightItem { get; init; }
+        public required string Outline { get; init; }
+        public string Transparent => "0 0 0 0.0";
+    }
+
+    private static class FontSizes
+    {
+        public static string[] Options { get; } = Enum
+            .GetValues(typeof(FontSizeOptions))
+            .Cast<FontSizeOptions>()
+            .Select(option => option.ToString())
+            .ToArray();
+
+        public static readonly FontSize Small = new()
+        {
+            Header = 12,
+            Body = 10,
+        };
+
+        public static readonly FontSize Medium = new()
+        {
+            Header = 16,
+            Body = 14,
+        };
+
+        public static readonly FontSize Large = new()
+        {
+            Header = 20,
+            Body = 18,
+        };
+    }
+
+    private class FontSize
+    {
+        public required int Header { get; init; }
+        public required int Body { get; init; }
+    }
+
+    private static class FontTypes
+    {
+        public static string[] Options { get; } = Enum
+            .GetValues(typeof(FontTypeOptions))
+            .Cast<FontTypeOptions>()
+            .Select(option => option.ToString())
+            .ToArray();
+
+        public static readonly FontType Roboto = new()
+        {
+            Header = CUI.Handler.FontTypes.RobotoCondensedBold,
+            Body = CUI.Handler.FontTypes.RobotoCondensedRegular,
+        };
+    }
+
+    private class FontType
+    {
+        public required CUI.Handler.FontTypes Header { get; init; }
+        public required CUI.Handler.FontTypes Body { get; init; }
     }
 
     #endregion

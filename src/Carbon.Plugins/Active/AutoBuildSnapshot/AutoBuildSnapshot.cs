@@ -28,6 +28,9 @@ public partial class AutoBuildSnapshot : CarbonPlugin
         Helpers.Init();
         ChangeManagement.Init();
         UserInterface.Init();
+        UserPreference.Init();
+
+        UserInterface.ToggleMenu(BasePlayer.activePlayerList[0]);
     }
 
     /// <summary>
@@ -35,6 +38,7 @@ public partial class AutoBuildSnapshot : CarbonPlugin
     /// </summary>
     void Unload()
     {
+        UserPreference.Unload();
         UserInterface.Unload();
         ChangeManagement.Unload();
         Helpers.Unload();

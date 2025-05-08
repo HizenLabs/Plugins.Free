@@ -5,6 +5,8 @@ namespace Carbon.Plugins;
 
 public partial class AutoBuildSnapshot
 {
+    private const string CommandPrefix = nameof(AutoBuildSnapshot) + ".";
+
     /// <summary>
     /// Handles the command to toggle the menu for the AutoBuildSnapshot plugin.
     /// </summary>
@@ -15,7 +17,7 @@ public partial class AutoBuildSnapshot
     {
         if (!CheckPermission(player, Settings.Commands.Rollback)) return;
 
-        UserInterface.Toggle(player);
+        UserInterface.ToggleMenu(player);
     }
 
     /// <summary>
@@ -70,6 +72,25 @@ public partial class AutoBuildSnapshot
         if (!TryGetArgument(player, args, out Guid backupId)) return;
 
         throw new NotImplementedException();
+    }
+
+    /// <summary>
+    /// Handles the command to close the menu for the AutoBuildSnapshot plugin.
+    /// </summary>
+    /// <param name="player">The player who initiated the command.</param>
+    /// <param name="command">The command that was executed.</param>
+    /// <param name="args">The arguments passed to the command.</param>
+    [ProtectedCommand(CommandPrefix + nameof(CommandMenuClose))]
+    private void CommandMenuClose(BasePlayer player, string command, string[] args)
+    {
+        // no need to check perms here as we're just closing the menu
+        UserInterface.HideMenu(player);
+    }
+
+    [ProtectedCommand(CommandPrefix + nameof(CommandMenuSettings))]
+    private void CommandMenuSettings(BasePlayer player, string command, string[] args)
+    {
+        UserInterface.ShowPreference(player);
     }
 
     /// <summary>
