@@ -5,6 +5,7 @@ using ProtoBuf;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using UnityEngine;
 
 namespace Carbon.Plugins;
@@ -153,7 +154,7 @@ public partial class AutoBuildSnapshot
             using var buffer = Pool.Get<BufferStream>().Initialize();  // Ensure proper initialization
             copyPasteEntityInfo.ToProto(buffer);
 
-            using var writer = File.Create(binFilePath);
+            using Stream writer = GetDataFileStream(binFilePath, isReading: false);
 
             await WriteBlockZonesAsync(writer, zones);
 
@@ -162,11 +163,85 @@ public partial class AutoBuildSnapshot
         }
 
         /// <summary>
+        /// Gets a file stream for reading or writing based on the specified mode.
+        /// </summary>
+        /// <param name="filePath">The file path to open.</param>
+        /// <param name="isReading">True if the stream is for reading, false if it is for writing.</param>
+        /// <returns>The opened file stream.</returns>
+        private static Stream GetDataFileStream(string filePath, bool isReading)
+        {
+            if (!isReading && Settings.Advanced.DataSaveFormat == DataFormat.GZip)
+            {
+                filePath += gzipExtension;
+            }
+
+            return isReading
+                ? OpenRead(filePath)
+                : OpenWrite(filePath);
+        }
+
+        /// <summary>
+        /// Opens a file stream for reading.
+        /// </summary>
+        /// <param name="filePath">The file path to open.</param>
+        /// <returns>The opened file stream.</returns>
+        private static Stream OpenRead(string filePath)
+        {
+            var stream = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+
+            return FormatStream(filePath, stream, isReading: true);
+        }
+
+        /// <summary>
+        /// Opens a file stream for writing.
+        /// </summary>
+        /// <param name="filePath">The file path to open.</param>
+        /// <returns>The opened file stream.</returns>
+        private static Stream OpenWrite(string filePath)
+        {
+            var stream = File.Open(filePath, FileMode.Create, FileAccess.Write, FileShare.None);
+
+            return FormatStream(filePath, stream, isReading: false);
+        }
+
+        /// <summary>
+        /// Formats the stream based on the specified data save format.
+        /// </summary>
+        /// <param name="filePath">The name of the file being processed.</param>
+        /// <param name="stream">The stream to format.</param>
+        /// <param name="isReading">True if the stream is being read, false if it is being written.</param>
+        /// <returns>The formatted stream.</returns>
+        private static Stream FormatStream(string filePath, Stream stream, bool isReading)
+        {
+            if (filePath.EndsWith(gzipExtension, StringComparison.OrdinalIgnoreCase))
+            {
+                return CompressStream(stream, isReading);
+            }
+
+            return stream;
+        }
+
+        /// <summary>
+        /// Compresses or decompresses the given stream based on the specified mode.
+        /// </summary>
+        /// <param name="stream">The stream to compress or decompress.</param>
+        /// <param name="isReading">True if the stream is being read, false if it is being written.</param>
+        /// <returns>The compressed or decompressed stream.</returns>
+        private static Stream CompressStream(Stream stream, bool isReading)
+        {
+            var mode = isReading
+                ? CompressionMode.Decompress
+                : CompressionMode.Compress;
+
+            return new GZipStream(stream, mode);
+        }
+
+        /// <summary>
         /// Writes the block data to the file stream.
         /// </summary>
         /// <param name="writer">The file stream to write to.</param>
         /// <param name="zones">The list of building blocks to write.</param>
-        private static async UniTask WriteBlockZonesAsync(FileStream writer, List<Vector3> zones)
+        private static async UniTask WriteBlockZonesAsync(Stream writer, List<Vector3> zones)
         {
             var blockBufferSize = sizeof(int) + sizeof(float) + (zones.Count * DataLength.Vector3); // payload size + radius + (zones * size)
             var blockBuffer = BufferStream.Shared.ArrayPool.Rent(blockBufferSize);

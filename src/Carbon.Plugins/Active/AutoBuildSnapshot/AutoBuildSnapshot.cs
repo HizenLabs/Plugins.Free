@@ -10,6 +10,8 @@ namespace Carbon.Plugins;
 [Description("Creates snapshots of user bases which can then be rolled back to at a later date.")]
 public partial class AutoBuildSnapshot : CarbonPlugin
 {
+    private const string gzipExtension = ".gz";
+
     private static AutoBuildSnapshot _instance;
 
     private static string BackupDirectory => Path.Combine(Interface.Oxide.DataDirectory, "abs_backups");
