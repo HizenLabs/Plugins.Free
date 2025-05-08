@@ -1,7 +1,6 @@
 ﻿using Facepunch;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using UnityEngine;
 
 namespace Carbon.Plugins;
@@ -31,6 +30,8 @@ public partial class AutoBuildSnapshot
         {
             Pool.FreeUnmanaged(ref _logs);
         }
+
+        #region Logging
 
         /// <summary>
         /// Logs a localized message to the console and to the player if provided.
@@ -66,6 +67,10 @@ public partial class AutoBuildSnapshot
             _instance.Puts(format);
             _logs.Add(format);
         }
+
+        #endregion
+
+        #region Stream
 
         /// <summary>
         /// Reads an integer value from a byte array at the specified offset and updates the offset.
@@ -170,6 +175,96 @@ public partial class AutoBuildSnapshot
             WriteSingle(buffer, value.y, ref offset);
             WriteSingle(buffer, value.z, ref offset);
         }
+
+        #endregion
+
+        #region Game Engine
+
+        /// <summary>
+        /// Tries to get the player target building.
+        /// </summary>
+        /// <param name="player">The player whose target building is being checked.</param>
+        /// <param name="building">The building that was hit by the raycast.</param>
+        /// <returns>True if the raycast hit a building; otherwise, false.</returns>
+        public static bool TryGetTargetBuilding(BasePlayer player, out BuildingManager.Building building)
+        {
+            const float targetDistance = 20f;
+
+            building = null;
+            if (!TryGetTargetEntity(player, out var entity, targetDistance))
+            {
+                Localizer.ChatMessage(player, LangKeys.error_must_face_target, targetDistance);
+
+                return false;
+            }
+
+            var priv = entity.GetBuildingPrivilege();
+            if (!priv)
+            {
+                Localizer.ChatMessage(player, LangKeys.error_building_priv_missing);
+                return false;
+            }
+
+            building = priv.GetBuilding();
+            if (building == null)
+            {
+                Localizer.ChatMessage(player, LangKeys.error_building_null);
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Attempts to get the target entity from the player's eyes.
+        /// </summary>
+        /// <param name="player">The player whose eyes are used for the raycast.</param>
+        /// <param name="entity">The entity that was hit by the raycast.</param>
+        /// <param name="distance">The maximum distance for the raycast.</param>
+        /// <returns>True if the raycast hit an entity; otherwise, false.</returns>
+        public static bool TryGetTargetEntity(BasePlayer player, out BaseEntity entity, float distance = float.PositiveInfinity)
+        {
+            if (TryGetPlayerEyesRaycast(player, out var hit, distance, Masks.BaseEntities))
+            {
+                entity = hit.GetEntity();
+                return entity != null;
+            }
+
+            entity = null;
+            return false;
+        }
+
+        /// <summary>
+        /// Tries to get a hit from the player's eyes.
+        /// </summary>
+        /// <param name="player">The player whose eyes are used for the raycast.</param>
+        /// <param name="hit">The RaycastHit object that contains information about the hit.</param>
+        /// <param name="distance">The maximum distance for the raycast.</param>
+        /// <param name="layerMask">The layer mask to use for the raycast.</param>
+        /// <returns>True if the raycast hit an entity; otherwise, false.</returns>
+        private static bool TryGetPlayerEyesRaycast(BasePlayer player, out RaycastHit hit, float distance = float.PositiveInfinity, int? layerMask = null)
+        {
+            var raycast = GetPlayerEyesRay(player);
+
+            if (Physics.Raycast(raycast, out hit, distance, layerMask ?? Masks.Default))
+            {
+                return hit.collider != null;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Creates a ray from the player's eyes in the direction they are looking.
+        /// </summary>
+        /// <param name="player">The player whose eyes are used for the ray.</param>
+        /// <returns>A Ray object representing the player's eyes ray.</returns>
+        private static Ray GetPlayerEyesRay(BasePlayer player)
+        {
+            return new(player.eyes.position, player.eyes.HeadForward());
+        }
+
+        #endregion
     }
 
     /// <summary>

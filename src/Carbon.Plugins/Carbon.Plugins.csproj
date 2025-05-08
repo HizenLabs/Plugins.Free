@@ -702,10 +702,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.ChangeManagement.cs" />
+    <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.Commands.cs" />
     <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.cs" />
     <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.Helpers.cs" />
     <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.SaveManager.cs" />
     <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.Timers.cs" />
+    <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.UserInterface.cs" />
     <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.UserPreference.cs" />
     <Compile Include="Active\AutoBuildSnapshot_old\AutoBuildSnapshot.BuildingScanner.cs" />
     <Compile Include="Active\AutoBuildSnapshot_old\AutoBuildSnapshot.BuildSnapshot.cs" />

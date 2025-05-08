@@ -1,5 +1,4 @@
 ﻿using Newtonsoft.Json;
-using Oxide.Core.Libraries;
 using System;
 using System.Collections.Generic;
 
@@ -40,6 +39,9 @@ public partial class AutoBuildSnapshot
                 [nameof(LangKeys.message_save_begin)] = "Begin saving base {0} at position {1}...",
                 [nameof(LangKeys.error_save_file_exists)] = "The save file at '{0}' already exists.",
                 [nameof(LangKeys.error_recording_locked)] = "Failed to obtain a lock on the recording.",
+                [nameof(LangKeys.error_must_face_target)] = "Must be facing building and be within {0} meters.",
+                [nameof(LangKeys.error_building_priv_missing)] = "Entity is not part of building privilege.",
+                [nameof(LangKeys.error_building_null)] = "Could not find building (check returned null).",
             },
             plugin, "en");
         }
@@ -64,11 +66,11 @@ public partial class AutoBuildSnapshot
         /// <param name="player">The player to send the message to.</param>
         /// <param name="langKey">The key for the localized message.</param>
         /// <param name="args">The arguments to format the message with.</param>
-        public static void SendReply(BasePlayer player, LangKeys langKey, params string[] args)
+        public static void ChatMessage(BasePlayer player, LangKeys langKey, params object[] args)
         {
-            var format = GetFormat(player, langKey);
+            var msg = Text(langKey, player, args);
 
-            _instance.SendReply(player, format, args);
+            player.ChatMessage(msg);
         }
 
         /// <summary>
@@ -135,6 +137,21 @@ public partial class AutoBuildSnapshot
         /// The save file at '{0}' already exists.
         /// </summary>
         error_save_file_exists,
+
+        /// <summary>
+        /// Must be facing building and be within {0} meters.
+        /// </summary>
+        error_must_face_target,
+
+        /// <summary>
+        /// Entity is not part of building privilege.
+        /// </summary>
+        error_building_priv_missing,
+
+        /// <summary>
+        /// Could not find building (check returned null).
+        /// </summary>
+        error_building_null,
 
         /// <summary>
         /// Failed to obtain a lock on the recording.
@@ -270,6 +287,10 @@ public partial class AutoBuildSnapshot
         public static void Save(AutoBuildSnapshot plugin)
         {
             plugin.Config.WriteObject(_config, true);
+
+            plugin.AddCovalenceCommand(Commands.ToggleMenu.Alias, nameof(CommandToggleMenu), Commands.ToggleMenu.Permission);
+            plugin.AddCovalenceCommand(Commands.Backup.Alias, nameof(CommandBackup), Commands.Backup.Permission);
+            plugin.AddCovalenceCommand(Commands.Rollback.Alias, nameof(CommandRollback), Commands.Rollback.Permission);
         }
     }
 
