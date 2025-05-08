@@ -534,20 +534,6 @@ public partial class AutoBuildSnapshot
             public int MaxSaveFailRetries { get; set; } = SettingDefaults.Advanced.MaxSaveFailRetries;
 
             /// <summary>
-            /// The maximum duration, in milliseconds, that we can process a step 
-            /// before yielding it to the game loop (may step into the next frame).
-            /// </summary>
-            [JsonProperty("Max Step Duration (ms)")]
-            public int MaxStepDuration { get; set; } = SettingDefaults.Advanced.MaxStepDuration;
-
-            /// <summary>
-            /// The maximum radius to create zones before splitting them up.
-            /// This is used when scanning entities for snapshots.
-            /// </summary>
-            [JsonProperty("Max Zone Scan Radius")]
-            public float MaxScanZoneRadius { get; set; } = SettingDefaults.Advanced.MaxScanZoneRadius;
-
-            /// <summary>
             /// List of data formats that can be used to save the snapshot data.
             /// </summary>
             [JsonProperty("Data Save FormatLegend")]
