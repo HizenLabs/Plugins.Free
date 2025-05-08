@@ -68,22 +68,6 @@ public partial class AutoBuildSnapshot
         }
 
         /// <summary>
-        /// Handles the destruction of an entity and stops recording if it's a tool cupboard.
-        /// </summary>
-        /// <param name="networkable">The BaseNetworkable that was destroyed.</param>
-        public static void HandleOnEntityKill(BaseNetworkable networkable)
-        {
-            if (networkable is BuildingPrivlidge priv)
-            {
-                StopRecording(priv);
-            }
-            else if (networkable is BaseEntity entity)
-            {
-                HandleChange(entity, ChangeAction.Kill);
-            }
-        }
-
-        /// <summary>
         /// Handles changes to an entity and records them if applicable.
         /// </summary>
         /// <param name="entity">The entity that was changed.</param>
@@ -91,6 +75,13 @@ public partial class AutoBuildSnapshot
         /// <param name="player">Optionally, the player that made the change.</param>
         public static void HandleChange(BaseEntity entity, ChangeAction action, BasePlayer player = null)
         {
+            if ((action == ChangeAction.Kill || action == ChangeAction.Decay)
+                && entity is BuildingPrivlidge priv)
+            {
+                StopRecording(priv);
+                return;
+            }
+
             var tc = entity.GetBuildingPrivilege();
 
             if (tc && TryGetRecording(tc, out var recording))

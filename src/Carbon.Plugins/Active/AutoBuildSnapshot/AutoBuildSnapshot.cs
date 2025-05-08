@@ -27,6 +27,7 @@ public partial class AutoBuildSnapshot : CarbonPlugin
 
         Helpers.Init();
         ChangeManagement.Init();
+        UserInterface.Init();
     }
 
     /// <summary>
@@ -34,6 +35,7 @@ public partial class AutoBuildSnapshot : CarbonPlugin
     /// </summary>
     void Unload()
     {
+        UserInterface.Unload();
         ChangeManagement.Unload();
         Helpers.Unload();
 
@@ -55,7 +57,10 @@ public partial class AutoBuildSnapshot : CarbonPlugin
     /// <param name="networkable">The entity that was killed.</param>
     void OnEntityKill(BaseNetworkable networkable)
     {
-        ChangeManagement.HandleOnEntityKill(networkable);
+        if (networkable is BaseEntity entity)
+        {
+            ChangeManagement.HandleChange(entity, ChangeAction.Kill);
+        }
     }
 
     /// <summary>
@@ -87,5 +92,15 @@ public partial class AutoBuildSnapshot : CarbonPlugin
     void OnDebrisSpawned(BaseEntity entity)
     {
         ChangeManagement.HandleChange(entity, ChangeAction.Decay);
+    }
+
+    /// <summary>
+    /// Called when a player disconnects from the server.
+    /// </summary>
+    /// <param name="player">The player that disconnected.</param>
+    /// <param name="reason">The reason for the disconnection.</param>
+    void OnPlayerDisconnected(BasePlayer player, string reason)
+    {
+        UserInterface.HandleDisconnect(player);
     }
 }
