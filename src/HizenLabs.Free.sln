@@ -33,6 +33,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{6A89C909
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ObjectSerializer", "Carbon.Extensions\ObjectSerializer\ObjectSerializer.csproj", "{0F9B4405-B1ED-4025-B95B-EA8F9D9D5160}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserPreference", "UserPreference\UserPreference.csproj", "{694CA1E3-ED7E-4BE8-A849-6E9D74B5DFEA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -73,6 +75,14 @@ Global
 		{0F9B4405-B1ED-4025-B95B-EA8F9D9D5160}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0F9B4405-B1ED-4025-B95B-EA8F9D9D5160}.Release|x64.ActiveCfg = Release|Any CPU
 		{0F9B4405-B1ED-4025-B95B-EA8F9D9D5160}.Release|x64.Build.0 = Release|Any CPU
+		{694CA1E3-ED7E-4BE8-A849-6E9D74B5DFEA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{694CA1E3-ED7E-4BE8-A849-6E9D74B5DFEA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{694CA1E3-ED7E-4BE8-A849-6E9D74B5DFEA}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{694CA1E3-ED7E-4BE8-A849-6E9D74B5DFEA}.Debug|x64.Build.0 = Debug|Any CPU
+		{694CA1E3-ED7E-4BE8-A849-6E9D74B5DFEA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{694CA1E3-ED7E-4BE8-A849-6E9D74B5DFEA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{694CA1E3-ED7E-4BE8-A849-6E9D74B5DFEA}.Release|x64.ActiveCfg = Release|Any CPU
+		{694CA1E3-ED7E-4BE8-A849-6E9D74B5DFEA}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -85,6 +95,7 @@ Global
 		{43D7F203-C9DD-4752-BE45-2CA3F064487E} = {6A89C909-5A47-4A40-AD7D-B4DE36EC22CB}
 		{6A89C909-5A47-4A40-AD7D-B4DE36EC22CB} = {3750B824-8A27-448C-A651-34F6C3583389}
 		{0F9B4405-B1ED-4025-B95B-EA8F9D9D5160} = {0CE5AC80-F364-42B4-9017-0B0DF8A46E3F}
+		{694CA1E3-ED7E-4BE8-A849-6E9D74B5DFEA} = {0CE5AC80-F364-42B4-9017-0B0DF8A46E3F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E56ED32D-07F8-4731-8458-2BDC13D8B2D5}
