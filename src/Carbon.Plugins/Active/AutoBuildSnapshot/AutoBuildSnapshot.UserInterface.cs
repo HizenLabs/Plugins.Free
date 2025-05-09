@@ -18,6 +18,7 @@ public partial class AutoBuildSnapshot
         private const string MainMenuId = "abs.mainmenu";
 
         private static Dictionary<ulong, bool> _playerMenuState;
+        private static Dictionary<ulong, int> _playerTabIndex;
 
         /// <summary>
         /// Initializes the user interface for the plugin.
@@ -25,6 +26,7 @@ public partial class AutoBuildSnapshot
         public static void Init()
         {
             _playerMenuState = Pool.Get<Dictionary<ulong, bool>>();
+            _playerTabIndex = Pool.Get<Dictionary<ulong, int>>();
         }
 
         /// <summary>
@@ -41,6 +43,11 @@ public partial class AutoBuildSnapshot
             {
                 Pool.FreeUnmanaged(ref _playerMenuState);
             }
+
+            if (_playerTabIndex != null)
+            {
+                Pool.FreeUnmanaged(ref _playerTabIndex);
+            }
         }
 
         /// <summary>
@@ -52,6 +59,11 @@ public partial class AutoBuildSnapshot
             if (_playerMenuState != null && _playerMenuState.ContainsKey(player.userID))
             {
                 _playerMenuState.Remove(player.userID);
+            }
+
+            if (_playerTabIndex != null && _playerTabIndex.ContainsKey(player.userID))
+            {
+                _playerTabIndex.Remove(player.userID);
             }
         }
 
@@ -76,6 +88,23 @@ public partial class AutoBuildSnapshot
             {
                 ShowMenu(player);
             }
+        }
+
+        public static void SwitchTab(BasePlayer player, int targetIndex = 0)
+        {
+            if (_playerTabIndex == null || !player) return;
+
+            if (!_playerTabIndex.TryGetValue(player.userID, out var currentIndex))
+            {
+                currentIndex = 0;
+            }
+
+            if (currentIndex != targetIndex)
+            {
+                _playerTabIndex[player.userID] = targetIndex;
+            }
+
+            ShowMenu(player);
         }
 
         /// <summary>
@@ -115,19 +144,14 @@ public partial class AutoBuildSnapshot
         {
             var userData = UserPreference.For(player);
             var palette = userData.ColorPalette;
-            var fontSize = userData.FontSize;
-            var fontType = userData.FontType;
 
-            float baseFontSize = FontSizes.Medium.Body;
-            float heightScale = userData.FontSize.Body / baseFontSize;
+            var headFontSize = userData.HeaderFontSize;
+            var headFontType = userData.HeaderFontType;
+            GetFontScaling(userData.HeaderFontSize, userData.HeaderFontTypeOption, out var headScaleH, out var headScaleW);
 
-            heightScale = Mathf.Clamp(heightScale, 0.85f, 1.2f);
-
-            var widthScale = heightScale;
-            if (userData.FontTypeOption == FontTypeOptions.DroidSans)
-            {
-                widthScale *= 1.05f;
-            }
+            var bodyFontSize = userData.BodyFontSize;
+            var bodyFontType = userData.BodyFontType;
+            GetFontScaling(userData.BodyFontSize, userData.BodyFontTypeOption, out var bodyScaleH, out var bodyScaleW);
 
             var backgroundColor = userData.BackgroundOption switch
             {
@@ -137,6 +161,12 @@ public partial class AutoBuildSnapshot
             };
 
             var headerText = Localizer.Text(LangKeys.menu_title, player, _instance.Version);
+
+            if (!_playerTabIndex.TryGetValue(player.userID, out var tabIndex))
+            {
+                tabIndex = 0;
+                _playerTabIndex[player.userID] = tabIndex;
+            }
 
             var parent = cui.v2
                 .CreateParent(
@@ -199,7 +229,7 @@ public partial class AutoBuildSnapshot
                     );
             }
 
-            var headerHeight = 0.08f * heightScale;
+            var headerHeight = 0.08f * headScaleH;
             var headerStartY = 1 - headerHeight;
             var header = cui.v2
                 .CreatePanel(
@@ -214,11 +244,11 @@ public partial class AutoBuildSnapshot
                     position: new(.015f, 0, .5f, 1),
                     offset: new(1, 1, 0, 0),
                     color: palette.OnPrimary,
-                    fontSize: fontSize.Header,
+                    fontSize: headFontSize,
                     text: headerText,
                     alignment: TextAnchor.MiddleLeft
                 )
-                .SetTextFont(fontType.Header);
+                .SetTextFont(headFontType);
 
             var headerButtons = cui.v2
                 .CreatePanel(
@@ -228,23 +258,29 @@ public partial class AutoBuildSnapshot
                     color: palette.Transparent
                 );
 
-            var closeButtonWidth = 0.15f * widthScale;
+            var closeButtonWidth = 0.18f * headScaleW;
             var closeButtonX = 1 - closeButtonWidth;
             CreateButton(cui, player, userData,
                 container: headerButtons,
                 position: new(closeButtonX, 0, 1, 1),
                 offset: LuiOffset.None,
+                color: palette.Primary,
+                textColor: palette.OnPrimary,
                 textKey: LangKeys.menu_close,
+                isHeader: true,
                 commandName: nameof(CommandMenuClose)
             );
 
-            var optionsButtonWidth = 0.2f * widthScale;
+            var optionsButtonWidth = 0.2f * headScaleW;
             var optionsButtonX = closeButtonX - optionsButtonWidth;
             CreateButton(cui, player, userData,
                 container: headerButtons,
                 position: new(optionsButtonX, 0, closeButtonX, 1),
                 offset: LuiOffset.None,
+                color: palette.Primary,
+                textColor: palette.OnPrimary,
                 textKey: LangKeys.menu_options,
+                isHeader: true,
                 commandName: nameof(CommandMenuSettings)
             );
 
@@ -256,6 +292,7 @@ public partial class AutoBuildSnapshot
                     color: palette.Transparent
                 );
 
+            // watermark
             cui.v2
                 .CreateText(
                     container: content,
@@ -266,6 +303,138 @@ public partial class AutoBuildSnapshot
                     text: $"AutoBuildSnapshot v{_instance.Version} by hizenxyz",
                     alignment: TextAnchor.LowerCenter)
                 .SetTextFont(CUI.Handler.FontTypes.DroidSansMono);
+
+            var tabButtonsHeight = 0.08f * bodyScaleH;
+            var tabButtonsStartY = 1 - tabButtonsHeight;
+            var tabButtons = cui.v2
+                .CreatePanel(
+                    container: content,
+                    position: new(0, tabButtonsStartY, 1, 1),
+                    offset: new(5, 7, -5, -7),
+                    color: palette.Transparent
+                );
+
+            var contentButtonWidth = 0.12f * headScaleW;
+            var homeButtonX = 0f;
+            CreateButton(cui, player, userData,
+                container: tabButtons,
+                position: new(homeButtonX, 0, contentButtonWidth, 1),
+                offset: LuiOffset.None,
+                color: GetTabButtonColor(tabIndex, 0, palette),
+                textColor: GetTabButtonTextColor(tabIndex, 0, palette),
+                textKey: LangKeys.menu_tab_home,
+                commandName: nameof(CommandMenuSwitchTab),
+                commandArgs: "0"
+            );
+
+            var logsButtonX = contentButtonWidth;
+            CreateButton(cui, player, userData,
+                container: tabButtons,
+                position: new(logsButtonX, 0, contentButtonWidth + logsButtonX, 1),
+                offset: new(5, 0, 0, 0),
+                color: GetTabButtonColor(tabIndex, 1, palette),
+                textColor: GetTabButtonTextColor(tabIndex, 1, palette),
+                textKey: LangKeys.menu_tab_logs,
+                commandName: nameof(CommandMenuSwitchTab),
+                commandArgs:"1"
+            );
+
+            switch (tabIndex)
+            {
+                case 1:
+                    RenderLogsTab(cui, player, tabButtons, content, userData, headScaleW, headScaleH, bodyScaleW, bodyScaleH);
+                    break;
+
+                case 0:
+                default:
+                    RenderHomeTab(cui, player, tabButtons, content, userData, headScaleW, headScaleH, bodyScaleW, bodyScaleH);
+                    break;
+            }
+        }
+
+        private static void RenderHomeTab(
+            CUI cui,
+            BasePlayer player,
+            LUI.LuiContainer tabButtons,
+            LUI.LuiContainer content,
+            UserPreferenceData userData,
+            float headScaleW,
+            float headScaleH,
+            float bodyScaleW,
+            float bodyScaleH)
+        {
+            var palette = userData.ColorPalette;
+
+            var contentButtonWidth = 0.12f * headScaleW;
+            bool backButtonEnabled = false;
+            if (backButtonEnabled)
+            {
+                CreateButton(cui, player, userData,
+                    container: tabButtons,
+                    position: new(1 - contentButtonWidth, 0, 1, 1),
+                    offset: LuiOffset.None,
+                    color: palette.Tertiary,
+                    textColor: palette.OnTertiary,
+                    textKey: LangKeys.menu_content_back,
+                    commandName: nameof(CommandMenuSettings)
+                );
+            }
+        }
+
+        private static void RenderLogsTab(
+            CUI cui,
+            BasePlayer player,
+            LUI.LuiContainer tabButtons,
+            LUI.LuiContainer container,
+            UserPreferenceData userData,
+            float headScaleW,
+            float headScaleH,
+            float bodyScaleW,
+            float bodyScaleH)
+        {
+            var palette = userData.ColorPalette;
+
+            var clearButtonWidth = 0.12f * headScaleW;
+            CreateButton(cui, player, userData,
+                container: tabButtons,
+                position: new(1 - clearButtonWidth, 0, 1, 1),
+                offset: LuiOffset.None,
+                color: palette.Secondary,
+                textColor: palette.OnSecondary,
+                textKey: LangKeys.menu_content_clear,
+                commandName: nameof(CommandMenuSettings)
+            );
+        }
+
+        private static string GetTabButtonColor(int index, int targetIndex, ColorPalette palette)
+        {
+            return index == targetIndex ? palette.HighlightItem : palette.InactiveItem;
+        }
+
+        private static string GetTabButtonTextColor(int index, int targetIndex, ColorPalette palette)
+        {
+            return index == targetIndex ? palette.OnHighlightItem : palette.OnInactiveItem;
+        }
+
+        /// <summary>
+        /// Calculates the scaling factors for font size and type.
+        /// </summary>
+        /// <param name="fontSize">The font size to scale.</param>
+        /// <param name="fontType">The font type to scale.</param>
+        /// <param name="heightScale">The height scaling factor.</param>
+        /// <param name="widthScale">The width scaling factor.</param>
+        private static void GetFontScaling(float fontSize, FontTypeOptions fontType, out float heightScale, out float widthScale)
+        {
+            float baseFontSize = 18f;
+            heightScale = fontSize / baseFontSize;
+
+            heightScale = Mathf.Clamp(heightScale, 0.85f, 1.4f);
+
+            widthScale = heightScale;
+            if (fontType == FontTypeOptions.DroidSans)
+            {
+                widthScale *= 1.05f;
+            }
         }
 
         private static void CreateButton(
@@ -275,13 +444,25 @@ public partial class AutoBuildSnapshot
             LUI.LuiContainer container,
             LuiPosition position,
             LuiOffset offset,
+            string color,
+            string textColor,
             LangKeys textKey,
-            string commandName)
+            string commandName,
+            string commandArgs = null,
+            bool isHeader = false)
         {
             var buttonText = Localizer.Text(textKey, player);
+            var fontSize = isHeader ? userData.HeaderFontSize : userData.BodyFontSize;
+            var fontType = isHeader ? userData.HeaderFontType : userData.BodyFontType;
+
             if (!commandName.StartsWith(CommandPrefix))
             {
                 commandName = CommandPrefix + commandName;
+            }
+
+            if (commandArgs != null)
+            {
+                commandName += " " + commandArgs;
             }
 
             var userPrefButton = cui.v2
@@ -290,18 +471,18 @@ public partial class AutoBuildSnapshot
                     position: position,
                     offset: offset,
                     command: commandName,
-                    color: userData.ColorPalette.Primary
+                    color: color
                 );
 
             cui.v2.CreateText(
                     container: userPrefButton,
                     position: new(0, 0, 1, 1),
                     offset: new(0, 0, 0, 0),
-                    color: userData.ColorPalette.OnPrimary,
-                    fontSize: userData.FontSize.Body,
+                    color: textColor,
+                    fontSize: fontSize,
                     text: buttonText,
                     alignment: TextAnchor.MiddleCenter)
-                .SetTextFont(userData.FontType.Body);
+                .SetTextFont(fontType);
         }
 
         /// <summary>
@@ -315,6 +496,13 @@ public partial class AutoBuildSnapshot
             var userData = UserPreference.For(player);
             var fields = new Dictionary<string, ModalModule.Modal.Field>
             {
+                ["theme"] = ModalModule.Modal.EnumField.MakeEnum(
+                    displayName: Localizer.Text(LangKeys.menu_options_theme, player),
+                    options: Themes.Options,
+                    required: true,
+                    @default: 0,
+                    isReadOnly: true),
+
                 [nameof(UserPreferenceData.ColorPalette)] = ModalModule.Modal.EnumField.MakeEnum(
                     displayName: fieldThemeText,
                     options: ColorPalettes.ColorOptions,
@@ -333,17 +521,29 @@ public partial class AutoBuildSnapshot
                     required: true,
                     @default: (int)userData.BackgroundOption),
 
-                [nameof(UserPreferenceData.FontSize)] = ModalModule.Modal.EnumField.MakeEnum(
-                    displayName: Localizer.Text(LangKeys.menu_options_fontsize, player),
-                    options: FontSizes.Options,
-                    required: true,
-                    @default: (int)userData.FontSizeOption),
-
-                [nameof(UserPreferenceData.FontType)] = ModalModule.Modal.EnumField.MakeEnum(
-                    displayName: Localizer.Text(LangKeys.menu_options_fonttype, player),
+                [nameof(UserPreferenceData.HeaderFontType)] = ModalModule.Modal.EnumField.MakeEnum(
+                    displayName: Localizer.Text(LangKeys.menu_options_header_fonttype, player),
                     options: FontTypes.Options,
                     required: true,
-                    @default: (int)userData.FontTypeOption)
+                    @default: (int)userData.HeaderFontTypeOption),
+
+                [nameof(UserPreferenceData.HeaderFontSize)] = ModalModule.Modal.EnumField.MakeEnum(
+                    displayName: Localizer.Text(LangKeys.menu_options_header_fontsize, player),
+                    options: FontSizes.Options,
+                    required: true,
+                    @default: (int)userData.HeaderFontSizeOption),
+
+                [nameof(UserPreferenceData.BodyFontType)] = ModalModule.Modal.EnumField.MakeEnum(
+                    displayName: Localizer.Text(LangKeys.menu_options_body_fonttype, player),
+                    options: FontTypes.Options,
+                    required: true,
+                    @default: (int)userData.BodyFontTypeOption),
+
+                [nameof(UserPreferenceData.BodyFontSize)] = ModalModule.Modal.EnumField.MakeEnum(
+                    displayName: Localizer.Text(LangKeys.menu_options_body_fontsize, player),
+                    options: FontSizes.Options,
+                    required: true,
+                    @default: (int)userData.BodyFontSizeOption),
             };
 
             var modalModule = Base.BaseModule.GetModule<ModalModule>();

@@ -93,6 +93,15 @@ public partial class AutoBuildSnapshot
         UserInterface.ShowPreference(player);
     }
 
+    [ProtectedCommand(CommandPrefix + nameof(CommandMenuSwitchTab))]
+    private void CommandMenuSwitchTab(BasePlayer player, string command, string[] args)
+    {
+        if (!CheckPermission(player, Settings.Commands.Rollback)) return;
+        if (!TryGetArgument(player, args, out int tabIndex)) return;
+
+        UserInterface.SwitchTab(player, tabIndex);
+    }
+
     /// <summary>
     /// Checks if the player has the required permissions to execute a command.
     /// </summary>

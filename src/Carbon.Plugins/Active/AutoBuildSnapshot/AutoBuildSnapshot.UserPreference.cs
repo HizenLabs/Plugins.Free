@@ -99,13 +99,19 @@ public partial class AutoBuildSnapshot
                 [nameof(LangKeys.menu_close)] = "Close",
                 [nameof(LangKeys.menu_options)] = "Options",
                 [nameof(LangKeys.menu_options_title)] = "Menu Options",
+                [nameof(LangKeys.menu_options_theme)] = "Theme",
                 [nameof(LangKeys.menu_options_mode)] = "Mode",
                 [nameof(LangKeys.menu_options_contrast)] = "Contrast",
-                [nameof(LangKeys.menu_options_fontsize)] = "Font Size",
-                [nameof(LangKeys.menu_options_fonttype)] = "Font Type",
+                [nameof(LangKeys.menu_options_header_fonttype)] = "Header Font Type",
+                [nameof(LangKeys.menu_options_header_fontsize)] = "Header Font Size",
+                [nameof(LangKeys.menu_options_body_fonttype)] = "Body Font Type",
+                [nameof(LangKeys.menu_options_body_fontsize)] = "Body Font Size",
                 [nameof(LangKeys.menu_options_background)] = "Background",
-            },
-            plugin, "en");
+                [nameof(LangKeys.menu_tab_home)] = "Home",
+                [nameof(LangKeys.menu_tab_logs)] = "Logs",
+                [nameof(LangKeys.menu_content_back)] = "Back",
+                [nameof(LangKeys.menu_content_clear)] = "Clear",
+            }, plugin, "en");
         }
     }
 
@@ -217,6 +223,11 @@ public partial class AutoBuildSnapshot
         menu_options_title,
 
         /// <summary>
+        /// Theme
+        /// </summary>
+        menu_options_theme,
+
+        /// <summary>
         /// Mode
         /// </summary>
         menu_options_mode,
@@ -232,14 +243,44 @@ public partial class AutoBuildSnapshot
         menu_options_background,
 
         /// <summary>
-        /// Font Size
+        /// Header Font Type
         /// </summary>
-        menu_options_fontsize,
+        menu_options_header_fonttype,
 
         /// <summary>
-        /// Font Type
+        /// Header Font Size
         /// </summary>
-        menu_options_fonttype
+        menu_options_header_fontsize,
+
+        /// <summary>
+        /// Body Font Type
+        /// </summary>
+        menu_options_body_fonttype,
+
+        /// <summary>
+        /// Body Font Size
+        /// </summary>
+        menu_options_body_fontsize,
+
+        /// <summary>
+        /// Home
+        /// </summary>
+        menu_tab_home,
+
+        /// <summary>
+        /// Logs
+        /// </summary>
+        menu_tab_logs,
+
+        /// <summary>
+        /// Back
+        /// </summary>
+        menu_content_back,
+
+        /// <summary>
+        /// Clear
+        /// </summary>
+        menu_content_clear,
     }
 
     /// <summary>
@@ -802,15 +843,19 @@ public partial class AutoBuildSnapshot
         {
             var colorPalette = modal.Get<ColorPaletteOptions>(nameof(UserPreferenceData.ColorPalette));
             var contrast = modal.Get<ContrastOptions>(nameof(UserPreferenceData.ContrastOption));
-            var fontSize = modal.Get<FontSizeOptions>(nameof(UserPreferenceData.FontSize));
-            var fontType = modal.Get<FontTypeOptions>(nameof(UserPreferenceData.FontType));
+            var fontSize = modal.Get<FontSizeOptions>(nameof(UserPreferenceData.HeaderFontSize));
+            var fontType = modal.Get<FontTypeOptions>(nameof(UserPreferenceData.HeaderFontType));
+            var bodyFontSize = modal.Get<FontSizeOptions>(nameof(UserPreferenceData.BodyFontSize));
+            var bodyFontType = modal.Get<FontTypeOptions>(nameof(UserPreferenceData.BodyFontType));
             var background = modal.Get<BackgroundOptions>(nameof(UserPreferenceData.BackgroundOption));
 
             var userPreference = For(player);
             userPreference.ColorPaletteOption = colorPalette;
             userPreference.ContrastOption = contrast;
-            userPreference.FontSizeOption = fontSize;
-            userPreference.FontTypeOption = fontType;
+            userPreference.HeaderFontSizeOption = fontSize;
+            userPreference.HeaderFontTypeOption = fontType;
+            userPreference.BodyFontSizeOption = bodyFontSize;
+            userPreference.BodyFontTypeOption = bodyFontType;
             userPreference.BackgroundOption = background;
 
             Save(player, userPreference);
@@ -846,36 +891,44 @@ public partial class AutoBuildSnapshot
         private ContrastOptions _contrastOption;
 
         /// <summary>
-        /// The font size used for the UI.
+        /// The font type used for the UI header.
         /// </summary>
-        [JsonIgnore]
-        public FontSize FontSize { get; private set; }
+        public FontTypeOptions HeaderFontTypeOption { get; set; }
 
         /// <summary>
-        /// The font size option selected by the user.
+        /// The font type used for the UI header.
         /// </summary>
-        public FontSizeOptions FontSizeOption
-        {
-            get => _fontSizeOption;
-            set => SetFontSize(value);
-        }
-        private FontSizeOptions _fontSizeOption;
+        public CUI.Handler.FontTypes HeaderFontType => GetFontType(HeaderFontTypeOption);
 
         /// <summary>
-        /// The font type used for the UI.
+        /// The font size used for the UI header.
         /// </summary>
-        [JsonIgnore]
-        public FontType FontType { get; private set; }
+        public FontSizeOptions HeaderFontSizeOption { get; set; }
 
         /// <summary>
-        /// The font type option selected by the user.
+        /// The font type used for the UI header.
         /// </summary>
-        public FontTypeOptions FontTypeOption
-        {
-            get => _fontTypeOption;
-            set => SetFontType(value);
-        }
-        private FontTypeOptions _fontTypeOption;
+        public int HeaderFontSize => GetFontSize(HeaderFontSizeOption);
+
+        /// <summary>
+        /// The font type used for the UI body.
+        /// </summary>
+        public FontTypeOptions BodyFontTypeOption { get; set; }
+
+        /// <summary>
+        /// The font type used for the UI body.
+        /// </summary>
+        public CUI.Handler.FontTypes BodyFontType => GetFontType(BodyFontTypeOption);
+
+        /// <summary>
+        /// The font size used for the UI body.
+        /// </summary>
+        public FontSizeOptions BodyFontSizeOption { get; set; }
+
+        /// <summary>
+        /// The font size used for the UI body.
+        /// </summary>
+        public int BodyFontSize => GetFontSize(BodyFontSizeOption);
 
         /// <summary>
         /// The background option selected by the user.
@@ -889,6 +942,8 @@ public partial class AutoBuildSnapshot
             ColorPaletteOptions.Dark, 
             ContrastOptions.Medium, 
             FontSizeOptions.Medium, 
+            FontTypeOptions.PermanentMarker,
+            FontSizeOptions.Medium,
             FontTypeOptions.Roboto,
             BackgroundOptions.Blur)
         {
@@ -899,21 +954,23 @@ public partial class AutoBuildSnapshot
         /// </summary>
         /// <param name="colorPalette">The color palette option.</param>
         /// <param name="contrast">The contrast option.</param>
-        /// <param name="fontSize">The font size option.</param>
-        /// <param name="fontType">The font type option.</param>
+        /// 
         /// <param name="background">The background option.</param>
         public UserPreferenceData(
-            ColorPaletteOptions colorPalette, 
-            ContrastOptions contrast, 
-            FontSizeOptions fontSize, 
-            FontTypeOptions fontType,
-            BackgroundOptions background)
+            ColorPaletteOptions colorPaletteOption, 
+            ContrastOptions contrastOption, 
+            FontSizeOptions headerFontSizeOption, 
+            FontTypeOptions headerFontTypeOption,
+            FontSizeOptions bodyFontSizeOption,
+            FontTypeOptions bodyFontTypeOption,
+            BackgroundOptions backgroundOption)
         {
-            ColorPaletteOption = colorPalette;
-            ContrastOption = contrast;
-            FontSizeOption = fontSize;
-            FontTypeOption = fontType;
-            BackgroundOption = background;
+            SetColorPalette(colorPaletteOption, contrastOption);
+            HeaderFontSizeOption = headerFontSizeOption;
+            HeaderFontTypeOption = headerFontTypeOption;
+            BodyFontSizeOption = bodyFontSizeOption;
+            BodyFontTypeOption = bodyFontTypeOption;
+            BackgroundOption = backgroundOption;
         }
 
         /// <summary>
@@ -947,6 +1004,7 @@ public partial class AutoBuildSnapshot
                 },
                 _ => throw new ArgumentOutOfRangeException(nameof(colorOption), colorOption, null)
             };
+
             _colorPaletteOption = colorOption;
             _contrastOption = contrastOption;
         }
@@ -956,16 +1014,16 @@ public partial class AutoBuildSnapshot
         /// </summary>
         /// <param name="option">The font size option.</param>
         /// <exception cref="ArgumentOutOfRangeException">Thrown when an invalid option is provided.</exception>
-        private void SetFontSize(FontSizeOptions option)
+        private static int GetFontSize(FontSizeOptions option)
         {
-            FontSize = option switch
+            return option switch
             {
-                FontSizeOptions.Small => FontSizes.Small,
-                FontSizeOptions.Medium => FontSizes.Medium,
-                FontSizeOptions.Large => FontSizes.Large,
+                FontSizeOptions.Small => 14,
+                FontSizeOptions.Medium => 18,
+                FontSizeOptions.Large => 22,
+                FontSizeOptions.LegallyBlind => 30,
                 _ => throw new ArgumentOutOfRangeException(nameof(option), option, null)
             };
-            _fontSizeOption = option;
         }
 
         /// <summary>
@@ -973,18 +1031,17 @@ public partial class AutoBuildSnapshot
         /// </summary>
         /// <param name="option">The font type option.</param>
         /// <exception cref="ArgumentOutOfRangeException">Thrown when an invalid option is provided.</exception>
-        private void SetFontType(FontTypeOptions option)
+        private static CUI.Handler.FontTypes GetFontType(FontTypeOptions option)
         {
-            FontType = option switch
+            return option switch
             {
-                FontTypeOptions.Roboto => FontTypes.Roboto,
-                FontTypeOptions.RobotoBold => FontTypes.RobotoBold,
-                FontTypeOptions.DroidSans => FontTypes.DroidSans,
-                FontTypeOptions.NotoSans => FontTypes.NotoSans,
-                FontTypeOptions.PermanentMarker => FontTypes.PermanentMarker,
+                FontTypeOptions.Roboto => CUI.Handler.FontTypes.RobotoCondensedRegular,
+                FontTypeOptions.RobotoBold => CUI.Handler.FontTypes.RobotoCondensedBold,
+                FontTypeOptions.DroidSans => CUI.Handler.FontTypes.DroidSansMono,
+                FontTypeOptions.NotoSans => CUI.Handler.FontTypes.NotoSansArabicBold,
+                FontTypeOptions.PermanentMarker => CUI.Handler.FontTypes.PermanentMarker,
                 _ => throw new ArgumentOutOfRangeException(nameof(option), option, null)
             };
-            _fontTypeOption = option;
         }
     }
 
@@ -1001,8 +1058,19 @@ public partial class AutoBuildSnapshot
         High
     }
 
+    /// <summary>
+    /// Represents the available color schemes.
+    /// </summary>
+    public static class Themes
+    {
+        // only one theme available currently, but may add more in the future
+        // right now I'm only using this to align the fonts in menu options
+        public static string[] Options { get; } = { "Rusty" };
+    }
+
     public static class ColorPalettes
     {
+
         public static string[] ColorOptions { get; } = Enum
             .GetValues(typeof(ColorPaletteOptions))
             .Cast<ColorPaletteOptions>()
@@ -1033,6 +1101,8 @@ public partial class AutoBuildSnapshot
                 OnButton = "1.0 1.0 1.0 1.0",
                 HighlightItem = "0.950 0.900 0.875 1.0",
                 OnHighlightItem = "0.0 0.0 0.0 1.0",
+                InactiveItem = "0.0 0.0 0.0 0.4",
+                OnInactiveItem = "0.0 0.0 0.0 1.0",
                 Watermark = "0.0 0.0 0.0 0.4",
             };
             public static readonly ColorPalette MediumContrast = new()
@@ -1051,6 +1121,8 @@ public partial class AutoBuildSnapshot
                 OnButton = "1.0 1.0 1.0 1.0",
                 HighlightItem = "0.900 0.700 0.600 1.0",
                 OnHighlightItem = "0.0 0.0 0.0 1.0",
+                InactiveItem = "0.0 0.0 0.0 0.4",
+                OnInactiveItem = "0.0 0.0 0.0 1.0",
                 Watermark = "0.0 0.0 0.0 0.4",
             };
             public static readonly ColorPalette HighContrast = new()
@@ -1069,6 +1141,8 @@ public partial class AutoBuildSnapshot
                 OnButton = "1.0 1.0 1.0 1.0",
                 HighlightItem = "1.000 0.800 0.700 1.0",
                 OnHighlightItem = "0.0 0.0 0.0 1.0",
+                InactiveItem = "0.0 0.0 0.0 0.3",
+                OnInactiveItem = "0.0 0.0 0.0 1.0",
                 Watermark = "0.0 0.0 0.0 0.4",
             };
         }
@@ -1090,6 +1164,8 @@ public partial class AutoBuildSnapshot
                 OnButton = "0.0 0.0 0.0 1.0",
                 HighlightItem = "0.500 0.200 0.150 1.0",
                 OnHighlightItem = "1.0 1.0 1.0 1.0",
+                InactiveItem = "0.4 0.4 0.4 0.9",
+                OnInactiveItem = "1.0 1.0 1.0 .7",
                 Watermark = "1.0 1.0 1.0 0.1",
             };
             public static readonly ColorPalette MediumContrast = new()
@@ -1108,6 +1184,8 @@ public partial class AutoBuildSnapshot
                 OnButton = "0.0 0.0 0.0 1.0",
                 HighlightItem = "0.600 0.250 0.200 1.0",
                 OnHighlightItem = "1.0 1.0 1.0 1.0",
+                InactiveItem = "0.5 0.5 0.5 0.9",
+                OnInactiveItem = "1.0 1.0 1.0 .8",
                 Watermark = "1.0 1.0 1.0 0.1",
             };
             public static readonly ColorPalette HighContrast = new()
@@ -1126,6 +1204,8 @@ public partial class AutoBuildSnapshot
                 OnButton = "0.0 0.0 0.0 1.0",
                 HighlightItem = "0.700 0.300 0.250 1.0",
                 OnHighlightItem = "1.0 1.0 1.0 1.0",
+                InactiveItem = "0.7 0.7 0.7 1.0",
+                OnInactiveItem = "0.0 0.0 0.0 1.0",
                 Watermark = "1.0 1.0 1.0 0.1",
             };
         }
@@ -1147,6 +1227,8 @@ public partial class AutoBuildSnapshot
         public required string OnButton { get; init; }
         public required string HighlightItem { get; init; }
         public required string OnHighlightItem { get; init; }
+        public required string InactiveItem { get; init; }
+        public required string OnInactiveItem { get; init; }
         public required string Watermark { get; init; }
         public string Blur => "0 0 0 0.2";
         public string Transparent => "0 0 0 0.01";
@@ -1157,7 +1239,8 @@ public partial class AutoBuildSnapshot
     {
         Small,
         Medium,
-        Large
+        Large,
+        LegallyBlind,
     }
 
     private static class FontSizes
@@ -1167,25 +1250,9 @@ public partial class AutoBuildSnapshot
             .Cast<FontSizeOptions>()
             .Select(option => option.ToString())
             .ToArray();
-
-        public static readonly FontSize Small = new()
-        {
-            Header = 14,
-            Body = 12,
-        };
-
-        public static readonly FontSize Medium = new()
-        {
-            Header = 18,
-            Body = 16,
-        };
-
-        public static readonly FontSize Large = new()
-        {
-            Header = 22,
-            Body = 20,
-        };
     }
+
+    // TODO: Split these up so users can choose different header and body fonts.
 
     private class FontSize
     {
@@ -1209,36 +1276,6 @@ public partial class AutoBuildSnapshot
             .Cast<FontTypeOptions>()
             .Select(option => option.ToString())
             .ToArray();
-
-        public static readonly FontType Roboto = new()
-        {
-            Header = CUI.Handler.FontTypes.RobotoCondensedRegular,
-            Body = CUI.Handler.FontTypes.RobotoCondensedRegular,
-        };
-
-        public static readonly FontType RobotoBold = new()
-        {
-            Header = CUI.Handler.FontTypes.RobotoCondensedBold,
-            Body = CUI.Handler.FontTypes.RobotoCondensedBold,
-        };
-
-        public static readonly FontType DroidSans = new()
-        {
-            Header = CUI.Handler.FontTypes.DroidSansMono,
-            Body = CUI.Handler.FontTypes.DroidSansMono,
-        };
-
-        public static readonly FontType NotoSans = new()
-        {
-            Header = CUI.Handler.FontTypes.NotoSansArabicBold,
-            Body = CUI.Handler.FontTypes.NotoSansArabicBold,
-        };
-
-        public static readonly FontType PermanentMarker = new()
-        {
-            Header = CUI.Handler.FontTypes.PermanentMarker,
-            Body = CUI.Handler.FontTypes.PermanentMarker,
-        };
     }
 
     private class FontType
