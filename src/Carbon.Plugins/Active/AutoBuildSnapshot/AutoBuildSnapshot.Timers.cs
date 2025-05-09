@@ -12,6 +12,7 @@ public partial class AutoBuildSnapshot
     {
         private static Timer _timer;
         private static float _interval;
+        private static bool _isProcessing;
 
         /// <summary>
         /// Checks if the settings have changed and if the timer needs to be restarted.
@@ -50,6 +51,11 @@ public partial class AutoBuildSnapshot
         /// </summary>
         public static async UniTaskVoid ProcessIntervalAsync()
         {
+            if (_isProcessing)
+            {
+                return;
+            }
+
             if (SettingsChanged)
             {
                 Restart();
