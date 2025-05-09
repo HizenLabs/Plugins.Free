@@ -10,6 +10,7 @@
     <RootNamespace>HizenLabs.Extensions.UserPreference</RootNamespace>
     <AssemblyName>HizenLabs.Extensions.UserPreference</AssemblyName>
     <TargetFrameworkVersion>v4.8.1</TargetFrameworkVersion>
+    <LangVersion>11</LangVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
   </PropertyGroup>
@@ -41,6 +42,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Material\ColorScheme.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
