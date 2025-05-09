@@ -535,14 +535,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Material\ColorScheme.cs" />
-    <Compile Include="Material\IColorScheme.cs" />
-    <Compile Include="Material\IMaterialColor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Material\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
