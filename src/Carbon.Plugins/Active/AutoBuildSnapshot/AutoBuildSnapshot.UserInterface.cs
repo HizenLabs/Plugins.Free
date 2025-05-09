@@ -84,7 +84,6 @@ public partial class AutoBuildSnapshot
         /// <param name="player">The player to close the menu for.</param>
         public static void HideMenu(BasePlayer player)
         {
-            _instance.Puts("CLosing menu");
             CuiHelper.DestroyUi(player, MainMenuId);
 
             if (_playerMenuState != null)
@@ -119,9 +118,25 @@ public partial class AutoBuildSnapshot
             var fontSize = userData.FontSize;
             var fontType = userData.FontType;
 
-            var title = Localizer.Text(LangKeys.menu_title, player);
-            var btnCloseText = Localizer.Text(LangKeys.menu_close, player);
-            var btnUserPrefText = Localizer.Text(LangKeys.menu_options, player);
+            float baseFontSize = FontSizes.Medium.Body;
+            float heightScale = userData.FontSize.Body / baseFontSize;
+
+            heightScale = Mathf.Clamp(heightScale, 0.85f, 1.2f);
+
+            var widthScale = heightScale;
+            if (userData.FontTypeOption == FontTypeOptions.DroidSans)
+            {
+                widthScale *= 1.05f;
+            }
+
+            var backgroundColor = userData.BackgroundOption switch
+            {
+                BackgroundOptions.Translucent => palette.Transparent,
+                BackgroundOptions.Blur => palette.Blur,
+                _ => palette.BackgroundBase + " 1.0"
+            };
+
+            var headerText = Localizer.Text(LangKeys.menu_title, player, _instance.Version);
 
             var parent = cui.v2
                 .CreateParent(
@@ -131,39 +146,76 @@ public partial class AutoBuildSnapshot
                 .AddCursor()
                 .SetDestroy(MainMenuId);
 
-            cui.v2
+            var outline = cui.v2
                 .CreatePanel(
                     container: parent,
                     position: LuiPosition.MiddleCenter,
                     offset: new(-451, -275.65f, 451, 276),
                     color: palette.Outline
-                )
-                .SetMaterial(BlurAsset);
+                );
 
-            var main = cui.v2
+            var container = cui.v2
                 .CreatePanel(
                     container: parent,
                     position: LuiPosition.MiddleCenter,
                     offset: new(-450, -275, 450, 275),
-                    color: palette.Background
-                )
-                .SetMaterial(BlurAsset);
+                    color: backgroundColor
+                );
 
+            if (userData.ColorPaletteOption == ColorPaletteOptions.Light)
+            {
+                backgroundColor = palette.BackgroundBase + " 0.4";
+            }
+            else
+            {
+                backgroundColor = palette.BackgroundBase + " 0.9";
+            }
+
+            if (userData.BackgroundOption == BackgroundOptions.Blur)
+            {
+                outline.SetMaterial(BlurAsset);
+                container.SetMaterial(BlurAsset);
+
+                container = cui.v2
+                    .CreatePanel(
+                        container: parent,
+                        position: LuiPosition.MiddleCenter,
+                        offset: new(-450, -275, 450, 275),
+                        color: backgroundColor
+                    );
+            }
+            else if (userData.BackgroundOption == BackgroundOptions.Translucent)
+            {
+                outline.SetMaterial(BlurAsset);
+                container.SetMaterial(BlurAsset);
+
+
+                container = cui.v2
+                    .CreatePanel(
+                        container: parent,
+                        position: LuiPosition.MiddleCenter,
+                        offset: new(-450, -275, 450, 275),
+                        color: backgroundColor
+                    );
+            }
+
+            var headerHeight = 0.08f * heightScale;
+            var headerStartY = 1 - headerHeight;
             var header = cui.v2
                 .CreatePanel(
-                    container: main,
-                    position: new(0, .92f, 1, 1),
+                    container: container,
+                    position: new(0, headerStartY, 1, 1),
                     offset: LuiOffset.None,
-                    color: palette.Surface
+                    color: palette.Primary
                 );
 
             cui.v2.CreateText(
                     container: header,
                     position: new(.015f, 0, .5f, 1),
                     offset: new(1, 1, 0, 0),
-                    color: palette.OnSurface,
+                    color: palette.OnPrimary,
                     fontSize: fontSize.Header,
-                    text: title,
+                    text: headerText,
                     alignment: TextAnchor.MiddleLeft
                 )
                 .SetTextFont(fontType.Header);
@@ -176,43 +228,80 @@ public partial class AutoBuildSnapshot
                     color: palette.Transparent
                 );
 
-            var closeButton = cui.v2
-                .CreateButton(
-                    container: headerButtons,
-                    position: new(.85f, 0, 1, 1),
-                    offset: new(0, 0, 0, 0),
-                    command: CommandPrefix + nameof(CommandMenuClose),
-                    color: palette.Button
+            var closeButtonWidth = 0.15f * widthScale;
+            var closeButtonX = 1 - closeButtonWidth;
+            CreateButton(cui, player, userData,
+                container: headerButtons,
+                position: new(closeButtonX, 0, 1, 1),
+                offset: LuiOffset.None,
+                textKey: LangKeys.menu_close,
+                commandName: nameof(CommandMenuClose)
+            );
+
+            var optionsButtonWidth = 0.2f * widthScale;
+            var optionsButtonX = closeButtonX - optionsButtonWidth;
+            CreateButton(cui, player, userData,
+                container: headerButtons,
+                position: new(optionsButtonX, 0, closeButtonX, 1),
+                offset: LuiOffset.None,
+                textKey: LangKeys.menu_options,
+                commandName: nameof(CommandMenuSettings)
+            );
+
+            var content = cui.v2
+                .CreatePanel(
+                    container: container,
+                    position: new(0, 0, 1, headerStartY),
+                    offset: LuiOffset.None,
+                    color: palette.Transparent
                 );
 
-            cui.v2.CreateText(
-                    container: closeButton,
-                    position: new(0, 0, 1, 1),
-                    offset: new(0, 0, 0, 0),
-                    color: palette.OnSurface,
-                    fontSize: fontSize.Body,
-                    text: btnCloseText,
-                    alignment: TextAnchor.MiddleCenter
-                );
+            cui.v2
+                .CreateText(
+                    container: content,
+                    position: LuiPosition.Full,
+                    offset: new(0, 1, 0, 0),
+                    fontSize: 8,
+                    color: palette.Watermark,
+                    text: $"AutoBuildSnapshot v{_instance.Version} by hizenxyz",
+                    alignment: TextAnchor.LowerCenter)
+                .SetTextFont(CUI.Handler.FontTypes.DroidSansMono);
+        }
+
+        private static void CreateButton(
+            CUI cui,
+            BasePlayer player,
+            UserPreferenceData userData,
+            LUI.LuiContainer container,
+            LuiPosition position,
+            LuiOffset offset,
+            LangKeys textKey,
+            string commandName)
+        {
+            var buttonText = Localizer.Text(textKey, player);
+            if (!commandName.StartsWith(CommandPrefix))
+            {
+                commandName = CommandPrefix + commandName;
+            }
 
             var userPrefButton = cui.v2
                 .CreateButton(
-                    container: headerButtons,
-                    position: new(.7f, 0, .85f, 1),
-                    offset: new(-5, 0, -5, 0),
-                    command: CommandPrefix + nameof(CommandMenuSettings),
-                    color: palette.Button
+                    container: container,
+                    position: position,
+                    offset: offset,
+                    command: commandName,
+                    color: userData.ColorPalette.Primary
                 );
 
             cui.v2.CreateText(
                     container: userPrefButton,
                     position: new(0, 0, 1, 1),
                     offset: new(0, 0, 0, 0),
-                    color: palette.OnSurface,
-                    fontSize: fontSize.Body,
-                    text: btnUserPrefText,
-                    alignment: TextAnchor.MiddleCenter
-                );
+                    color: userData.ColorPalette.OnPrimary,
+                    fontSize: userData.FontSize.Body,
+                    text: buttonText,
+                    alignment: TextAnchor.MiddleCenter)
+                .SetTextFont(userData.FontType.Body);
         }
 
         /// <summary>
@@ -222,15 +311,27 @@ public partial class AutoBuildSnapshot
         public static void ShowPreference(BasePlayer player)
         {
             var title = Localizer.Text(LangKeys.menu_options_title, player);
-            var fieldThemeText = Localizer.Text(LangKeys.menu_options_theme, player);
+            var fieldThemeText = Localizer.Text(LangKeys.menu_options_mode, player);
             var userData = UserPreference.For(player);
             var fields = new Dictionary<string, ModalModule.Modal.Field>
             {
                 [nameof(UserPreferenceData.ColorPalette)] = ModalModule.Modal.EnumField.MakeEnum(
                     displayName: fieldThemeText,
-                    options: ColorPalettes.Options,
+                    options: ColorPalettes.ColorOptions,
                     required: true,
                     @default: (int)userData.ColorPaletteOption),
+
+                [nameof(UserPreferenceData.ContrastOption)] = ModalModule.Modal.EnumField.MakeEnum(
+                    displayName: Localizer.Text(LangKeys.menu_options_contrast, player),
+                    options: ColorPalettes.ContrastOptions,
+                    required: true,
+                    @default: (int)userData.ContrastOption),
+
+                [nameof(UserPreferenceData.BackgroundOption)] = ModalModule.Modal.EnumField.MakeEnum(
+                    displayName: Localizer.Text(LangKeys.menu_options_background, player),
+                    options: Backgrounds.Options,
+                    required: true,
+                    @default: (int)userData.BackgroundOption),
 
                 [nameof(UserPreferenceData.FontSize)] = ModalModule.Modal.EnumField.MakeEnum(
                     displayName: Localizer.Text(LangKeys.menu_options_fontsize, player),

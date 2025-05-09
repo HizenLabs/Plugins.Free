@@ -31,41 +31,6 @@ public partial class AutoBuildSnapshot
     private static class Localizer
     {
         /// <summary>
-        /// Registers the default localized messages.
-        /// </summary>
-        public static void RegisterMessages(CarbonPlugin plugin)
-        {
-            plugin.lang.RegisterMessages(new()
-            {
-                [nameof(LangKeys.error_no_permission)] = "You do not have permission to use this command.",
-                [nameof(LangKeys.error_save_fail)] = "Failed to save base {0} at position {1}: {2}",
-                [nameof(LangKeys.error_save_baserecording_invalid)] = "BaseRecording is not valid.",
-                [nameof(LangKeys.error_save_no_entities_found)] = "No entities found for saving.",
-                [nameof(LangKeys.message_init_recordings)] = "Initialize found {0} building(s) to track",
-                [nameof(LangKeys.message_save_begin)] = "Begin saving base {0} at position {1}...",
-                [nameof(LangKeys.error_save_file_exists)] = "The save file at '{0}' already exists.",
-                [nameof(LangKeys.error_recording_locked)] = "The base is currently locked for processing. Please try again later.",
-                [nameof(LangKeys.error_must_face_target)] = "Must be facing building and be within {0} meters.",
-                [nameof(LangKeys.error_building_priv_missing)] = "Entity is not part of building privilege.",
-                [nameof(LangKeys.error_building_null)] = "Could not find building (check returned null).",
-                [nameof(LangKeys.error_command_args_length)] = "Expected {0} argument(s), but got {1} arguments.",
-                [nameof(LangKeys.error_command_arg_parse_fail)] = "The argument at index '{0}' could not be parsed as '{1}', value: '{2}'.",
-                [nameof(LangKeys.error_recording_not_found)] = "Could not find recording with id '{0}'.",
-                [nameof(LangKeys.error_backup_failed)] = "Backup command for base {0} failed, reason unknown.",
-                [nameof(LangKeys.error_backup_failed_exception)] = "Backup command for base {0} failed, reason: {1}",
-                [nameof(LangKeys.message_backup_success)] = "Backup command for base {0} completed in: {1}",
-                [nameof(LangKeys.menu_title)] = "Auto Build Snapshot",
-                [nameof(LangKeys.menu_close)] = "Close",
-                [nameof(LangKeys.menu_options)] = "Options",
-                [nameof(LangKeys.menu_options_title)] = "Menu Options",
-                [nameof(LangKeys.menu_options_theme)] = "Theme",
-                [nameof(LangKeys.menu_options_fontsize)] = "Font Size",
-                [nameof(LangKeys.menu_options_fonttype)] = "Font Type",
-            },
-            plugin, "en");
-        }
-
-        /// <summary>
         /// Gets the localized message format for the specified key and player.
         /// </summary>
         /// <param name="player">The player to get the message for.</param>
@@ -105,29 +70,43 @@ public partial class AutoBuildSnapshot
 
             return string.Format(format, args);
         }
-    }
 
-    /// <summary>
-    /// Represents a localized exception.
-    /// </summary>
-    private class LocalizedException : Exception
-    {
         /// <summary>
-        /// Initializes a new instance of the <see cref="LocalizedException"/> class with the specified language key and player.
+        /// Registers the default localized messages.
         /// </summary>
-        /// <param name="langKey">The language key for the exception message.</param>
-        /// <param name="player">The player to send the message to (optional).</param>
-        /// <param name="args">The arguments to format the message with.</param>
-        public LocalizedException(LangKeys langKey, BasePlayer player = null, params object[] args)
-            : base(Localizer.Text(langKey, player, args))
+        public static void RegisterMessages(CarbonPlugin plugin)
         {
-            LangKey = langKey;
+            plugin.lang.RegisterMessages(new()
+            {
+                [nameof(LangKeys.error_no_permission)] = "You do not have permission to use this command.",
+                [nameof(LangKeys.error_save_fail)] = "Failed to save base {0} at position {1}: {2}",
+                [nameof(LangKeys.error_save_baserecording_invalid)] = "BaseRecording is not valid.",
+                [nameof(LangKeys.error_save_no_entities_found)] = "No entities found for saving.",
+                [nameof(LangKeys.message_init_recordings)] = "Initialize found {0} building(s) to track",
+                [nameof(LangKeys.message_save_begin)] = "Begin saving base {0} at position {1}...",
+                [nameof(LangKeys.error_save_file_exists)] = "The save file at '{0}' already exists.",
+                [nameof(LangKeys.error_recording_locked)] = "The base is currently locked for processing. Please try again later.",
+                [nameof(LangKeys.error_must_face_target)] = "Must be facing building and be within {0} meters.",
+                [nameof(LangKeys.error_building_priv_missing)] = "Entity is not part of building privilege.",
+                [nameof(LangKeys.error_building_null)] = "Could not find building (check returned null).",
+                [nameof(LangKeys.error_command_args_length)] = "Expected {0} argument(s), but got {1} arguments.",
+                [nameof(LangKeys.error_command_arg_parse_fail)] = "The argument at index '{0}' could not be parsed as '{1}', value: '{2}'.",
+                [nameof(LangKeys.error_recording_not_found)] = "Could not find recording with id '{0}'.",
+                [nameof(LangKeys.error_backup_failed)] = "Backup command for base {0} failed, reason unknown.",
+                [nameof(LangKeys.error_backup_failed_exception)] = "Backup command for base {0} failed, reason: {1}",
+                [nameof(LangKeys.message_backup_success)] = "Backup command for base {0} completed in: {1}",
+                [nameof(LangKeys.menu_title)] = "Auto Build Snapshot",
+                [nameof(LangKeys.menu_close)] = "Close",
+                [nameof(LangKeys.menu_options)] = "Options",
+                [nameof(LangKeys.menu_options_title)] = "Menu Options",
+                [nameof(LangKeys.menu_options_mode)] = "Mode",
+                [nameof(LangKeys.menu_options_contrast)] = "Contrast",
+                [nameof(LangKeys.menu_options_fontsize)] = "Font Size",
+                [nameof(LangKeys.menu_options_fonttype)] = "Font Type",
+                [nameof(LangKeys.menu_options_background)] = "Background",
+            },
+            plugin, "en");
         }
-
-        /// <summary>
-        /// Gets the language key used for the localized exception message.
-        /// </summary>
-        public LangKeys LangKey { get; }
     }
 
     private enum LangKeys
@@ -238,9 +217,19 @@ public partial class AutoBuildSnapshot
         menu_options_title,
 
         /// <summary>
-        /// Theme
+        /// Mode
         /// </summary>
-        menu_options_theme,
+        menu_options_mode,
+
+        /// <summary>
+        /// Contrast
+        /// </summary>
+        menu_options_contrast,
+
+        /// <summary>
+        /// Background Transparency
+        /// </summary>
+        menu_options_background,
 
         /// <summary>
         /// Font Size
@@ -251,6 +240,29 @@ public partial class AutoBuildSnapshot
         /// Font Type
         /// </summary>
         menu_options_fonttype
+    }
+
+    /// <summary>
+    /// Represents a localized exception.
+    /// </summary>
+    private class LocalizedException : Exception
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LocalizedException"/> class with the specified language key and player.
+        /// </summary>
+        /// <param name="langKey">The language key for the exception message.</param>
+        /// <param name="player">The player to send the message to (optional).</param>
+        /// <param name="args">The arguments to format the message with.</param>
+        public LocalizedException(LangKeys langKey, BasePlayer player = null, params object[] args)
+            : base(Localizer.Text(langKey, player, args))
+        {
+            LangKey = langKey;
+        }
+
+        /// <summary>
+        /// Gets the language key used for the localized exception message.
+        /// </summary>
+        public LangKeys LangKey { get; }
     }
 
     #endregion
@@ -789,74 +801,161 @@ public partial class AutoBuildSnapshot
         public static void Update(BasePlayer player, ModalModule.Modal modal)
         {
             var colorPalette = modal.Get<ColorPaletteOptions>(nameof(UserPreferenceData.ColorPalette));
+            var contrast = modal.Get<ContrastOptions>(nameof(UserPreferenceData.ContrastOption));
             var fontSize = modal.Get<FontSizeOptions>(nameof(UserPreferenceData.FontSize));
             var fontType = modal.Get<FontTypeOptions>(nameof(UserPreferenceData.FontType));
+            var background = modal.Get<BackgroundOptions>(nameof(UserPreferenceData.BackgroundOption));
 
             var userPreference = For(player);
             userPreference.ColorPaletteOption = colorPalette;
+            userPreference.ContrastOption = contrast;
             userPreference.FontSizeOption = fontSize;
             userPreference.FontTypeOption = fontType;
+            userPreference.BackgroundOption = background;
 
             Save(player, userPreference);
         }
     }
 
-
     private class UserPreferenceData
     {
+        /// <summary>
+        /// The color palette used for the UI.
+        /// </summary>
         [JsonIgnore]
         public ColorPalette ColorPalette { get; private set; }
 
+        /// <summary>
+        /// The color palette option selected by the user.
+        /// </summary>
         public ColorPaletteOptions ColorPaletteOption
         {
-            get => _colorPaletteOptions;
-            set => SetColorPalette(value);
+            get => _colorPaletteOption;
+            set => SetColorPalette(value, ContrastOption);
         }
-        private ColorPaletteOptions _colorPaletteOptions;
+        private ColorPaletteOptions _colorPaletteOption;
 
+        /// <summary>
+        /// The contrast option selected by the user.
+        /// </summary>
+        public ContrastOptions ContrastOption
+        {
+            get => _contrastOption;
+            set => SetColorPalette(ColorPaletteOption, value);
+        }
+        private ContrastOptions _contrastOption;
+
+        /// <summary>
+        /// The font size used for the UI.
+        /// </summary>
         [JsonIgnore]
         public FontSize FontSize { get; private set; }
 
+        /// <summary>
+        /// The font size option selected by the user.
+        /// </summary>
         public FontSizeOptions FontSizeOption
         {
-            get => _fontSizeOptions;
+            get => _fontSizeOption;
             set => SetFontSize(value);
         }
-        private FontSizeOptions _fontSizeOptions;
+        private FontSizeOptions _fontSizeOption;
 
+        /// <summary>
+        /// The font type used for the UI.
+        /// </summary>
         [JsonIgnore]
         public FontType FontType { get; private set; }
 
+        /// <summary>
+        /// The font type option selected by the user.
+        /// </summary>
         public FontTypeOptions FontTypeOption
         {
-            get => _fontTypeOptions;
+            get => _fontTypeOption;
             set => SetFontType(value);
         }
-        private FontTypeOptions _fontTypeOptions;
+        private FontTypeOptions _fontTypeOption;
 
-        public UserPreferenceData() : this(ColorPaletteOptions.Light, FontSizeOptions.Medium, FontTypeOptions.Roboto)
+        /// <summary>
+        /// The background option selected by the user.
+        /// </summary>
+        public BackgroundOptions BackgroundOption { get; set; }
+
+        /// <summary>
+        /// Default constructor for the user preference data.
+        /// </summary>
+        public UserPreferenceData() : this(
+            ColorPaletteOptions.Dark, 
+            ContrastOptions.Medium, 
+            FontSizeOptions.Medium, 
+            FontTypeOptions.Roboto,
+            BackgroundOptions.Blur)
         {
         }
 
-        public UserPreferenceData(ColorPaletteOptions colorPalette, FontSizeOptions fontSize, FontTypeOptions fontType)
+        /// <summary>
+        /// Constructor for the user preference data with specified options.
+        /// </summary>
+        /// <param name="colorPalette">The color palette option.</param>
+        /// <param name="contrast">The contrast option.</param>
+        /// <param name="fontSize">The font size option.</param>
+        /// <param name="fontType">The font type option.</param>
+        /// <param name="background">The background option.</param>
+        public UserPreferenceData(
+            ColorPaletteOptions colorPalette, 
+            ContrastOptions contrast, 
+            FontSizeOptions fontSize, 
+            FontTypeOptions fontType,
+            BackgroundOptions background)
         {
             ColorPaletteOption = colorPalette;
+            ContrastOption = contrast;
             FontSizeOption = fontSize;
             FontTypeOption = fontType;
+            BackgroundOption = background;
         }
 
-        private void SetColorPalette(ColorPaletteOptions option)
+        /// <summary>
+        /// Sets the color palette based on the selected options.
+        /// </summary>
+        /// <param name="colorOption">The color palette option.</param>
+        /// <param name="contrastOption">The contrast option.</param>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when an invalid option is provided.</exception>
+        private void SetColorPalette(ColorPaletteOptions colorOption, ContrastOptions contrastOption)
         {
-            ColorPalette = option switch
+            if (colorOption == ColorPaletteOption && contrastOption == ContrastOption)
             {
-                ColorPaletteOptions.Light => ColorPalettes.Light,
-                ColorPaletteOptions.Dark => ColorPalettes.Dark,
-                ColorPaletteOptions.HighContrast => ColorPalettes.HighContrast,
-                _ => throw new ArgumentOutOfRangeException(nameof(option), option, null)
+                return;
+            }
+
+            ColorPalette = colorOption switch
+            {
+                ColorPaletteOptions.Light => contrastOption switch
+                {
+                    ContrastOptions.Low => ColorPalettes.Light.LowContrast,
+                    ContrastOptions.Medium => ColorPalettes.Light.MediumContrast,
+                    ContrastOptions.High => ColorPalettes.Light.HighContrast,
+                    _ => throw new ArgumentOutOfRangeException(nameof(contrastOption), contrastOption, null)
+                },
+                ColorPaletteOptions.Dark => contrastOption switch
+                {
+                    ContrastOptions.Low => ColorPalettes.Dark.LowContrast,
+                    ContrastOptions.Medium => ColorPalettes.Dark.MediumContrast,
+                    ContrastOptions.High => ColorPalettes.Dark.HighContrast,
+                    _ => throw new ArgumentOutOfRangeException(nameof(contrastOption), contrastOption, null)
+                },
+                _ => throw new ArgumentOutOfRangeException(nameof(colorOption), colorOption, null)
             };
-            _colorPaletteOptions = option;
+            _colorPaletteOption = colorOption;
+            _contrastOption = contrastOption;
         }
 
+        /// <summary>
+        /// Sets the font size based on the selected option.
+        /// </summary>
+        /// <param name="option">The font size option.</param>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when an invalid option is provided.</exception>
         private void SetFontSize(FontSizeOptions option)
         {
             FontSize = option switch
@@ -866,17 +965,26 @@ public partial class AutoBuildSnapshot
                 FontSizeOptions.Large => FontSizes.Large,
                 _ => throw new ArgumentOutOfRangeException(nameof(option), option, null)
             };
-            _fontSizeOptions = option;
+            _fontSizeOption = option;
         }
 
+        /// <summary>
+        /// Sets the font type based on the selected option.
+        /// </summary>
+        /// <param name="option">The font type option.</param>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when an invalid option is provided.</exception>
         private void SetFontType(FontTypeOptions option)
         {
             FontType = option switch
             {
                 FontTypeOptions.Roboto => FontTypes.Roboto,
+                FontTypeOptions.RobotoBold => FontTypes.RobotoBold,
+                FontTypeOptions.DroidSans => FontTypes.DroidSans,
+                FontTypeOptions.NotoSans => FontTypes.NotoSans,
+                FontTypeOptions.PermanentMarker => FontTypes.PermanentMarker,
                 _ => throw new ArgumentOutOfRangeException(nameof(option), option, null)
             };
-            _fontTypeOptions = option;
+            _fontTypeOption = option;
         }
     }
 
@@ -884,7 +992,165 @@ public partial class AutoBuildSnapshot
     {
         Light,
         Dark,
-        HighContrast
+    }
+
+    public enum ContrastOptions
+    {
+        Low,
+        Medium,
+        High
+    }
+
+    public static class ColorPalettes
+    {
+        public static string[] ColorOptions { get; } = Enum
+            .GetValues(typeof(ColorPaletteOptions))
+            .Cast<ColorPaletteOptions>()
+            .Select(option => option.ToString())
+            .ToArray();
+
+        public static string[] ContrastOptions { get; } = Enum
+            .GetValues(typeof(ContrastOptions))
+            .Cast<ContrastOptions>()
+            .Select(option => option.ToString())
+            .ToArray();
+
+        public static class Light
+        {
+            public static readonly ColorPalette LowContrast = new()
+            {
+                Primary = "0.850 0.400 0.300 1.0",
+                OnPrimary = "1.0 0.998 0.998 1.0",
+                Secondary = "0.612 0.400 0.365 1.0",
+                OnSecondary = "1.0 1.0 1.0 1.0",
+                Tertiary = "0.620 0.671 0.286 1.0",
+                OnTertiary = "0.0 0.0 0.0 1.0",
+                BackgroundBase = "1.0 1.0 1.0",
+                OnBackground = "0.0 0.0 0.0 0.87",
+                Surface = "1.0 1.0 1.0",
+                OnSurface = "0.0 0.0 0.0 0.87",
+                Button = "0.850 0.400 0.300 1.0",
+                OnButton = "1.0 1.0 1.0 1.0",
+                HighlightItem = "0.950 0.900 0.875 1.0",
+                OnHighlightItem = "0.0 0.0 0.0 1.0",
+                Watermark = "0.0 0.0 0.0 0.4",
+            };
+            public static readonly ColorPalette MediumContrast = new()
+            {
+                Primary = "0.800 0.300 0.200 1.0",
+                OnPrimary = "1.0 1.0 1.0 1.0",
+                Secondary = "0.612 0.400 0.365 1.0",
+                OnSecondary = "1.0 1.0 1.0 1.0",
+                Tertiary = "0.620 0.671 0.286 1.0",
+                OnTertiary = "0.0 0.0 0.0 1.0",
+                BackgroundBase = "0.960 0.960 0.960",
+                OnBackground = "0.0 0.0 0.0 1.0",
+                Surface = "0.980 0.980 0.980",
+                OnSurface = "0.0 0.0 0.0 1.0",
+                Button = "0.800 0.300 0.200 1.0",
+                OnButton = "1.0 1.0 1.0 1.0",
+                HighlightItem = "0.900 0.700 0.600 1.0",
+                OnHighlightItem = "0.0 0.0 0.0 1.0",
+                Watermark = "0.0 0.0 0.0 0.4",
+            };
+            public static readonly ColorPalette HighContrast = new()
+            {
+                Primary = "0.600 0.100 0.000 1.0",
+                OnPrimary = "1.0 1.0 1.0 1.0",
+                Secondary = "0.612 0.400 0.365 1.0",
+                OnSecondary = "1.0 1.0 1.0 1.0",
+                Tertiary = "0.620 0.671 0.286 1.0",
+                OnTertiary = "0.0 0.0 0.0 1.0",
+                BackgroundBase = "0.920 0.920 0.920",
+                OnBackground = "0.0 0.0 0.0 1.0",
+                Surface = "0.960 0.960 0.960",
+                OnSurface = "0.0 0.0 0.0 1.0",
+                Button = "0.600 0.100 0.000 1.0",
+                OnButton = "1.0 1.0 1.0 1.0",
+                HighlightItem = "1.000 0.800 0.700 1.0",
+                OnHighlightItem = "0.0 0.0 0.0 1.0",
+                Watermark = "0.0 0.0 0.0 0.4",
+            };
+        }
+        public static class Dark
+        {
+            public static readonly ColorPalette LowContrast = new()
+            {
+                Primary = "0.950 0.600 0.500 1.0",
+                OnPrimary = "0.0 0.0 0.0 1.0",
+                Secondary = "0.765 0.639 0.616 1.0",
+                OnSecondary = "0.0 0.0 0.0 1.0",
+                Tertiary = "0.769 0.800 0.569 1.0",
+                OnTertiary = "0.0 0.0 0.0 1.0",
+                BackgroundBase = "0.071 0.071 0.071",
+                OnBackground = "1.0 1.0 1.0 0.87",
+                Surface = "0.071 0.071 0.071",
+                OnSurface = "1.0 1.0 1.0 0.87",
+                Button = "0.950 0.600 0.500 1.0",
+                OnButton = "0.0 0.0 0.0 1.0",
+                HighlightItem = "0.500 0.200 0.150 1.0",
+                OnHighlightItem = "1.0 1.0 1.0 1.0",
+                Watermark = "1.0 1.0 1.0 0.1",
+            };
+            public static readonly ColorPalette MediumContrast = new()
+            {
+                Primary = "0.900 0.400 0.300 1.0",
+                OnPrimary = "0.0 0.0 0.0 1.0",
+                Secondary = "0.765 0.639 0.616 1.0",
+                OnSecondary = "0.0 0.0 0.0 1.0",
+                Tertiary = "0.769 0.800 0.569 1.0",
+                OnTertiary = "0.0 0.0 0.0 1.0",
+                BackgroundBase = "0.050 0.050 0.050",
+                OnBackground = "1.0 1.0 1.0 1.0",
+                Surface = "0.090 0.090 0.090",
+                OnSurface = "1.0 1.0 1.0 1.0",
+                Button = "0.900 0.400 0.300 1.0",
+                OnButton = "0.0 0.0 0.0 1.0",
+                HighlightItem = "0.600 0.250 0.200 1.0",
+                OnHighlightItem = "1.0 1.0 1.0 1.0",
+                Watermark = "1.0 1.0 1.0 0.1",
+            };
+            public static readonly ColorPalette HighContrast = new()
+            {
+                Primary = "1.000 0.200 0.000 1.0",
+                OnPrimary = "0.0 0.0 0.0 1.0",
+                Secondary = "0.765 0.639 0.616 1.0",
+                OnSecondary = "0.0 0.0 0.0 1.0",
+                Tertiary = "0.769 0.800 0.569 1.0",
+                OnTertiary = "0.0 0.0 0.0 1.0",
+                BackgroundBase = "0.000 0.000 0.000",
+                OnBackground = "1.0 1.0 1.0 1.0",
+                Surface = "0.050 0.050 0.050",
+                OnSurface = "1.0 1.0 1.0 1.0",
+                Button = "1.000 0.200 0.000 1.0",
+                OnButton = "0.0 0.0 0.0 1.0",
+                HighlightItem = "0.700 0.300 0.250 1.0",
+                OnHighlightItem = "1.0 1.0 1.0 1.0",
+                Watermark = "1.0 1.0 1.0 0.1",
+            };
+        }
+    }
+
+    public class ColorPalette
+    {
+        public required string Primary { get; init; }
+        public required string OnPrimary { get; init; }
+        public required string Secondary { get; init; }
+        public required string OnSecondary { get; init; }
+        public required string Tertiary { get; init; }
+        public required string OnTertiary { get; init; }
+        public required string BackgroundBase { get; init; }
+        public required string OnBackground { get; init; }
+        public required string Surface { get; init; }
+        public required string OnSurface { get; init; }
+        public required string Button { get; init; }
+        public required string OnButton { get; init; }
+        public required string HighlightItem { get; init; }
+        public required string OnHighlightItem { get; init; }
+        public required string Watermark { get; init; }
+        public string Blur => "0 0 0 0.2";
+        public string Transparent => "0 0 0 0.01";
+        public string Outline => "0.0 0.0 0.0 1.0";
     }
 
     public enum FontSizeOptions
@@ -892,113 +1158,6 @@ public partial class AutoBuildSnapshot
         Small,
         Medium,
         Large
-    }
-
-    public enum FontTypeOptions
-    {
-        Roboto,
-    }
-
-    public static class ColorPalettes
-    {
-        public static string[] Options { get; } = Enum
-            .GetValues(typeof(ColorPaletteOptions))
-            .Cast<ColorPaletteOptions>()
-            .Select(option => option.ToString())
-            .ToArray();
-
-        public static readonly ColorPalette Light = new()
-        {
-            Primary = "0.55 0.40 0.85 1.0",
-            OnPrimary = "1.0 1.0 1.0 1.0",
-            Background = "0 0 0 0.2",
-            OnBackground = "0.90 0.88 0.90 1.0",
-            Surface = "0.90 0.90 0.92 0.97",
-            OnSurface = "0.12 0.12 0.14 1.0",
-            SurfaceRed = "0.95 0.30 0.30 1.0",
-            OnSurfaceRed = "1.0 1.0 1.0 1.0",
-            SurfaceGreen = "0.30 0.80 0.35 1.0",
-            OnSurfaceGreen = "1.0 1.0 1.0 1.0",
-            SurfaceBlue = "0.35 0.65 0.95 1.0",
-            OnSurfaceBlue = "1.0 1.0 1.0 1.0",
-            SurfaceAmber = "0.95 0.70 0.20 1.0",
-            OnSurfaceAmber = "0.1 0.1 0.1 1.0",
-            Button = "0.70 0.60 0.95 1.0",
-            OnButton = "0.1 0.1 0.1 1.0",
-            HighlightItem = "0.70 0.60 0.95 0.3",
-            OnHighlightItem = "0.30 0.20 0.50 1.0",
-            Outline = "0 0 0 1"
-        };
-
-        public static readonly ColorPalette Dark = new()
-        {
-            Primary = "0.85 0.76 1.0 1.0",
-            OnPrimary = "0.18 0.10 0.40 1.0",
-            Background = "0 0 0 0.2",
-            OnBackground = "0.90 0.88 0.90 1.0",
-            Surface = "0.12 0.12 0.14 0.97",
-            OnSurface = "0.92 0.90 0.95 1.0",
-            SurfaceRed = "0.90 0.25 0.25 1.0",
-            OnSurfaceRed = "1.0 1.0 1.0 1.0",
-            SurfaceGreen = "0.25 0.85 0.30 1.0",
-            OnSurfaceGreen = "0.1 0.1 0.1 1.0",
-            SurfaceBlue = "0.30 0.70 0.95 1.0",
-            OnSurfaceBlue = "0.1 0.1 0.1 1.0",
-            SurfaceAmber = "0.95 0.75 0.20 1.0",
-            OnSurfaceAmber = "0.1 0.1 0.1 1.0",
-            Button = "0.9 0.9 0.9 0.3",
-            OnButton = "0.1 0.1 0.1 1.0",
-            HighlightItem = "0.60 0.50 0.90 0.8",
-            OnHighlightItem = "1.0 1.0 1.0 1.0",
-            Outline = "0 0 0 1",
-        };
-
-        public static readonly ColorPalette HighContrast = new()
-        {
-            Primary = "1.0 1.0 1.0 1.0",
-            OnPrimary = "0.0 0.0 0.0 1.0",
-            Background = "0.0 0.0 0.0 1.0",
-            OnBackground = "1.0 1.0 1.0 1.0",
-            Surface = "0.1 0.1 0.1 1.0",
-            OnSurface = "1.0 1.0 1.0 1.0",
-            SurfaceRed = "1.0 0.0 0.0 1.0",
-            OnSurfaceRed = "1.0 1.0 1.0 1.0",
-            SurfaceGreen = "0.0 1.0 0.0 1.0",
-            OnSurfaceGreen = "0.0 0.0 0.0 1.0",
-            SurfaceBlue = "0.0 0.5 1.0 1.0",
-            OnSurfaceBlue = "1.0 1.0 1.0 1.0",
-            SurfaceAmber = "1.0 0.8 0.0 1.0",
-            OnSurfaceAmber = "0.0 0.0 0.0 1.0",
-            Button = "0.8 0.8 0.0 1.0",
-            OnButton = "0.0 0.0 0.0 1.0",
-            HighlightItem = "0.8 0.8 0.0 1.0",
-            OnHighlightItem = "0.0 0.0 0.0 1.0",
-            Outline = "0 0 0 1"
-        };
-    }
-
-    public class ColorPalette
-    {
-        public required string Primary { get; init; }
-        public required string OnPrimary { get; init; }
-        public required string Background { get; init; }
-        public required string OnBackground { get; init; }
-        public required string Surface { get; init; }
-        public required string OnSurface { get; init; }
-        public required string SurfaceRed { get; init; }
-        public required string OnSurfaceRed { get; init; }
-        public required string SurfaceGreen { get; init; }
-        public required string OnSurfaceGreen { get; init; }
-        public required string SurfaceBlue { get; init; }
-        public required string OnSurfaceBlue { get; init; }
-        public required string SurfaceAmber { get; init; }
-        public required string OnSurfaceAmber { get; init; }
-        public required string Button { get; init; }
-        public required string OnButton { get; init; }
-        public required string HighlightItem { get; init; }
-        public required string OnHighlightItem { get; init; }
-        public required string Outline { get; init; }
-        public string Transparent => "0 0 0 0.0";
     }
 
     private static class FontSizes
@@ -1011,20 +1170,20 @@ public partial class AutoBuildSnapshot
 
         public static readonly FontSize Small = new()
         {
-            Header = 12,
-            Body = 10,
+            Header = 14,
+            Body = 12,
         };
 
         public static readonly FontSize Medium = new()
         {
-            Header = 16,
-            Body = 14,
+            Header = 18,
+            Body = 16,
         };
 
         public static readonly FontSize Large = new()
         {
-            Header = 20,
-            Body = 18,
+            Header = 22,
+            Body = 20,
         };
     }
 
@@ -1032,6 +1191,15 @@ public partial class AutoBuildSnapshot
     {
         public required int Header { get; init; }
         public required int Body { get; init; }
+    }
+
+    public enum FontTypeOptions
+    {
+        Roboto,
+        RobotoBold,
+        DroidSans,
+        NotoSans,
+        PermanentMarker,
     }
 
     private static class FontTypes
@@ -1044,8 +1212,32 @@ public partial class AutoBuildSnapshot
 
         public static readonly FontType Roboto = new()
         {
-            Header = CUI.Handler.FontTypes.RobotoCondensedBold,
+            Header = CUI.Handler.FontTypes.RobotoCondensedRegular,
             Body = CUI.Handler.FontTypes.RobotoCondensedRegular,
+        };
+
+        public static readonly FontType RobotoBold = new()
+        {
+            Header = CUI.Handler.FontTypes.RobotoCondensedBold,
+            Body = CUI.Handler.FontTypes.RobotoCondensedBold,
+        };
+
+        public static readonly FontType DroidSans = new()
+        {
+            Header = CUI.Handler.FontTypes.DroidSansMono,
+            Body = CUI.Handler.FontTypes.DroidSansMono,
+        };
+
+        public static readonly FontType NotoSans = new()
+        {
+            Header = CUI.Handler.FontTypes.NotoSansArabicBold,
+            Body = CUI.Handler.FontTypes.NotoSansArabicBold,
+        };
+
+        public static readonly FontType PermanentMarker = new()
+        {
+            Header = CUI.Handler.FontTypes.PermanentMarker,
+            Body = CUI.Handler.FontTypes.PermanentMarker,
         };
     }
 
@@ -1053,6 +1245,22 @@ public partial class AutoBuildSnapshot
     {
         public required CUI.Handler.FontTypes Header { get; init; }
         public required CUI.Handler.FontTypes Body { get; init; }
+    }
+
+    private enum BackgroundOptions
+    {
+        Solid,
+        Translucent,
+        Blur,
+    }
+
+    private static class Backgrounds
+    {
+        public static string[] Options { get; } = Enum
+            .GetValues(typeof(BackgroundOptions))
+            .Cast<BackgroundOptions>()
+            .Select(option => option.ToString())
+            .ToArray();
     }
 
     #endregion
