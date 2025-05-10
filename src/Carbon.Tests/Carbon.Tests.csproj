@@ -705,13 +705,13 @@
       <Project>{0F9B4405-B1ED-4025-B95B-EA8F9D9D5160}</Project>
       <Name>ObjectSerializer</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Carbon.Extensions\UserPreference\UserPreference.csproj">
+      <Project>{694ca1e3-ed7e-4be8-a849-6e9d74b5dfea}</Project>
+      <Name>UserPreference</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Carbon.Plugins\Carbon.Plugins.csproj">
       <Project>{fd83841b-e3c7-4982-87e7-39184b1bde98}</Project>
       <Name>Carbon.Plugins</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\UserPreference\UserPreference.csproj">
-      <Project>{694ca1e3-ed7e-4be8-a849-6e9d74b5dfea}</Project>
-      <Name>UserPreference</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

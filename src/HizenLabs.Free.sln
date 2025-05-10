@@ -33,7 +33,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{6A89C909
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ObjectSerializer", "Carbon.Extensions\ObjectSerializer\ObjectSerializer.csproj", "{0F9B4405-B1ED-4025-B95B-EA8F9D9D5160}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserPreference", "UserPreference\UserPreference.csproj", "{694CA1E3-ED7E-4BE8-A849-6E9D74B5DFEA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserPreference", "Carbon.Extensions\UserPreference\UserPreference.csproj", "{694CA1E3-ED7E-4BE8-A849-6E9D74B5DFEA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
