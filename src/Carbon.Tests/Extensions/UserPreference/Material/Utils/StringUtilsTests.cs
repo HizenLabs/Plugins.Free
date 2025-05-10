@@ -1,7 +1,7 @@
 ﻿using HizenLabs.Extensions.UserPreference.Material.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Carbon.Tests.Extensions.UserPreference.Utils;
+namespace Carbon.Tests.Extensions.UserPreference.Material.Utils;
 
 [TestClass]
 public class StringUtilsTests

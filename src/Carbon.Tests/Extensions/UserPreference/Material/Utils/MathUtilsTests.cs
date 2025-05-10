@@ -1,7 +1,7 @@
 ﻿using HizenLabs.Extensions.UserPreference.Material.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Carbon.Tests.Extensions.UserPreference.Utils;
+namespace Carbon.Tests.Extensions.UserPreference.Material.Utils;
 
 /// <summary>
 /// Tests for <see cref="MathUtils"/>.
@@ -23,6 +23,12 @@ public class MathUtilsTests
         double result = MathUtils.Lerp(start, stop, amount);
         Assert.AreEqual(expected, result);
     }
+
+    #endregion
+
+    #region Clamp
+
+
 
     #endregion
 

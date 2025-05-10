@@ -687,9 +687,9 @@
     <Compile Include="Extensions\ObjectSerializer\Extensions\BinaryWriterExtensionsTests.cs" />
     <Compile Include="Extensions\ObjectSerializer\Extensions\TypeExtensionsTests.cs" />
     <Compile Include="Extensions\ObjectSerializer\Internal\Delegates\GenericDelegateFactoryTests.cs" />
-    <Compile Include="Extensions\UserPreference\Utils\ColorUtilsTests.cs" />
-    <Compile Include="Extensions\UserPreference\Utils\MathUtilsTests.cs" />
-    <Compile Include="Extensions\UserPreference\Utils\StringUtilsTests.cs" />
+    <Compile Include="Extensions\UserPreference\Material\Utils\ColorUtilsTests.cs" />
+    <Compile Include="Extensions\UserPreference\Material\Utils\MathUtilsTests.cs" />
+    <Compile Include="Extensions\UserPreference\Material\Utils\StringUtilsTests.cs" />
     <Compile Include="Integration\RoundTripSerializationTests.cs" />
     <Compile Include="Integration\SerializationPerformanceTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
