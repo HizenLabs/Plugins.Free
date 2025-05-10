@@ -82,13 +82,13 @@ public static class ColorUtils
     /// <param name="a">a* (green–red) component of the Lab color.</param>
     /// <param name="b">b* (blue–yellow) component of the Lab color.</param>
     /// <returns>An ARGB color converted from the Lab input.</returns>
-    public static ColorArgb ArgbFromLab(double l, double a, double b)
+    public static ColorArgb ArgbFromLab(ColorXyz lab)
     {
         // Convert L*a*b* to intermediate f(x), f(y), f(z) values
         // These represent cube root–transformed XYZ values, normalized to the white point
-        double fy = (l + Lab.FOffset) / Lab.FScale;
-        double fx = a / Lab.A_Scale + fy;
-        double fz = fy - b / Lab.B_Scale;
+        double fy = (lab.X + Lab.FOffset) / Lab.FScale;
+        double fx = lab.Y / Lab.A_Scale + fy;
+        double fz = fy - lab.Z / Lab.B_Scale;
 
         // Convert normalized f(x), f(y), f(z) values to relative XYZ
         // (i.e., where white point Y is 1.0)

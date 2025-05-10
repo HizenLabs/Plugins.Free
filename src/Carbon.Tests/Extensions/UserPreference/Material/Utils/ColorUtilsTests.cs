@@ -118,12 +118,12 @@ public class ColorUtilsTests
     [TestMethod]
     public void ArgbFromLab_ShouldConvertCorrectly()
     {
-        var red = ColorUtils.ArgbFromLab(53.24, 80.09, 67.20);
+        var red = ColorUtils.ArgbFromLab(new(53.24, 80.09, 67.20));
         Assert.AreEqual(255, red.R, 5);
         Assert.IsTrue(red.G < 20);
         Assert.IsTrue(red.B < 20);
 
-        var white = ColorUtils.ArgbFromLab(100, 0, 0);
+        var white = ColorUtils.ArgbFromLab(new(100, 0, 0));
         Assert.AreEqual(255, white.R, 5);
         Assert.AreEqual(255, white.G, 5);
         Assert.AreEqual(255, white.B, 5);
@@ -340,7 +340,7 @@ public class ColorUtilsTests
             Assert.AreEqual(argb.B, roundArgb.B, 2);
 
             var lab = ColorUtils.LabFromArgb(color);
-            var labBack = ColorUtils.ArgbFromLab(lab[0], lab[1], lab[2]);
+            var labBack = ColorUtils.ArgbFromLab(lab);
 
             Assert.AreEqual(argb.R, labBack.R, 2);
             Assert.AreEqual(argb.G, labBack.G, 2);
