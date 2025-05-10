@@ -10,7 +10,6 @@ using System.Linq;
 
 namespace Carbon.Plugins;
 
-#pragma warning disable IDE1006 // Naming Styles
 public partial class AutoBuildSnapshot
 {
     #region Localization
