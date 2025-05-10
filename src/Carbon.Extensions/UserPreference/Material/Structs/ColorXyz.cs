@@ -55,12 +55,24 @@ public readonly struct ColorXyz
         Z = z;
     }
 
+    /// <summary>
+    /// Multiplies two ColorXyz instances component-wise.
+    /// </summary>
+    /// <param name="a">The first ColorXyz instance.</param>
+    /// <param name="b">The second ColorXyz instance.</param>
+    /// <returns>A new ColorXyz instance representing the product of the two colors.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ColorXyz operator *(ColorXyz a, ColorXyz b)
     {
         return new(a.X * b.X, a.Y * b.Y, a.Z * b.Z);
     }
 
+    /// <summary>
+    /// Divides two ColorXyz instances component-wise.
+    /// </summary>
+    /// <param name="a">The first ColorXyz instance.</param>
+    /// <param name="b">The second ColorXyz instance.</param>
+    /// <returns>A new ColorXyz instance representing the quotient of the two colors.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static ColorXyz operator /(ColorXyz a, ColorXyz b)
     {
