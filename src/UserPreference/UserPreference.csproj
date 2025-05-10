@@ -535,6 +535,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Material\Constants\ColorConversions.cs" />
+    <Compile Include="Material\Constants\Gamma.cs" />
+    <Compile Include="Material\Constants\Lab.cs" />
+    <Compile Include="Material\Constants\WhitePoints.cs" />
     <Compile Include="Material\DynamicScheme\DynamicScheme.cs" />
     <Compile Include="Material\Structs\ColorArgb.cs" />
     <Compile Include="Material\Structs\ColorXyz.cs" />
@@ -548,8 +552,6 @@
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Material\Constants\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
