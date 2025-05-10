@@ -5,12 +5,6 @@ namespace HizenLabs.Extensions.UserPreference.Material.Utils;
 
 public static class MathUtils
 {
-    [Obsolete("Use Math.Sign instead.")]
-    public static int Signum(double value)
-    {
-        return Math.Sign(value);
-    }
-
     /// <summary>
     /// Linearly interpolates between two values.
     /// </summary>
