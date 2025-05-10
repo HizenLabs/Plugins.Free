@@ -73,29 +73,15 @@ public class ColorUtilsTests
     [TestMethod]
     public void ArgbFromXyz_ShouldConvertCorrectly()
     {
-        var whiteArgb = ColorUtils.ArgbFromXyz(WhitePoints.D65.X, WhitePoints.D65.Y, WhitePoints.D65.Z);
+        var whiteArgb = ColorUtils.ArgbFromXyz(WhitePoints.D65);
         Assert.AreEqual(255, whiteArgb.R);
         Assert.AreEqual(255, whiteArgb.G);
         Assert.AreEqual(255, whiteArgb.B);
 
-        var redArgb = ColorUtils.ArgbFromXyz(41.24, 21.26, 1.93);
+        var redArgb = ColorUtils.ArgbFromXyz(new(41.24, 21.26, 1.93));
         Assert.AreEqual(255, redArgb.R);
         Assert.IsTrue(redArgb.G < 10);
         Assert.IsTrue(redArgb.B < 10);
-    }
-
-    [TestMethod]
-    public void ArgbFromXyzVector_ShouldConvertCorrectly()
-    {
-        var xyz = new ColorXyz(41.24, 21.26, 1.93);
-        var argb = ColorUtils.ArgbFromColorXyz(xyz);
-
-        Assert.AreEqual(255, argb.R);
-        Assert.IsTrue(argb.G < 10);
-        Assert.IsTrue(argb.B < 10);
-
-        var argb2 = ColorUtils.ArgbFromXyz(41.24, 21.26, 1.93);
-        Assert.AreEqual(argb.Value, argb2.Value);
     }
 
     #endregion
@@ -115,7 +101,7 @@ public class ColorUtilsTests
 
         var whiteArgb = new ColorArgb(255, 255, 255);
         var whiteXyz = ColorUtils.XyzFromArgb(whiteArgb);
-        var backToWhite = ColorUtils.ArgbFromColorXyz(whiteXyz);
+        var backToWhite = ColorUtils.ArgbFromXyz(whiteXyz);
 
         Assert.AreEqual(255, backToWhite.R);
         Assert.AreEqual(255, backToWhite.G);
@@ -347,7 +333,7 @@ public class ColorUtilsTests
         {
             var argb = new ColorArgb(color);
             var xyz = ColorUtils.XyzFromArgb(argb);
-            var roundArgb = ColorUtils.ArgbFromColorXyz(xyz);
+            var roundArgb = ColorUtils.ArgbFromXyz(xyz);
 
             Assert.AreEqual(argb.R, roundArgb.R, 2);
             Assert.AreEqual(argb.G, roundArgb.G, 2);

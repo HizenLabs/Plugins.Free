@@ -54,23 +54,9 @@ public static class ColorUtils
     /// <summary>
     /// Converts a color from XYZ to ARGB.
     /// </summary>
-    /// <param name="x">X component.</param>
-    /// <param name="y">Y component.</param>
-    /// <param name="z">Z component.</param>
-    /// <returns>An ARGB integer.</returns>
-    public static ColorArgb ArgbFromXyz(double x, double y, double z)
-    {
-        var colorXyz = new ColorXyz(x, y, z);
-
-        return ArgbFromColorXyz(colorXyz);
-    }
-
-    /// <summary>
-    /// Converts a color from XYZ to ARGB.
-    /// </summary>
     /// <param name="colorXyz">The XYZ vector.</param>
     /// <returns>An ARGB integer.</returns>
-    public static ColorArgb ArgbFromColorXyz(ColorXyz colorXyz)
+    public static ColorArgb ArgbFromXyz(ColorXyz colorXyz)
     {
         var linearRgb = ColorTransforms.XyzToSrgb * colorXyz;
         
@@ -118,7 +104,7 @@ public static class ColorUtils
         ColorXyz absoluteXyz = relativeXyz * WhitePoints.D65;
 
         // Convert absolute XYZ to sRGB (ARGB representation)
-        return ArgbFromColorXyz(absoluteXyz);
+        return ArgbFromXyz(absoluteXyz);
     }
 
 
