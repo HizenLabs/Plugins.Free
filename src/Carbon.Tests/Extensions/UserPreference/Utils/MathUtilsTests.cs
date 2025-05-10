@@ -108,4 +108,44 @@ public class MathUtilsTests
     }
 
     #endregion
+
+    #region RotationDirection
+
+    [TestMethod]
+    [DataRow(0f, 90f, 1f)]
+    [DataRow(0f, 180f, 1f)]
+    [DataRow(0f, 270f, -1f)]
+    [DataRow(270f, 90f, 1f)]
+    [DataRow(90f, 270f, 1f)]
+    [DataRow(45f, 45f, 1f)]
+    [DataRow(359f, 1f, 1f)]
+    [DataRow(1f, 359f, -1f)]
+    public void RotationDirection_ReturnsExpected(float from, float to, float expected)
+    {
+        float result = MathUtils.RotationDirection(from, to);
+        Assert.AreEqual(expected, result);
+    }
+
+    #endregion
+
+    #region DifferenceDegrees
+
+    [TestMethod]
+    [DataRow(0f, 0f, 0f)]
+    [DataRow(0f, 90f, 90f)]
+    [DataRow(0f, 180f, 180f)]
+    [DataRow(0f, 360f, 0f)]
+    [DataRow(10f, 350f, 20f)]
+    [DataRow(45f, 405f, 0f)]
+    [DataRow(90f, 270f, 180f)]
+    [DataRow(180f, 0f, 180f)]
+    [DataRow(270f, 90f, 180f)]
+    [DataRow(350f, 10f, 20f)]
+    public void DifferenceDegrees_ReturnsExpected(float from, float to, float expected)
+    {
+        float result = MathUtils.DifferenceDegrees(from, to);
+        Assert.AreEqual(expected, result);
+    }
+
+    #endregion
 }
