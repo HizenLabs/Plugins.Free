@@ -12,26 +12,6 @@ namespace Carbon.Tests.Extensions.UserPreference.Material.Utils;
 [TestClass]
 public class ColorUtilsTests
 {
-    #region ArgbFromRgb
-
-    /// <summary>
-    /// Tests that <see cref="ColorUtils.ArgbFromRgb"/> packs RGB into ARGB with full alpha.
-    /// </summary>
-    [TestMethod]
-    [DataRow((byte)255, (byte)0, (byte)0, (uint)0xFFFF0000)]
-    [DataRow((byte)0, (byte)255, (byte)0, (uint)0xFF00FF00)]
-    [DataRow((byte)0, (byte)0, (byte)255, (uint)0xFF0000FF)]
-    [DataRow((byte)255, (byte)255, (byte)255, (uint)0xFFFFFFFF)]
-    [DataRow((byte)0, (byte)0, (byte)0, (uint)0xFF000000)]
-    [DataRow((byte)128, (byte)128, (byte)128, (uint)0xFF808080)]
-    public void ArgbFromRgb_ShouldReturnCorrectArgb(byte red, byte green, byte blue, uint expected)
-    {
-        uint result = ColorUtils.ArgbFromRgb(red, green, blue);
-        Assert.AreEqual(expected, result);
-    }
-
-    #endregion
-
     #region ArgbFromLinearArgb
 
     /// <summary>

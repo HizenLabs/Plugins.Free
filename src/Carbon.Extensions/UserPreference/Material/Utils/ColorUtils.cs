@@ -11,33 +11,14 @@ namespace HizenLabs.Extensions.UserPreference.Material.Utils;
 public static class ColorUtils
 {
     /// <summary>
-    /// Packs RGB components into a 32-bit ARGB integer.
-    /// </summary>
-    /// <param name="red">Red component (0–255).</param>
-    /// <param name="green">Green component (0–255).</param>
-    /// <param name="blue">Blue component (0–255).</param>
-    /// <returns>An ARGB integer with full alpha (255).</returns>
-    /// <remarks>
-    /// ARGB Format: 0xAARRGGBB
-    /// </remarks>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static uint ArgbFromRgb(byte red, byte green, byte blue)
-    {
-        return (uint)((255 << 24) | (red << 16) | (green << 8) | blue);
-    }
-
-    /// <summary>
     /// Converts a color from linear RGB components to ARGB format.
     /// </summary>
     /// <param name="linearRgb">Linear RGB components in range [0, 100].</param>
     /// <returns>An ARGB integer with full alpha (255).</returns>
-    public static uint ArgbFromLinearArgb(ColorXyz linearArgb)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ColorArgb ArgbFromLinearArgb(ColorXyz linearArgb)
     {
-        var red = Delinearized(linearArgb.X);
-        var green = Delinearized(linearArgb.Y);
-        var blue = Delinearized(linearArgb.Z);
-
-        return ArgbFromRgb(red, green, blue);
+        return Delinearized(linearArgb);
     }
 
     /// <summary>
