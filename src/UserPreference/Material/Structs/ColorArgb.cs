@@ -1,36 +1,43 @@
-﻿using UnityEngine;
+﻿using System.Runtime.InteropServices;
+using UnityEngine;
 
 namespace HizenLabs.Extensions.UserPreference.Material.Structs;
 
 /// <summary>
 /// Represents a color in ARGB format.
 /// </summary>
+[StructLayout(LayoutKind.Explicit)]
 public readonly struct ColorArgb
 {
     /// <summary>
     /// The ARGB value of the color.
     /// </summary>
+    [FieldOffset(0)]
     public readonly uint Value;
-
-    /// <summary>
-    /// The alpha component of the color (0-255).
-    /// </summary>
-    public readonly byte A;
-
-    /// <summary>
-    /// The red component of the color (0-255).
-    /// </summary>
-    public readonly byte R;
-
-    /// <summary>
-    /// The green component of the color (0-255).
-    /// </summary>
-    public readonly byte G;
 
     /// <summary>
     /// The blue component of the color (0-255).
     /// </summary>
+    [FieldOffset(0)]
     public readonly byte B;
+
+    /// <summary>
+    /// The green component of the color (0-255).
+    /// </summary>
+    [FieldOffset(1)]
+    public readonly byte G;
+
+    /// <summary>
+    /// The red component of the color (0-255).
+    /// </summary>
+    [FieldOffset(2)]
+    public readonly byte R;
+
+    /// <summary>
+    /// The alpha component of the color (0-255).
+    /// </summary>
+    [FieldOffset(3)]
+    public readonly byte A;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ColorArgb"/> struct with the specified ARGB value.
@@ -38,18 +45,13 @@ public readonly struct ColorArgb
     /// <param name="argb">The ARGB value of the color.</param>
     public ColorArgb(uint argb)
     {
+        B = G = R = A = 0;
         Value = argb;
-
-        A = (byte)(argb >> 24);
-        R = (byte)(argb >> 16);
-        G = (byte)(argb >> 8);
-        B = (byte)argb;
     }
 
     public ColorArgb(byte a, byte r, byte g, byte b)
     {
-        Value = (uint)((a << 24) | (r << 16) | (g << 8) | b);
-
+        Value = 0;
         A = a;
         R = r;
         G = g;
