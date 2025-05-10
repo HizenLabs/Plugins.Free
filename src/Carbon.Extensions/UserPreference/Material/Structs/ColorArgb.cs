@@ -40,6 +40,11 @@ public readonly struct ColorArgb
     public readonly byte A;
 
     /// <summary>
+    /// Returns true if the color is opaque (alpha = 255).
+    /// </summary>
+    public bool IsOpaque => A == 255;
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="ColorArgb"/> struct with the specified ARGB value.
     /// </summary>
     /// <param name="argb">The ARGB value of the color.</param>

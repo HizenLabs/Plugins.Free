@@ -13,23 +13,12 @@ public static class ColorUtils
     /// <summary>
     /// Converts a color from linear RGB components to ARGB format.
     /// </summary>
-    /// <param name="linearRgb">Linear RGB components in range [0, 100].</param>
+    /// <param name="colorXyz">Linear RGB components in range [0, 100].</param>
     /// <returns>An ARGB integer with full alpha (255).</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ColorArgb ArgbFromLinearArgb(ColorXyz linearArgb)
+    public static ColorArgb ArgbFromLinearArgb(ColorXyz colorXyz)
     {
-        return Delinearized(linearArgb);
-    }
-
-    /// <summary>
-    /// Checks if the color represented by the ARGB integer is opaque.
-    /// </summary>
-    /// <param name="argb">The ARGB integer.</param>
-    /// <returns>True if the color is opaque (alpha = 255), otherwise false.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static bool IsOpaque(uint argb)
-    {
-        return ((argb >> 24) & 255) == 255;
+        return Delinearized(colorXyz);
     }
 
     /// <summary>
