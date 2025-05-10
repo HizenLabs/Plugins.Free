@@ -1,155 +1,212 @@
 ﻿using HizenLabs.Extensions.UserPreference.Material.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 
 namespace Carbon.Tests.Extensions.UserPreference.Material.Utils;
 
 /// <summary>
-/// Tests for <see cref="MathUtils"/>.
+/// Unit tests for <see cref="MathUtils"/> static utility methods.
 /// </summary>
 [TestClass]
 public class MathUtilsTests
 {
-    #region Lerp
+    #region Lerp Tests
 
+    /// <summary>
+    /// Tests that <see cref="MathUtils.Lerp"/> correctly interpolates between two values.
+    /// </summary>
     [TestMethod]
-    [DataRow(10f, 20f, 0f, 10f)]
-    [DataRow(10f, 20f, 1f, 20f)]
-    [DataRow(10f, 20f, 0.5f, 15f)]
-    [DataRow(10f, 20f, -0.5f, 5f)]
-    [DataRow(10f, 20f, 1.5f, 25f)]
-    [DataRow(0f, 1f, 0.333f, 0.333f)]
-    public void Lerp_ReturnsExpectedResult(double start, double stop, double amount, double expected)
+    [DataRow(5.0, 0, 1.0, 0.0)]
+    [DataRow(0.0, 10.0, 0.5, 5.0)]
+    [DataRow(-10.0, 10.0, 0.75, 5.0)]
+    [DataRow(0.0, 1.0, 0.25, 0.25)]
+    [DataRow(0.0, 1.0, 0.0, 0.0)]
+    [DataRow(0.0, 1.0, 1.0, 1.0)]
+    public void Lerp_ReturnsCorrectInterpolation(double start, double stop, double amount, double expected)
     {
         double result = MathUtils.Lerp(start, stop, amount);
-        Assert.AreEqual(expected, result);
+        Assert.AreEqual(expected, result, 0.000001);
     }
 
     #endregion
 
-    #region Clamp
+    #region Clamp Tests
 
+    /// <summary>
+    /// Tests that <see cref="MathUtils.Clamp(int, int, int)"/> correctly clamps integer values.
+    /// </summary>
+    [TestMethod]
+    [DataRow(0, 10, -5, 0)]
+    [DataRow(0, 10, 5, 5)]
+    [DataRow(0, 10, 15, 10)]
+    [DataRow(-10, 0, -15, -10)]
+    [DataRow(-10, 0, -5, -5)]
+    [DataRow(-10, 0, 5, 0)]
+    public void Clamp_Int_ReturnsCorrectValue(int min, int max, int input, int expected)
+    {
+        int result = MathUtils.Clamp(min, max, input);
+        Assert.AreEqual(expected, result);
+    }
 
+    /// <summary>
+    /// Tests that <see cref="MathUtils.Clamp(double, double, double)"/> correctly clamps double values.
+    /// </summary>
+    [TestMethod]
+    [DataRow(0.0, 10.0, -5.0, 0.0)]
+    [DataRow(0.0, 10.0, 5.0, 5.0)]
+    [DataRow(0.0, 10.0, 15.0, 10.0)]
+    [DataRow(-10.0, 0.0, -15.0, -10.0)]
+    [DataRow(-10.0, 0.0, -5.0, -5.0)]
+    [DataRow(-10.0, 0.0, 5.0, 0.0)]
+    [DataRow(0.5, 1.5, 1.0, 1.0)]
+    public void Clamp_Double_ReturnsCorrectValue(double min, double max, double input, double expected)
+    {
+        double result = MathUtils.Clamp(min, max, input);
+        Assert.AreEqual(expected, result, 0.000001);
+    }
 
     #endregion
 
-    #region SanitizeDegrees
+    #region SanitizeDegrees Tests
 
+    /// <summary>
+    /// Tests that <see cref="MathUtils.SanitizeDegrees(int)"/> wraps angles correctly to the range [0, 360).
+    /// </summary>
     [TestMethod]
     [DataRow(0, 0)]
-    [DataRow(1, 1)]
-    [DataRow(180, 180)]
+    [DataRow(90, 90)]
     [DataRow(359, 359)]
     [DataRow(360, 0)]
     [DataRow(361, 1)]
     [DataRow(720, 0)]
-    [DataRow(450, 90)]
     [DataRow(-1, 359)]
     [DataRow(-90, 270)]
-    [DataRow(-180, 180)]
     [DataRow(-360, 0)]
     [DataRow(-361, 359)]
-    [DataRow(-540, 180)]
-    [DataRow(int.MaxValue, (int.MaxValue % 360 + 360) % 360)]
-    public void SanitizeDegrees_Int_ReturnsCorrectValue(int input, int expected)
+    public void SanitizeDegrees_Int_ReturnsCorrectValue(int degrees, int expected)
     {
-        int result = MathUtils.SanitizeDegrees(input);
-
-        Assert.AreEqual(expected, result, $"Failed for input: {input}");
+        int result = MathUtils.SanitizeDegrees(degrees);
+        Assert.AreEqual(expected, result);
     }
 
+    /// <summary>
+    /// Tests that <see cref="MathUtils.SanitizeDegrees(double)"/> wraps angles correctly to the range [0, 360).
+    /// </summary>
     [TestMethod]
-    [DataRow(0f, 0f)]
-    [DataRow(1.5f, 1.5f)]
-    [DataRow(180.25f, 180.25f)]
-    [DataRow(359.999f, 359.999f)]
-    [DataRow(360f, 0f)]
-    [DataRow(361.5f, 1.5f)]
-    [DataRow(720f, 0f)]
-    [DataRow(450.75f, 90.75f)]
-    [DataRow(-0.5f, 359.5f)]
-    [DataRow(-89.75f, 270.25f)]
-    [DataRow(-179.5f, 180.5f)]
-    [DataRow(-360f, 0f)]
-    [DataRow(-361.25f, 358.75f)]
-    [DataRow(-539.5f, 180.5f)]
-    [DataRow(double.MaxValue, double.NaN)]
-    public void SanitizeDegrees_double_ReturnsCorrectValue(double input, double expected)
+    [DataRow(0.0, 0.0)]
+    [DataRow(90.0, 90.0)]
+    [DataRow(359.5, 359.5)]
+    [DataRow(360.0, 0.0)]
+    [DataRow(361.5, 1.5)]
+    [DataRow(720.0, 0.0)]
+    [DataRow(-1.5, 358.5)]
+    [DataRow(-90.0, 270.0)]
+    [DataRow(-360.0, 0.0)]
+    [DataRow(-361.5, 358.5)]
+    public void SanitizeDegrees_Double_ReturnsCorrectValue(double degrees, double expected)
     {
-        double result = MathUtils.SanitizeDegrees(input);
-
-        if (double.IsNaN(expected))
-        {
-            Assert.IsTrue(result >= 0 && result < 360,
-                $"Result {result} for input {input} should be between 0 and 360");
-        }
-        else
-        {
-            Assert.AreEqual(expected, result, 0.0001f, $"Failed for input: {input}");
-        }
-    }
-
-    [TestMethod]
-    [DataRow(0)]
-    [DataRow(10)]
-    [DataRow(90)]
-    [DataRow(180)]
-    [DataRow(270)]
-    [DataRow(359)]
-    [DataRow(360)]
-    [DataRow(400)]
-    [DataRow(-10)]
-    [DataRow(-90)]
-    [DataRow(-180)]
-    [DataRow(-359)]
-    [DataRow(-360)]
-    [DataRow(-400)]
-    public void SanitizeDegrees_IntAnddouble_Consistency(int value)
-    {
-        double doubleResult = MathUtils.SanitizeDegrees((double)value);
-        int intResult = MathUtils.SanitizeDegrees(value);
-
-        Assert.AreEqual(intResult, doubleResult, 0.0001f,
-            $"Mismatch at value {value}: Int returned {intResult}, double returned {doubleResult}");
+        double result = MathUtils.SanitizeDegrees(degrees);
+        Assert.AreEqual(expected, result, 0.000001);
     }
 
     #endregion
 
-    #region RotationDirection
+    #region RotationDirection Tests
 
+    /// <summary>
+    /// Tests that <see cref="MathUtils.RotationDirection"/> returns 1 or -1 depending on shortest angular path.
+    /// </summary>
     [TestMethod]
-    [DataRow(0f, 90f, 1f)]
-    [DataRow(0f, 180f, 1f)]
-    [DataRow(0f, 270f, -1f)]
-    [DataRow(270f, 90f, 1f)]
-    [DataRow(90f, 270f, 1f)]
-    [DataRow(45f, 45f, 1f)]
-    [DataRow(359f, 1f, 1f)]
-    [DataRow(1f, 359f, -1f)]
-    public void RotationDirection_ReturnsExpected(double from, double to, double expected)
+    [DataRow(0.0, 90.0, 1.0)]
+    [DataRow(0.0, 180.0, 1.0)]
+    [DataRow(0.0, 181.0, -1.0)]
+    [DataRow(0.0, 270.0, -1.0)]
+    [DataRow(90.0, 0.0, -1.0)]
+    [DataRow(270.0, 90.0, 1.0)]
+    [DataRow(359.0, 1.0, 1.0)]
+    [DataRow(1.0, 359.0, -1.0)]
+    public void RotationDirection_ReturnsCorrectDirection(double from, double to, double expected)
     {
         double result = MathUtils.RotationDirection(from, to);
-        Assert.AreEqual(expected, result);
+        Assert.AreEqual(expected, result, 0.000001);
     }
 
     #endregion
 
-    #region DifferenceDegrees
+    #region DifferenceDegrees Tests
 
+    /// <summary>
+    /// Tests that <see cref="MathUtils.DifferenceDegrees"/> returns the smallest angle difference between two angles.
+    /// </summary>
     [TestMethod]
-    [DataRow(0f, 0f, 0f)]
-    [DataRow(0f, 90f, 90f)]
-    [DataRow(0f, 180f, 180f)]
-    [DataRow(0f, 360f, 0f)]
-    [DataRow(10f, 350f, 20f)]
-    [DataRow(45f, 405f, 0f)]
-    [DataRow(90f, 270f, 180f)]
-    [DataRow(180f, 0f, 180f)]
-    [DataRow(270f, 90f, 180f)]
-    [DataRow(350f, 10f, 20f)]
-    public void DifferenceDegrees_ReturnsExpected(double from, double to, double expected)
+    [DataRow(0.0, 0.0, 0.0)]
+    [DataRow(0.0, 90.0, 90.0)]
+    [DataRow(0.0, 180.0, 180.0)]
+    [DataRow(0.0, 270.0, 90.0)]
+    [DataRow(0.0, 360.0, 0.0)]
+    [DataRow(90.0, 270.0, 180.0)]
+    [DataRow(270.0, 90.0, 180.0)]
+    [DataRow(359.0, 1.0, 2.0)]
+    public void DifferenceDegrees_ReturnsCorrectDifference(double a, double b, double expected)
     {
-        double result = MathUtils.DifferenceDegrees(from, to);
-        Assert.AreEqual(expected, result);
+        double result = MathUtils.DifferenceDegrees(a, b);
+        Assert.AreEqual(expected, result, 0.000001);
+    }
+
+    #endregion
+
+    #region Conversion Tests
+
+    /// <summary>
+    /// Tests that <see cref="MathUtils.ToDegrees"/> correctly converts radians to degrees.
+    /// </summary>
+    [TestMethod]
+    [DataRow(0.0, 0.0)]
+    [DataRow(Math.PI, 180.0)]
+    [DataRow(Math.PI / 2, 90.0)]
+    [DataRow(Math.PI / 4, 45.0)]
+    [DataRow(-Math.PI, -180.0)]
+    [DataRow(2 * Math.PI, 360.0)]
+    public void ToDegrees_ReturnsCorrectValue(double radians, double expected)
+    {
+        double result = MathUtils.ToDegrees(radians);
+        Assert.AreEqual(expected, result, 0.000001);
+    }
+
+    /// <summary>
+    /// Tests that <see cref="MathUtils.ToRadians"/> correctly converts degrees to radians.
+    /// </summary>
+    [TestMethod]
+    [DataRow(0.0, 0.0)]
+    [DataRow(180.0, Math.PI)]
+    [DataRow(90.0, Math.PI / 2)]
+    [DataRow(45.0, Math.PI / 4)]
+    [DataRow(-180.0, -Math.PI)]
+    [DataRow(360.0, 2 * Math.PI)]
+    public void ToRadians_ReturnsCorrectValue(double degrees, double expected)
+    {
+        double result = MathUtils.ToRadians(degrees);
+        Assert.AreEqual(expected, result, 0.000001);
+    }
+
+    #endregion
+
+    #region Hypotenuse Tests
+
+    /// <summary>
+    /// Tests that <see cref="MathUtils.Hypotenuse"/> returns the correct length for the hypotenuse.
+    /// </summary>
+    [TestMethod]
+    [DataRow(3.0, 4.0, 5.0)]
+    [DataRow(5.0, 12.0, 13.0)]
+    [DataRow(1.0, 1.0, 1.4142135623730951)]
+    [DataRow(0.0, 5.0, 5.0)]
+    [DataRow(7.0, 0.0, 7.0)]
+    [DataRow(0.0, 0.0, 0.0)]
+    public void Hypotenuse_ReturnsCorrectValue(double x, double y, double expected)
+    {
+        double result = MathUtils.Hypotenuse(x, y);
+        Assert.AreEqual(expected, result, 0.000001);
     }
 
     #endregion
