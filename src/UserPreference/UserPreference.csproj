@@ -536,7 +536,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Material\DynamicScheme\DynamicScheme.cs" />
+    <Compile Include="Material\Structs\ColorArgb.cs" />
+    <Compile Include="Material\Structs\Matrix3x3.cs" />
+    <Compile Include="Material\Utils\ColorUtils.cs" />
     <Compile Include="Material\Utils\MathUtils.cs" />
+    <Compile Include="Material\Utils\StringUtils.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
