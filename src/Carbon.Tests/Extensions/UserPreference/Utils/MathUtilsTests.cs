@@ -1,6 +1,5 @@
 ﻿using HizenLabs.Extensions.UserPreference.Material.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
 
 namespace Carbon.Tests.Extensions.UserPreference.Utils;
 
