@@ -169,7 +169,7 @@ public class SerializationPerformanceTests
             }
             sw.Stop();
 
-            double avgNanoseconds = (sw.Elapsed.TotalMilliseconds * 1_000_000) / iterations;
+            double avgNanoseconds = sw.Elapsed.TotalMilliseconds * 1_000_000 / iterations;
             Trace.WriteLine($"Type {type.Name}: {avgNanoseconds:F2} ns per call");
         }
     }
@@ -195,7 +195,7 @@ public class SerializationPerformanceTests
         }
         sw.Stop();
 
-        double avgNanosecondsSer = (sw.Elapsed.TotalMilliseconds * 1_000_000) / iterations;
+        double avgNanosecondsSer = sw.Elapsed.TotalMilliseconds * 1_000_000 / iterations;
 
         // Prepare for deserialization
         ms.Position = 0;
@@ -217,7 +217,7 @@ public class SerializationPerformanceTests
         }
         sw.Stop();
 
-        double avgNanosecondsDeser = (sw.Elapsed.TotalMilliseconds * 1_000_000) / iterations;
+        double avgNanosecondsDeser = sw.Elapsed.TotalMilliseconds * 1_000_000 / iterations;
 
         Trace.WriteLine($"{typeName} - Serialize: {avgNanosecondsSer:F2} ns/op, Deserialize: {avgNanosecondsDeser:F2} ns/op");
     }
@@ -272,7 +272,7 @@ public class SerializationPerformanceTests
         Trace.WriteLine($"Objects per second (serialize): {datasetSize / (avgSerializeMs / 1000):F0}");
         Trace.WriteLine($"Objects per second (deserialize): {datasetSize / (avgDeserializeMs / 1000):F0}");
         Trace.WriteLine($"Average bytes per object: {avgBytesPerObject:F1}");
-        Trace.WriteLine($"Throughput (serialize): {(totalBytesWritten / (totalSerializeMs / 1000)) / (1024 * 1024):F2} MB/s");
+        Trace.WriteLine($"Throughput (serialize): {totalBytesWritten / (totalSerializeMs / 1000) / (1024 * 1024):F2} MB/s");
     }
 
     private void SerializeDataset(List<TestData> dataset, MemoryStream ms)
@@ -345,8 +345,8 @@ public class SerializationPerformanceTests
         }
         sw.Stop();
 
-        double avgMicroseconds = (sw.Elapsed.TotalMilliseconds * 1000) / iterations;
-        double bytesPerSecond = (ms.Length * iterations) / sw.Elapsed.TotalSeconds;
+        double avgMicroseconds = sw.Elapsed.TotalMilliseconds * 1000 / iterations;
+        double bytesPerSecond = ms.Length * iterations / sw.Elapsed.TotalSeconds;
 
         Trace.WriteLine($"String length {value.Length}: {avgMicroseconds:F2} µs/op, {bytesPerSecond / (1024 * 1024):F2} MB/s");
     }
