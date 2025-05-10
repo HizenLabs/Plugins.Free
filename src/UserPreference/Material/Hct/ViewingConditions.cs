@@ -205,6 +205,9 @@ public sealed class ViewingConditions : IDisposable, Pool.IPooled
     /// </summary>
     public void Dispose()
     {
+        if (ReferenceEquals(this, Default)) // Do not free the default instance; it is very mean to do so.
+            return;
+
         var obj = this;
         Pool.Free(ref obj);
     }
