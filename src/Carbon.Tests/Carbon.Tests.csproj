@@ -687,6 +687,7 @@
     <Compile Include="Extensions\ObjectSerializer\Extensions\BinaryWriterExtensionsTests.cs" />
     <Compile Include="Extensions\ObjectSerializer\Extensions\TypeExtensionsTests.cs" />
     <Compile Include="Extensions\ObjectSerializer\Internal\Delegates\GenericDelegateFactoryTests.cs" />
+    <Compile Include="Extensions\UserPreference\Utils\MathUtilsTests.cs" />
     <Compile Include="Integration\RoundTripSerializationTests.cs" />
     <Compile Include="Integration\SerializationPerformanceTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -705,6 +706,10 @@
     <ProjectReference Include="..\Carbon.Plugins\Carbon.Plugins.csproj">
       <Project>{fd83841b-e3c7-4982-87e7-39184b1bde98}</Project>
       <Name>Carbon.Plugins</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\UserPreference\UserPreference.csproj">
+      <Project>{694ca1e3-ed7e-4be8-a849-6e9d74b5dfea}</Project>
+      <Name>UserPreference</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

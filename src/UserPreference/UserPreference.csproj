@@ -535,14 +535,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Material\DynamicScheme\DynamicScheme.cs" />
+    <Compile Include="Material\Utils\MathUtils.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Material\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
