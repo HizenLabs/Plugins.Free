@@ -338,7 +338,7 @@ public class BinaryReaderExtensionsTests : BinaryReaderWriterTest
         _memoryStream.Position = 0;
         var result = _reader.ReadList(actual);
 
-        Assert.ReferenceEquals(result, actual);
+        ReferenceEquals(result, actual);
         CollectionAssert.AreEqual(testValues, actual);
         Assert.ThrowsException<EndOfStreamException>(() => _reader.ReadByte());
 
