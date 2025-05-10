@@ -104,4 +104,10 @@ public struct ColorConversionMatrix
             matrix.m20 * colorXyz.X + matrix.m21 * colorXyz.Y + matrix.m22 * colorXyz.Z
         );
     }
+
+    /// <inheritdoc cref="operator *(ColorConversionMatrix, ColorXyz)"/>
+    public static ColorXyz operator *(ColorXyz colorXyz, ColorConversionMatrix matrix)
+    {
+        return matrix * colorXyz;
+    }
 }

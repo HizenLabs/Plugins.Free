@@ -1,4 +1,6 @@
-﻿namespace HizenLabs.Extensions.UserPreference.Material.Structs;
+﻿using System.Runtime.CompilerServices;
+
+namespace HizenLabs.Extensions.UserPreference.Material.Structs;
 
 /// <summary>
 /// Represents a linear color in the XYZ color space, where X, Y, and Z are the red, green, and blue color components ranging from 0 to 1.
@@ -51,5 +53,11 @@ public readonly struct ColorXyz
         X = x;
         Y = y;
         Z = z;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ColorXyz operator *(ColorXyz a, ColorXyz b)
+    {
+        return new(a.X * b.X, a.Y * b.Y, a.Z * b.Z);
     }
 }

@@ -2,7 +2,6 @@
 using HizenLabs.Extensions.UserPreference.Material.Structs;
 using System;
 using System.Runtime.CompilerServices;
-using UnityEngine;
 
 namespace HizenLabs.Extensions.UserPreference.Material.Utils;
 
@@ -32,11 +31,11 @@ public static class ColorUtils
     /// </summary>
     /// <param name="linearRgb">Linear RGB components in range [0, 100].</param>
     /// <returns>An ARGB integer with full alpha (255).</returns>
-    public static uint ArgbFromLinearArgb(Vector3 linearArgb)
+    public static uint ArgbFromLinearArgb(ColorXyz linearArgb)
     {
-        var red = Delinearized(linearArgb.x);
-        var green = Delinearized(linearArgb.y);
-        var blue = Delinearized(linearArgb.z);
+        var red = Delinearized(linearArgb.X);
+        var green = Delinearized(linearArgb.Y);
+        var blue = Delinearized(linearArgb.Z);
 
         return ArgbFromRgb(red, green, blue);
     }
@@ -248,7 +247,7 @@ public static class ColorUtils
             ? normalized * Gamma.LinearScale
             : Gamma.Scale * Math.Pow(normalized, Gamma.EncodingExponent) - Gamma.Offset;
 
-        return (byte)Mathf.Clamp((int)Math.Round(delinearized * 255), 0, 255);
+        return (byte)MathUtils.Clamp(0, 255, (int)Math.Round(delinearized * 255));
     }
 
     /// <summary>

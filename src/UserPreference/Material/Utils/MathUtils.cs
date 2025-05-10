@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
-using UnityEngine;
 
 namespace HizenLabs.Extensions.UserPreference.Material.Utils;
 
 public static class MathUtils
 {
     [Obsolete("Use Math.Sign instead.")]
-    public static int Signum(float value)
+    public static int Signum(double value)
     {
         return Math.Sign(value);
     }
@@ -20,21 +19,51 @@ public static class MathUtils
     /// <param name="amount">The interpolation factor, typically in the range [0, 1].</param>
     /// <returns>The interpolated value.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static float Lerp(float start, float stop, float amount)
+    public static double Lerp(double start, double stop, double amount)
     {
         return (1 - amount) * start + amount * stop;
     }
 
-    [Obsolete("Caution: Parameters are swapped, but convert to Mathf.Clamp.")]
-    public static int Clamp(int min, int max, int value)
+    /// <summary>
+    /// Clamps a value between a minimum and maximum range.
+    /// </summary>
+    /// <param name="min">The minimum value.</param>
+    /// <param name="max">The maximum value.</param>
+    /// <param name="input">The value to clamp.</param>
+    /// <returns>The clamped value.</returns>
+    public static int Clamp(int min, int max, int input)
     {
-        return Mathf.Clamp(value, min, max);
+        if (input < min)
+        {
+            return min;
+        }
+        else if (input > max)
+        {
+            return max;
+        }
+
+        return input;
     }
 
-    [Obsolete("Caution: Parameters are swapped, but convert to Mathf.Clamp.")]
-    public static float Clamp(float min, float max, float value)
+    /// <summary>
+    /// Clamps a value between a minimum and maximum range.
+    /// </summary>
+    /// <param name="min">The minimum value.</param>
+    /// <param name="max">The maximum value.</param>
+    /// <param name="input">The value to clamp.</param>
+    /// <returns>The clamped value.</returns>
+    public static double Clamp(double min, double max, double input)
     {
-        return Mathf.Clamp(value, min, max);
+        if (input < min)
+        {
+            return min;
+        }
+        else if (input > max)
+        {
+            return max;
+        }
+
+        return input;
     }
 
     /// <summary>
@@ -59,13 +88,13 @@ public static class MathUtils
     /// </summary>
     /// <param name="degrees">The angle in degrees.</param>
     /// <returns>The sanitized angle in degrees.</returns>
-    public static float SanitizeDegrees(float degrees)
+    public static double SanitizeDegrees(double degrees)
     {
-        degrees %= 360f;
+        degrees %= 360d;
 
-        if (degrees < 0f)
+        if (degrees < 0d)
         {
-            return degrees + 360f;
+            return degrees + 360d;
         }
 
         return degrees;
@@ -77,9 +106,11 @@ public static class MathUtils
     /// <param name="from">The starting angle in degrees.</param>
     /// <param name="to">The ending angle in degrees.</param>
     /// <returns>The direction of rotation: 1 for clockwise, -1 for counterclockwise.</returns>
-    public static float RotationDirection(float from, float to)
+    public static double RotationDirection(double from, double to)
     {
-        return Mathf.DeltaAngle(from, to) >= 0f ? 1f : -1f;
+        double increasingDifference = SanitizeDegrees(to - from);
+
+        return increasingDifference <= 180.0 ? 1.0 : -1.0;
     }
 
     /// <summary>
@@ -88,19 +119,43 @@ public static class MathUtils
     /// <param name="a">The first angle in degrees.</param>
     /// <param name="b">The second angle in degrees.</param>
     /// <returns>The absolute difference between the two angles in degrees.</returns>
-    public static float DifferenceDegrees(float a, float b)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static double DifferenceDegrees(double a, double b)
     {
-        var delta = Mathf.DeltaAngle(a, b);
-
-        return Math.Abs(delta);
+        return 180.0 - Math.Abs(Math.Abs(a - b) - 180.0);
     }
 
-    [Obsolete("Array allocations, see if we can create custom matrices.")]
-    public static float[] MatrixMultiply(float[] row, float[][] matrix)
+    /// <summary>
+    /// Converts radians to degrees.
+    /// </summary>
+    /// <param name="radians">The angle in radians.</param>
+    /// <returns>The angle in degrees.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static double ToDegrees(double radians)
     {
-        var a = row[0] * matrix[0][0] + row[1] * matrix[0][1] + row[2] * matrix[0][2];
-        var b = row[0] * matrix[1][0] + row[1] * matrix[1][1] + row[2] * matrix[1][2];
-        var c = row[0] * matrix[2][0] + row[1] * matrix[2][1] + row[2] * matrix[2][2];
-        return new float[] { a, b, c };
+        return radians * (180.0 / Math.PI);
+    }
+
+    /// <summary>
+    /// Converts degrees to radians.
+    /// </summary>
+    /// <param name="degrees">The angle in degrees.</param>
+    /// <returns>The angle in radians.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static double ToRadians(double degrees)
+    {
+        return degrees * (Math.PI / 180.0);
+    }
+
+    /// <summary>
+    /// Calculates the hypotenuse of a right triangle given its two sides.
+    /// </summary>
+    /// <param name="x">The length of one side.</param>
+    /// <param name="y">The length of the other side.</param>
+    /// <returns>The length of the hypotenuse.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static double Hypotenuse(double x, double y)
+    {
+        return Math.Sqrt(x * x + y * y);
     }
 }

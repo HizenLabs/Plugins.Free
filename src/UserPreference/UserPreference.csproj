@@ -535,11 +535,15 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Material\Constants\ColorConversions.cs" />
+    <Compile Include="Material\Constants\ColorTransforms.cs" />
     <Compile Include="Material\Constants\Gamma.cs" />
     <Compile Include="Material\Constants\Lab.cs" />
     <Compile Include="Material\Constants\WhitePoints.cs" />
     <Compile Include="Material\DynamicScheme\DynamicScheme.cs" />
+    <Compile Include="Material\Hct\Cam16.cs" />
+    <Compile Include="Material\Hct\Hct.cs" />
+    <Compile Include="Material\Hct\HctSolver.cs" />
+    <Compile Include="Material\Hct\ViewingConditions.cs" />
     <Compile Include="Material\Structs\ColorArgb.cs" />
     <Compile Include="Material\Structs\ColorXyz.cs" />
     <Compile Include="Material\Structs\ColorConversionMatrix.cs" />

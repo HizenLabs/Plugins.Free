@@ -18,9 +18,9 @@ public class MathUtilsTests
     [DataRow(10f, 20f, -0.5f, 5f)]
     [DataRow(10f, 20f, 1.5f, 25f)]
     [DataRow(0f, 1f, 0.333f, 0.333f)]
-    public void Lerp_ReturnsExpectedResult(float start, float stop, float amount, float expected)
+    public void Lerp_ReturnsExpectedResult(double start, double stop, double amount, double expected)
     {
-        float result = MathUtils.Lerp(start, stop, amount);
+        double result = MathUtils.Lerp(start, stop, amount);
         Assert.AreEqual(expected, result);
     }
 
@@ -66,12 +66,12 @@ public class MathUtilsTests
     [DataRow(-360f, 0f)]
     [DataRow(-361.25f, 358.75f)]
     [DataRow(-539.5f, 180.5f)]
-    [DataRow(float.MaxValue, float.NaN)]
-    public void SanitizeDegrees_Float_ReturnsCorrectValue(float input, float expected)
+    [DataRow(double.MaxValue, double.NaN)]
+    public void SanitizeDegrees_double_ReturnsCorrectValue(double input, double expected)
     {
-        float result = MathUtils.SanitizeDegrees(input);
+        double result = MathUtils.SanitizeDegrees(input);
 
-        if (float.IsNaN(expected))
+        if (double.IsNaN(expected))
         {
             Assert.IsTrue(result >= 0 && result < 360,
                 $"Result {result} for input {input} should be between 0 and 360");
@@ -97,13 +97,13 @@ public class MathUtilsTests
     [DataRow(-359)]
     [DataRow(-360)]
     [DataRow(-400)]
-    public void SanitizeDegrees_IntAndFloat_Consistency(int value)
+    public void SanitizeDegrees_IntAnddouble_Consistency(int value)
     {
-        float floatResult = MathUtils.SanitizeDegrees((float)value);
+        double doubleResult = MathUtils.SanitizeDegrees((double)value);
         int intResult = MathUtils.SanitizeDegrees(value);
 
-        Assert.AreEqual(intResult, floatResult, 0.0001f,
-            $"Mismatch at value {value}: Int returned {intResult}, Float returned {floatResult}");
+        Assert.AreEqual(intResult, doubleResult, 0.0001f,
+            $"Mismatch at value {value}: Int returned {intResult}, double returned {doubleResult}");
     }
 
     #endregion
@@ -119,9 +119,9 @@ public class MathUtilsTests
     [DataRow(45f, 45f, 1f)]
     [DataRow(359f, 1f, 1f)]
     [DataRow(1f, 359f, -1f)]
-    public void RotationDirection_ReturnsExpected(float from, float to, float expected)
+    public void RotationDirection_ReturnsExpected(double from, double to, double expected)
     {
-        float result = MathUtils.RotationDirection(from, to);
+        double result = MathUtils.RotationDirection(from, to);
         Assert.AreEqual(expected, result);
     }
 
@@ -140,9 +140,9 @@ public class MathUtilsTests
     [DataRow(180f, 0f, 180f)]
     [DataRow(270f, 90f, 180f)]
     [DataRow(350f, 10f, 20f)]
-    public void DifferenceDegrees_ReturnsExpected(float from, float to, float expected)
+    public void DifferenceDegrees_ReturnsExpected(double from, double to, double expected)
     {
-        float result = MathUtils.DifferenceDegrees(from, to);
+        double result = MathUtils.DifferenceDegrees(from, to);
         Assert.AreEqual(expected, result);
     }
 
