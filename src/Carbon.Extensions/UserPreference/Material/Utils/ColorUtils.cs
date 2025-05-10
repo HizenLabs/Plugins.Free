@@ -253,7 +253,7 @@ public static class ColorUtils
     /// <summary>
     /// Helper function for L*a*b* conversions.
     /// </summary>
-    private static double LabF(double t)
+    internal static double LabF(double t)
     {
         if (t > Lab.Epsilon)
         {
@@ -268,7 +268,7 @@ public static class ColorUtils
     /// <summary>
     /// Inverse of the LabF function.
     /// </summary>
-    private static double LabInvF(double ft)
+    internal static double LabInvF(double ft)
     {
         double ft3 = ft * ft * ft;
 
