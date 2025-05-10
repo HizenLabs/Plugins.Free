@@ -62,7 +62,7 @@ public static class ColorUtils
     {
         var colorXyz = new ColorXyz(x, y, z);
 
-        return ArgbFromXyzVector(colorXyz);
+        return ArgbFromColorXyz(colorXyz);
     }
 
     /// <summary>
@@ -70,7 +70,7 @@ public static class ColorUtils
     /// </summary>
     /// <param name="colorXyz">The XYZ vector.</param>
     /// <returns>An ARGB integer.</returns>
-    public static ColorArgb ArgbFromXyzVector(ColorXyz colorXyz)
+    public static ColorArgb ArgbFromColorXyz(ColorXyz colorXyz)
     {
         var linearRgb = ColorTransforms.XyzToSrgb * colorXyz;
         
@@ -90,52 +90,62 @@ public static class ColorUtils
     }
 
     /// <summary>
-    /// Converts a color from L*a*b* to ARGB.
+    /// Converts a color from CIE L*a*b* to ARGB.
     /// </summary>
-    /// <param name="l">L* component.</param>
-    /// <param name="a">a* component.</param>
-    /// <param name="b">b* component.</param>
-    /// <returns>An ARGB integer.</returns>
+    /// <param name="l">L* (lightness) component of the Lab color.</param>
+    /// <param name="a">a* (green–red) component of the Lab color.</param>
+    /// <param name="b">b* (blue–yellow) component of the Lab color.</param>
+    /// <returns>An ARGB color converted from the Lab input.</returns>
     public static ColorArgb ArgbFromLab(double l, double a, double b)
     {
+        // Convert L*a*b* to intermediate f(x), f(y), f(z) values
+        // These represent cube root–transformed XYZ values, normalized to the white point
         double fy = (l + Lab.FOffset) / Lab.FScale;
         double fx = a / Lab.A_Scale + fy;
         double fz = fy - b / Lab.B_Scale;
 
-        double xNormalized = LabInvF(fx);
-        double yNormalized = LabInvF(fy);
-        double zNormalized = LabInvF(fz);
+        // Convert normalized f(x), f(y), f(z) values to relative XYZ
+        // (i.e., where white point Y is 1.0)
+        ColorXyz relativeXyz = new
+        (
+            LabInvF(fx),
+            LabInvF(fy),
+            LabInvF(fz)
+        );
 
-        double x = xNormalized * WhitePoints.D65[0];
-        double y = yNormalized * WhitePoints.D65[1];
-        double z = zNormalized * WhitePoints.D65[2];
+        // Scale relative XYZ to absolute XYZ using the D65 white point
+        // (i.e., where white point Y is 100.0 and XYZ reflects actual luminance)
+        ColorXyz absoluteXyz = relativeXyz * WhitePoints.D65;
 
-        return ArgbFromXyz(x, y, z);
+        // Convert absolute XYZ to sRGB (ARGB representation)
+        return ArgbFromColorXyz(absoluteXyz);
     }
+
 
     /// <summary>
-    /// Converts a color from ARGB to L*a*b* color space.
+    /// Converts an ARGB color to the CIE L\*a\*b\* color space.
     /// </summary>
-    /// <param name="argb">The ARGB integer.</param>
-    /// <returns>An array containing L*, a*, and b* values.</returns>
-    public static double[] LabFromArgb(uint argb)
+    /// <param name="argb">The ARGB color as an unsigned integer.</param>
+    /// <returns>An array containing L\*, a\*, and b\* values.</returns>
+    public static ColorXyz LabFromArgb(uint argb)
     {
-        var colorXyz = XyzFromArgb(argb);
+        // Convert ARGB to absolute XYZ (under D65 white point)
+        ColorXyz absoluteXyz = XyzFromArgb(argb);
 
-        double xNormalized = colorXyz[0] / WhitePoints.D65[0];
-        double yNormalized = colorXyz[1] / WhitePoints.D65[1];
-        double zNormalized = colorXyz[2] / WhitePoints.D65[2];
+        // Normalize XYZ by dividing by the D65 white point
+        ColorXyz relativeXyz = absoluteXyz / WhitePoints.D65;
 
-        double fx = LabF(xNormalized);
-        double fy = LabF(yNormalized);
-        double fz = LabF(zNormalized);
+        // Convert normalized XYZ to intermediate f(x), f(y), f(z) values
+        ColorXyz labF = LabF(relativeXyz);
 
-        double l = Lab.FScale * fy - Lab.FOffset;
-        double a = Lab.A_Scale * (fx - fy);
-        double b = Lab.B_Scale * (fy - fz);
+        // Convert to Lab using standard formulas
+        double l = Lab.FScale * labF.Y - Lab.FOffset;
+        double a = Lab.A_Scale * (labF.X - labF.Y);
+        double b = Lab.B_Scale * (labF.Y - labF.Z);
 
-        return new double[] { l, a, b };
+        return new(l, a, b);
     }
+
 
     /// <summary>
     /// Converts an L* value to an ARGB representation (grayscale).
@@ -248,6 +258,21 @@ public static class ColorUtils
             : Gamma.Scale * Math.Pow(normalized, Gamma.EncodingExponent) - Gamma.Offset;
 
         return (byte)MathUtils.Clamp(0, 255, (int)Math.Round(delinearized * 255));
+    }
+
+    /// <summary>
+    /// Applies the LabF function to the values of a ColorXyz color.
+    /// </summary>
+    /// <param name="xyz">The ColorXyz color.</param>
+    /// <returns>A new ColorXyz with the LabF transformation applied.</returns>
+    internal static ColorXyz LabF(ColorXyz xyz)
+    {
+        return new
+        (
+            LabF(xyz.X),
+            LabF(xyz.Y),
+            LabF(xyz.Z)
+        );
     }
 
     /// <summary>

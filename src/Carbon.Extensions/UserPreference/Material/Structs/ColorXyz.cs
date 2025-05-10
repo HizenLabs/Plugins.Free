@@ -60,4 +60,10 @@ public readonly struct ColorXyz
     {
         return new(a.X * b.X, a.Y * b.Y, a.Z * b.Z);
     }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static ColorXyz operator /(ColorXyz a, ColorXyz b)
+    {
+        return new(a.X / b.X, a.Y / b.Y, a.Z / b.Z);
+    }
 }

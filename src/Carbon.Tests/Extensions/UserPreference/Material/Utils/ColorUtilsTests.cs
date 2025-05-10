@@ -2,6 +2,7 @@
 using HizenLabs.Extensions.UserPreference.Material.Structs;
 using HizenLabs.Extensions.UserPreference.Material.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 
 namespace Carbon.Tests.Extensions.UserPreference.Material.Utils;
 
@@ -87,7 +88,7 @@ public class ColorUtilsTests
     public void ArgbFromXyzVector_ShouldConvertCorrectly()
     {
         var xyz = new ColorXyz(41.24, 21.26, 1.93);
-        var argb = ColorUtils.ArgbFromXyzVector(xyz);
+        var argb = ColorUtils.ArgbFromColorXyz(xyz);
 
         Assert.AreEqual(255, argb.R);
         Assert.IsTrue(argb.G < 10);
@@ -114,7 +115,7 @@ public class ColorUtilsTests
 
         var whiteArgb = new ColorArgb(255, 255, 255);
         var whiteXyz = ColorUtils.XyzFromArgb(whiteArgb);
-        var backToWhite = ColorUtils.ArgbFromXyzVector(whiteXyz);
+        var backToWhite = ColorUtils.ArgbFromColorXyz(whiteXyz);
 
         Assert.AreEqual(255, backToWhite.R);
         Assert.AreEqual(255, backToWhite.G);
@@ -254,6 +255,79 @@ public class ColorUtilsTests
 
     #endregion
 
+    #region LabF / LabInvF
+
+    /// <summary>
+    /// Tests that <see cref="ColorUtils.LabF(double)"/> behaves correctly above and below the epsilon threshold.
+    /// </summary>
+    [TestMethod]
+    [DataRow(0.0, (Lab.Kappa * 0.0 + Lab.FOffset) / Lab.FScale)]
+    [DataRow(Lab.Epsilon / 2, (Lab.Kappa * (Lab.Epsilon / 2) + Lab.FOffset) / Lab.FScale)]
+    public void LabF_Scalar_ShouldBehaveAsExpected(double input, double expected)
+    {
+        double result = ColorUtils.LabF(input);
+        Assert.AreEqual(expected, result, 0.0001);
+    }
+
+    /// <summary>
+    /// Tests that <see cref="ColorUtils.LabF(double)"/> behaves correctly above and below the epsilon threshold.
+    /// </summary>
+    [TestMethod]
+    public void LabF_Scalar_ShouldBehaveAsExpected()
+    {
+        // Below epsilon (nonlinear region)
+        double inputBelow = Lab.Epsilon / 2;
+        double expectedBelow = (Lab.Kappa * inputBelow + Lab.FOffset) / Lab.FScale;
+        Assert.AreEqual(expectedBelow, ColorUtils.LabF(inputBelow), 0.0001);
+
+        // Above epsilon (linear/cubic root region)
+        double inputAbove = Lab.Epsilon * 2;
+        double expectedAbove = Math.Pow(inputAbove, 1.0 / 3.0);
+        Assert.AreEqual(expectedAbove, ColorUtils.LabF(inputAbove), 0.0001);
+
+        // At zero
+        Assert.AreEqual((Lab.Kappa * 0 + Lab.FOffset) / Lab.FScale, ColorUtils.LabF(0.0), 0.0001);
+    }
+
+    /// <summary>
+    /// Tests that <see cref="ColorUtils.LabF(ColorXyz)"/> applies the transformation component-wise.
+    /// </summary>
+    [TestMethod]
+    public void LabF_Vector_ShouldApplyToEachComponent()
+    {
+        var input = new ColorXyz(0.0, 1.0, Lab.Epsilon / 2.0);
+        var expected = new ColorXyz(
+            ColorUtils.LabF(input.X),
+            ColorUtils.LabF(input.Y),
+            ColorUtils.LabF(input.Z)
+        );
+
+        var result = ColorUtils.LabF(input);
+
+        Assert.AreEqual(expected.X, result.X, 0.0001);
+        Assert.AreEqual(expected.Y, result.Y, 0.0001);
+        Assert.AreEqual(expected.Z, result.Z, 0.0001);
+    }
+
+    /// <summary>
+    /// Tests that <see cref="ColorUtils.LabInvF(double)"/> is the inverse of LabF for representative inputs.
+    /// </summary>
+    [TestMethod]
+    [DataRow(0.0)]
+    [DataRow(0.5)]
+    [DataRow(1.0)]
+    [DataRow(2.0)]
+    [DataRow(5.0)]
+    public void LabF_And_InvF_ShouldRoundtrip(double input)
+    {
+        double f = ColorUtils.LabF(input);
+        double roundtrip = ColorUtils.LabInvF(f);
+
+        Assert.AreEqual(input, roundtrip, 0.0001);
+    }
+
+    #endregion
+
     #region Round-trip
 
     /// <summary>
@@ -273,7 +347,7 @@ public class ColorUtilsTests
         {
             var argb = new ColorArgb(color);
             var xyz = ColorUtils.XyzFromArgb(argb);
-            var roundArgb = ColorUtils.ArgbFromXyzVector(xyz);
+            var roundArgb = ColorUtils.ArgbFromColorXyz(xyz);
 
             Assert.AreEqual(argb.R, roundArgb.R, 2);
             Assert.AreEqual(argb.G, roundArgb.G, 2);
