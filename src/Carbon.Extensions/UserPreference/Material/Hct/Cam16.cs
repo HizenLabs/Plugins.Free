@@ -126,6 +126,12 @@ public sealed class Cam16 : IDisposable, Pool.IPooled
         return FromXyzInViewingConditions(colorXyz, viewingConditions);
     }
 
+    /// <summary>
+    /// Create a CAM16 color from an XYZ color, assuming the color was viewed in the specified viewing conditions.
+    /// </summary>
+    /// <param name="color">The XYZ color to convert to CAM16.</param>
+    /// <param name="viewingConditions">The viewing conditions under which the color was viewed.</param>
+    /// <returns>A CAM16 object representing the color.</returns>
     public static Cam16 FromXyzInViewingConditions(ColorXyz color, ViewingConditions viewingConditions)
     {
         // Transform XYZ to 'cone'/'rgb' responses
