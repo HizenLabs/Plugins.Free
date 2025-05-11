@@ -548,6 +548,7 @@
     <Compile Include="Material\Structs\Cam16Rgb.cs" />
     <Compile Include="Material\Structs\Cam16ScaledDiscountRgb.cs" />
     <Compile Include="Material\Structs\Lab.cs" />
+    <Compile Include="Material\Structs\LabFxyz.cs" />
     <Compile Include="Material\Structs\StandardRgb.cs" />
     <Compile Include="Material\Structs\CieXyz.cs" />
     <Compile Include="Material\Structs\ColorConversionMatrix.cs" />
