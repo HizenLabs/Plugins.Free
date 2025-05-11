@@ -120,7 +120,7 @@ public sealed class Cam16 : IDisposable, Pool.IPooled
     public static Cam16 FromColorInViewingConditions(ColorArgb color, ViewingConditions viewingConditions)
     {
         // Transform ARGB int to XYZ
-        var colorXyz = ColorUtils.XyzFromArgb(color);
+        var colorXyz = color.ToXyz();
 
         return FromXyzInViewingConditions(colorXyz, viewingConditions);
     }

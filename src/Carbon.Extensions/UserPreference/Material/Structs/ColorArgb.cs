@@ -54,6 +54,13 @@ public readonly struct ColorArgb
         Value = argb;
     }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ColorArgb"/> struct with the specified alpha, red, green, and blue values.
+    /// </summary>
+    /// <param name="a">The alpha component of the color (0-255).</param>
+    /// <param name="r">The red component of the color (0-255).</param>
+    /// <param name="g">The green component of the color (0-255).</param>
+    /// <param name="b">The blue component of the color (0-255).</param>
     public ColorArgb(byte a, byte r, byte g, byte b)
     {
         Value = 0;
@@ -63,8 +70,19 @@ public readonly struct ColorArgb
         B = b;
     }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ColorArgb"/> struct with the specified red, green, and blue values.
+    /// </summary>
+    /// <param name="r">The red component of the color (0-255).</param>
+    /// <param name="g">The green component of the color (0-255).</param>
+    /// <param name="b">The blue component of the color (0-255).</param>
     public ColorArgb(byte r, byte g, byte b) : this(255, r, g, b)
     {
+    }
+
+    public ColorXyz ToXyz()
+    {
+        throw null;
     }
 
     /// <summary>
