@@ -70,6 +70,17 @@ public readonly struct ColorXyz
     }
 
     /// <summary>
+    /// Converts the ColorXyz instance to a Cam16Rgb instance using the XYZ to CAM16 RGB transformation.
+    /// </summary>
+    /// <returns>A Cam16Rgb instance representing the color in CAM16 RGB space.</returns>
+    public Cam16Rgb ToCam16Rgb()
+    {
+        var cam16 = ColorTransforms.XyzToCam16rgb * this;
+
+        return new(cam16.X, cam16.Y, cam16.Z);
+    }
+
+    /// <summary>
     /// Multiplies two ColorXyz instances component-wise.
     /// </summary>
     /// <param name="a">The first ColorXyz instance.</param>

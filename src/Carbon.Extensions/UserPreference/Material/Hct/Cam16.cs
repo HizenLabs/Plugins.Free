@@ -135,19 +135,18 @@ public sealed class Cam16 : IDisposable, Pool.IPooled
     public static Cam16 FromXyzInViewingConditions(ColorXyz color, ViewingConditions viewingConditions)
     {
         // Transform XYZ to 'cone'/'rgb' responses
-        var matrix = ColorTransforms.XyzToCam16rgb;
-        var rgbT = color * matrix;
+        var rgbT = color.ToCam16Rgb();
 
         // Discount illuminant
         var rgbD = viewingConditions.RgbD * rgbT;
 
         // Chromatic adaptation
-        double rAF = Math.Pow(viewingConditions.Fl * Math.Abs(rgbD.X) / 100.0, 0.42);
-        double gAF = Math.Pow(viewingConditions.Fl * Math.Abs(rgbD.Y) / 100.0, 0.42);
-        double bAF = Math.Pow(viewingConditions.Fl * Math.Abs(rgbD.Z) / 100.0, 0.42);
-        double rA = Math.Sign(rgbD.X) * 400.0 * rAF / (rAF + 27.13);
-        double gA = Math.Sign(rgbD.Y) * 400.0 * gAF / (gAF + 27.13);
-        double bA = Math.Sign(rgbD.Z) * 400.0 * bAF / (bAF + 27.13);
+        double rAF = Math.Pow(viewingConditions.Fl * Math.Abs(rgbD.R) / 100.0, 0.42);
+        double gAF = Math.Pow(viewingConditions.Fl * Math.Abs(rgbD.G) / 100.0, 0.42);
+        double bAF = Math.Pow(viewingConditions.Fl * Math.Abs(rgbD.B) / 100.0, 0.42);
+        double rA = Math.Sign(rgbD.R) * 400.0 * rAF / (rAF + 27.13);
+        double gA = Math.Sign(rgbD.G) * 400.0 * gAF / (gAF + 27.13);
+        double bA = Math.Sign(rgbD.B) * 400.0 * bAF / (bAF + 27.13);
 
         // redness-greenness
         double a = (11.0 * rA + -12.0 * gA + bA) / 11.0;

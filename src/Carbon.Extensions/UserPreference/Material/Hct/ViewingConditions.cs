@@ -23,7 +23,7 @@ public sealed class ViewingConditions : IDisposable, Pool.IPooled
     private double _ncb;
     private double _c;
     private double _nc;
-    private ColorXyz _rgbD;
+    private Cam16Rgb _rgbD;
     private double _fl;
     private double _flRoot;
     private double _z;
@@ -61,7 +61,7 @@ public sealed class ViewingConditions : IDisposable, Pool.IPooled
     /// <summary>
     /// The RGB discounting factors used to simulate incomplete adaptation to the illuminant.
     /// </summary>
-    public ColorXyz RgbD => _rgbD;
+    public Cam16Rgb RgbD => _rgbD;
 
     /// <summary>
     /// Luminance-level adaptation factor (FL), accounting for eye response to different luminance levels.
@@ -99,7 +99,7 @@ public sealed class ViewingConditions : IDisposable, Pool.IPooled
         double ncb,
         double c,
         double nc,
-        ColorXyz rgbD,
+        Cam16Rgb rgbD,
         double fl,
         double flRoot,
         double z)
@@ -136,10 +136,7 @@ public sealed class ViewingConditions : IDisposable, Pool.IPooled
     {
         backgroundLstar = Math.Max(0.1, backgroundLstar);
 
-        var matrix = ColorTransforms.XyzToCam16rgb;
-        var xyz = whitePoint;
-
-        var rgbW = xyz * matrix;
+        var rgbW = whitePoint.ToCam16Rgb();
 
         double f = 0.8 + (surround / 10.0);
         double c = f >= 0.9
@@ -153,11 +150,11 @@ public sealed class ViewingConditions : IDisposable, Pool.IPooled
 
         double nc = f;
 
-        ColorXyz rgbD = new
+        Cam16Rgb rgbD = new
         (
-            d * (100.0 / rgbW.X) + 1.0 - d,
-            d * (100.0 / rgbW.Y) + 1.0 - d,
-            d * (100.0 / rgbW.Z) + 1.0 - d
+            d * (100.0 / rgbW.R) + 1.0 - d,
+            d * (100.0 / rgbW.G) + 1.0 - d,
+            d * (100.0 / rgbW.B) + 1.0 - d
         );
 
         double k = 1.0 / (5.0 * adaptingLuminance + 1.0);
@@ -170,21 +167,21 @@ public sealed class ViewingConditions : IDisposable, Pool.IPooled
         double nbb = 0.725 / Math.Pow(n, 0.2);
         double ncb = nbb;
 
-        ColorXyz rgbAFactors = new
+        Cam16Rgb rgbAFactors = new
         (
-            Math.Pow(fl * rgbD.X * rgbW.X / 100.0, 0.42),
-            Math.Pow(fl * rgbD.Y * rgbW.Y / 100.0, 0.42),
-            Math.Pow(fl * rgbD.Z * rgbW.Z / 100.0, 0.42)
+            Math.Pow(fl * rgbD.R * rgbW.R / 100.0, 0.42),
+            Math.Pow(fl * rgbD.G * rgbW.G / 100.0, 0.42),
+            Math.Pow(fl * rgbD.B * rgbW.B / 100.0, 0.42)
         );
 
-        ColorXyz rgbA = new
+        Cam16Rgb rgbA = new
         (
-            400.0 * rgbAFactors[0] / (rgbAFactors[0] + 27.13),
-            400.0 * rgbAFactors[1] / (rgbAFactors[1] + 27.13),
-            400.0 * rgbAFactors[2] / (rgbAFactors[2] + 27.13)
+            400.0 * rgbAFactors.R / (rgbAFactors.R + 27.13),
+            400.0 * rgbAFactors.G / (rgbAFactors.G + 27.13),
+            400.0 * rgbAFactors.B / (rgbAFactors.B + 27.13)
         );
 
-        double aw = (2.0 * rgbA[0] + rgbA[1] + 0.05 * rgbA[2]) * nbb;
+        double aw = (2.0 * rgbA.R + rgbA.G + 0.05 * rgbA.B) * nbb;
 
         return Create(n, aw, nbb, ncb, c, nc, rgbD, fl, Math.Pow(fl, 0.25), z);
     }

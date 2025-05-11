@@ -545,6 +545,7 @@
     <Compile Include="Material\Hct\Hct.cs" />
     <Compile Include="Material\Hct\HctSolver.cs" />
     <Compile Include="Material\Hct\ViewingConditions.cs" />
+    <Compile Include="Material\Structs\Cam16Rgb.cs" />
     <Compile Include="Material\Structs\ColorArgb.cs" />
     <Compile Include="Material\Structs\ColorXyz.cs" />
     <Compile Include="Material\Structs\ColorConversionMatrix.cs" />
