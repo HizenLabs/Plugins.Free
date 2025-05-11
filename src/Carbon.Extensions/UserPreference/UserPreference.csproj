@@ -554,6 +554,8 @@
     <Compile Include="Material\Structs\ColorConversionMatrix.cs" />
     <Compile Include="Material\Structs\LinearRgb.cs" />
     <Compile Include="Material\Structs\Cam16PreAdaptRgb.cs" />
+    <Compile Include="Material\Structs\Vector3d.cs" />
+    <Compile Include="Material\Structs\WhitePoint.cs" />
     <Compile Include="Material\Utils\ColorUtils.cs" />
     <Compile Include="Material\Utils\MathUtils.cs" />
     <Compile Include="Material\Utils\StringUtils.cs" />

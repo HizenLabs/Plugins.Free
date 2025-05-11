@@ -81,6 +81,10 @@ public readonly struct StandardRgb
     {
     }
 
+    /// <summary>
+    /// Converts the <see cref="StandardRgb"/> struct to a <see cref="LinearRgb"/> object.
+    /// </summary>
+    /// <returns></returns>
     public LinearRgb ToLinearRgb()
     {
         return new
@@ -91,7 +95,11 @@ public readonly struct StandardRgb
         );
     }
 
-    public CieXyz ToXyz()
+    /// <summary>
+    /// Converts the <see cref="StandardRgb"/> struct to a <see cref="CieXyz"/> object.
+    /// </summary>
+    /// <returns></returns>
+    public CieXyz ToCieXyz()
     {
         return ToLinearRgb().ToColorXyz();
     }

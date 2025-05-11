@@ -688,7 +688,8 @@
     <Compile Include="Extensions\ObjectSerializer\Extensions\TypeExtensionsTests.cs" />
     <Compile Include="Extensions\ObjectSerializer\Internal\Delegates\GenericDelegateFactoryTests.cs" />
     <Compile Include="Extensions\UserPreference\Material\Htc\ViewingConditionsTests.cs" />
-    <Compile Include="Extensions\UserPreference\Material\Structs\ColorArgbTests.cs" />
+    <Compile Include="Extensions\UserPreference\Material\Structs\StandardRgbTests.cs" />
+    <Compile Include="Extensions\UserPreference\Material\Structs\WhitePointTests.cs" />
     <Compile Include="Extensions\UserPreference\Material\Utils\ColorUtilsTests.cs" />
     <Compile Include="Extensions\UserPreference\Material\Utils\MathUtilsTests.cs" />
     <Compile Include="Extensions\UserPreference\Material\Utils\StringUtilsTests.cs" />

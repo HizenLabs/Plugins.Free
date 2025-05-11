@@ -45,5 +45,5 @@ internal static class Gamma
     /// <summary>
     /// The threshold for the linear segment in sRGB gamma encoding.
     /// </summary>
-    public static readonly LinearRgb YFromLinearRgb = new(0.2126, 0.7152, 0.0722);
+    public static readonly Vector3d YFromLinearRgb = new(0.2126, 0.7152, 0.0722);
 }

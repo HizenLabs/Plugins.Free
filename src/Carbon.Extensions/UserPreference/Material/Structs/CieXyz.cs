@@ -108,4 +108,14 @@ public readonly struct CieXyz
     {
         return new(a.X / b.X, a.Y / b.Y, a.Z / b.Z);
     }
+
+    public static CieXyz operator *(CieXyz a, WhitePoint b)
+    {
+        return new(a.X * b.X, a.Y * b.Y, a.Z * b.Z);
+    }
+
+    public static CieXyz operator /(CieXyz a, WhitePoint b)
+    {
+        return new(a.X / b.X, a.Y / b.Y, a.Z / b.Z);
+    }
 }

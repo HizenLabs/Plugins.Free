@@ -128,44 +128,13 @@ public sealed class ViewingConditions : IDisposable, Pool.IPooled
     /// <param name="discountingIlluminant">Whether to discount the illuminant.</param>
     /// <returns>A new instance of <see cref="ViewingConditions"/>.</returns>
     public static ViewingConditions Create(
-        CieXyz whitePoint,
+        WhitePoint whitePoint,
         double adaptingLuminance,
         double backgroundLstar,
         double surround,
         bool discountingIlluminant)
     {
         backgroundLstar = Math.Max(0.1, backgroundLstar);
-
-        var rgbW = whitePoint.ToCam16PreAdaptRgb();
-
-        double f = 0.8 + (surround / 10.0);
-        double c = f >= 0.9
-            ? MathUtils.Lerp(0.59, 0.69, (f - 0.9) * 10.0)
-            : MathUtils.Lerp(0.525, 0.59, (f - 0.8) * 10.0);
-
-        double d = discountingIlluminant
-            ? 1.0
-            : f * (1.0 - (1.0 / 3.6 * Math.Exp((-adaptingLuminance - 42.0) / 92.0)));
-        d = MathUtils.Clamp(0.0, 1.0, d);
-
-        double nc = f;
-
-        Cam16Rgb rgbD = new
-        (
-            d * (100.0 / rgbW.R) + 1.0 - d,
-            d * (100.0 / rgbW.G) + 1.0 - d,
-            d * (100.0 / rgbW.B) + 1.0 - d
-        );
-
-        double k = 1.0 / (5.0 * adaptingLuminance + 1.0);
-        double k4 = k * k * k * k;
-        double k4F = 1.0 - k4;
-        double fl = (k4 * adaptingLuminance) + (0.1 * k4F * k4F * Math.Pow(5.0 * adaptingLuminance, 1d / 3d));
-
-        double n = ColorUtils.YFromLstar(backgroundLstar) / whitePoint[1];
-        double z = 1.48 + Math.Sqrt(n);
-        double nbb = 0.725 / Math.Pow(n, 0.2);
-        double ncb = nbb;
 
         throw new NotImplementedException();
     }
