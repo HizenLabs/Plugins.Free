@@ -110,4 +110,26 @@ public struct ColorConversionMatrix
     {
         return matrix * colorXyz;
     }
+
+    /// <summary>
+    /// Multiplies a 3x3 matrix by a LinearRgb vector.
+    /// </summary>
+    /// <param name="matrix">The 3x3 matrix.</param>
+    /// <param name="linearRgb">The LinearRgb vector.</param>
+    /// <returns>The resulting LinearRgb vector after multiplication.</returns>
+    public static LinearRgb operator *(ColorConversionMatrix matrix, LinearRgb linearRgb)
+    {
+        return new
+        (
+            matrix.m00 * linearRgb.R + matrix.m01 * linearRgb.G + matrix.m02 * linearRgb.B,
+            matrix.m10 * linearRgb.R + matrix.m11 * linearRgb.G + matrix.m12 * linearRgb.B,
+            matrix.m20 * linearRgb.R + matrix.m21 * linearRgb.G + matrix.m22 * linearRgb.B
+        );
+    }
+
+    /// <inheritdoc cref="operator *(ColorConversionMatrix, LinearRgb)"/>
+    public static LinearRgb operator *(LinearRgb linearRgb, ColorConversionMatrix matrix)
+    {
+        return matrix * linearRgb;
+    }
 }

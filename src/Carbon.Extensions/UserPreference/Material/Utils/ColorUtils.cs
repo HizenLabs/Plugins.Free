@@ -13,12 +13,12 @@ public static class ColorUtils
     /// <summary>
     /// Converts a color from linear RGB components to ARGB format.
     /// </summary>
-    /// <param name="colorXyz">Linear RGB components in range [0, 100].</param>
+    /// <param name="linearRgb">Linear RGB components in range [0, 100].</param>
     /// <returns>An ARGB integer with full alpha (255).</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ColorArgb ArgbFromLinearArgb(ColorXyz colorXyz)
+    public static ColorArgb ArgbFromLinearArgb(LinearRgb linearRgb)
     {
-        return Delinearized(colorXyz);
+        return Delinearized(linearRgb);
     }
 
     /// <summary>
@@ -28,8 +28,8 @@ public static class ColorUtils
     /// <returns>An ARGB integer.</returns>
     public static ColorArgb ArgbFromXyz(ColorXyz colorXyz)
     {
-        var linearRgb = ColorTransforms.XyzToSrgb * colorXyz;
-        
+        var linearRgb = colorXyz.ToLinearRgb();
+
         return Delinearized(linearRgb);
     }
 
@@ -42,7 +42,7 @@ public static class ColorUtils
     {
         var linearRgb = Linearized(color);
 
-        return ColorTransforms.SrgbToXyz * linearRgb;
+        return linearRgb.ToColorXyz();
     }
 
     /// <summary>
@@ -83,7 +83,7 @@ public static class ColorUtils
     /// </summary>
     /// <param name="argb">The ARGB color as an unsigned integer.</param>
     /// <returns>An array containing L\*, a\*, and b\* values.</returns>
-    public static ColorXyz LabFromArgb(uint argb)
+    public static ColorXyz LabFromArgb(ColorArgb argb)
     {
         // Convert ARGB to absolute XYZ (under D65 white point)
         ColorXyz absoluteXyz = XyzFromArgb(argb);
@@ -121,7 +121,7 @@ public static class ColorUtils
     /// </summary>
     /// <param name="argb">The ARGB integer.</param>
     /// <returns>The L* value.</returns>
-    public static double LstarFromArgb(uint argb)
+    public static double LstarFromArgb(ColorArgb argb)
     {
         double y = XyzFromArgb(argb)[1];
 
@@ -155,9 +155,9 @@ public static class ColorUtils
     /// <param name="color">The RGB components in range [0, 255].</param>
     /// <returns>A ColorXyz representing the linearized RGB color.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ColorXyz Linearized(ColorArgb color)
+    public static LinearRgb Linearized(ColorArgb color)
     {
-        return new ColorXyz
+        return new
         (
             Linearized(color.R),
             Linearized(color.G),
@@ -190,13 +190,13 @@ public static class ColorUtils
     /// <param name="linearRgb">Linear RGB components in range [0, 100].</param>
     /// <returns>A Vector3i representing the linear RGB color.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ColorArgb Delinearized(ColorXyz linearRgb)
+    public static ColorArgb Delinearized(LinearRgb linearRgb)
     {
         return new
         (
-            Delinearized(linearRgb.X),
-            Delinearized(linearRgb.Y),
-            Delinearized(linearRgb.Z)
+            Delinearized(linearRgb.R),
+            Delinearized(linearRgb.G),
+            Delinearized(linearRgb.B)
         );
     }
 

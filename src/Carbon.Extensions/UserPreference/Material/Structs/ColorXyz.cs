@@ -1,10 +1,13 @@
-﻿using System.Runtime.CompilerServices;
+﻿using HizenLabs.Extensions.UserPreference.Material.Constants;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace HizenLabs.Extensions.UserPreference.Material.Structs;
 
 /// <summary>
 /// Represents a linear color in the XYZ color space, where X, Y, and Z are the red, green, and blue color components ranging from 0 to 1.
 /// </summary>
+[StructLayout(LayoutKind.Sequential)]
 public readonly struct ColorXyz
 {
     /// <summary>
@@ -53,6 +56,17 @@ public readonly struct ColorXyz
         X = x;
         Y = y;
         Z = z;
+    }
+
+    /// <summary>
+    /// Converts the ColorXyz instance to a LinearRgb instance using the XYZ to linear RGB transformation.
+    /// </summary>
+    /// <returns>A LinearRgb instance representing the color in linear RGB space.</returns>
+    public LinearRgb ToLinearRgb()
+    {
+        var rgb = ColorTransforms.XyzToSrgb * this;
+
+        return new(rgb.X, rgb.Y, rgb.Z);
     }
 
     /// <summary>

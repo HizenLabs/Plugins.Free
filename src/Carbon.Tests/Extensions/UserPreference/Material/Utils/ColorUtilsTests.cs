@@ -20,10 +20,10 @@ public class ColorUtilsTests
     [TestMethod]
     public void ArgbFromLinearArgb_ShouldConvertCorrectly()
     {
-        var linearArgb = new ColorXyz(100.0, 0.0, 0.0);
+        var linearArgb = new LinearRgb(100.0, 0.0, 0.0);
         Assert.AreEqual(0xFFFF0000, ColorUtils.ArgbFromLinearArgb(linearArgb));
 
-        linearArgb = new ColorXyz(0.0, 100.0, 0.0);
+        linearArgb = new LinearRgb(0.0, 100.0, 0.0);
         Assert.AreEqual(0xFF00FF00, ColorUtils.ArgbFromLinearArgb(linearArgb));
     }
 
@@ -161,14 +161,14 @@ public class ColorUtilsTests
     public void Linearized_ColorArgb_ShouldConvertCorrectly()
     {
         var black = ColorUtils.Linearized(new ColorArgb(0, 0, 0));
-        Assert.AreEqual(0.0, black.X, 0.001);
-        Assert.AreEqual(0.0, black.Y, 0.001);
-        Assert.AreEqual(0.0, black.Z, 0.001);
+        Assert.AreEqual(0.0, black.R, 0.001);
+        Assert.AreEqual(0.0, black.G, 0.001);
+        Assert.AreEqual(0.0, black.B, 0.001);
 
         var white = ColorUtils.Linearized(new ColorArgb(255, 255, 255));
-        Assert.AreEqual(100.0, white.X, 0.001);
-        Assert.AreEqual(100.0, white.Y, 0.001);
-        Assert.AreEqual(100.0, white.Z, 0.001);
+        Assert.AreEqual(100.0, white.R, 0.001);
+        Assert.AreEqual(100.0, white.G, 0.001);
+        Assert.AreEqual(100.0, white.B, 0.001);
     }
 
     [TestMethod]
@@ -183,12 +183,12 @@ public class ColorUtilsTests
     [TestMethod]
     public void Delinearized_ColorXyz_ShouldConvertCorrectly()
     {
-        var black = ColorUtils.Delinearized(new ColorXyz(0.0, 0.0, 0.0));
+        var black = ColorUtils.Delinearized(new LinearRgb(0.0, 0.0, 0.0));
         Assert.AreEqual(0, black.R);
         Assert.AreEqual(0, black.G);
         Assert.AreEqual(0, black.B);
 
-        var white = ColorUtils.Delinearized(new ColorXyz(100.0, 100.0, 100.0));
+        var white = ColorUtils.Delinearized(new LinearRgb(100.0, 100.0, 100.0));
         Assert.AreEqual(255, white.R);
         Assert.AreEqual(255, white.G);
         Assert.AreEqual(255, white.B);
