@@ -1,5 +1,4 @@
 ﻿using Facepunch;
-using HizenLabs.Extensions.UserPreference.Material.Constants;
 using HizenLabs.Extensions.UserPreference.Material.Structs;
 using HizenLabs.Extensions.UserPreference.Material.Utils;
 using System;
@@ -141,21 +140,16 @@ public sealed class Cam16 : IDisposable, Pool.IPooled
         var rgbD = viewingConditions.RgbD * rgbT;
 
         // Chromatic adaptation
-        double rAF = Math.Pow(viewingConditions.Fl * Math.Abs(rgbD.R) / 100.0, 0.42);
-        double gAF = Math.Pow(viewingConditions.Fl * Math.Abs(rgbD.G) / 100.0, 0.42);
-        double bAF = Math.Pow(viewingConditions.Fl * Math.Abs(rgbD.B) / 100.0, 0.42);
-        double rA = Math.Sign(rgbD.R) * 400.0 * rAF / (rAF + 27.13);
-        double gA = Math.Sign(rgbD.G) * 400.0 * gAF / (gAF + 27.13);
-        double bA = Math.Sign(rgbD.B) * 400.0 * bAF / (bAF + 27.13);
+        var ca = rgbD.ToChromaticAdaptation(viewingConditions.Fl);
 
         // redness-greenness
-        double a = (11.0 * rA + -12.0 * gA + bA) / 11.0;
+        double a = (11.0 * ca.R + -12.0 * ca.G + ca.B) / 11.0;
         // yellowness-blueness
-        double b = (rA + gA - 2.0 * bA) / 9.0;
+        double b = (ca.R + ca.G - 2.0 * ca.B) / 9.0;
 
         // auxiliary components
-        double u = (20.0 * rA + 20.0 * gA + 21.0 * bA) / 20.0;
-        double p2 = (40.0 * rA + 20.0 * gA + bA) / 20.0;
+        double u = (20.0 * ca.R + 20.0 * ca.G + 21.0 * ca.B) / 20.0;
+        double p2 = (40.0 * ca.R + 20.0 * ca.G + ca.B) / 20.0;
 
         // hue
         double atan2 = Math.Atan2(b, a);

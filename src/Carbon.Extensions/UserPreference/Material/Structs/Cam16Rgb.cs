@@ -1,4 +1,5 @@
 ﻿using HizenLabs.Extensions.UserPreference.Material.Constants;
+using System;
 using System.Runtime.InteropServices;
 
 namespace HizenLabs.Extensions.UserPreference.Material.Structs;
@@ -37,9 +38,39 @@ public readonly struct Cam16Rgb
         B = b;
     }
 
-    public Cam16Rgb ChromaticAdaptation(double component, double fl = 1.0)
+    /// <summary>
+    /// Applies chromatic adaptation to this CAM16 RGB color using the specified luminance-level adaptation factor (FL).
+    /// This simulates the human visual system’s nonlinear response to light based on the viewing conditions.
+    /// </summary>
+    /// <param name="fl">
+    /// The luminance-level adaptation factor (<c>FL</c>), typically derived from viewing conditions.
+    /// This value affects the degree of chromatic adaptation applied to the input color.
+    /// </param>
+    /// <returns>
+    /// A new <see cref="Cam16Rgb"/> instance representing the chromatically adapted color,
+    /// transformed using the CAM16 non-linear response function.
+    /// </returns>
+
+    public Cam16Rgb ToChromaticAdaptation(double fl = 1.0)
     {
-        throw null;
+        double rA = ChromaticAdaptation(R, fl);
+        double gA = ChromaticAdaptation(G, fl);
+        double bA = ChromaticAdaptation(B, fl);
+
+        return new(rA, gA, bA);
+    }
+
+    /// <summary>
+    /// Applies chromatic adaptation to a single component of the CAM16 RGB color space.
+    /// </summary>
+    /// <param name="component">The color component to adapt.</param>
+    /// <param name="fl">The luminance-level adaptation factor (FL).</param>
+    /// <returns>The adapted color component value.</returns>
+    private static double ChromaticAdaptation(double component, double fl)
+    {
+        double rAF = Math.Pow(fl * Math.Abs(component) / 100.0, 0.42);
+
+        return Math.Sign(component) * 400.0 * rAF / (rAF + 27.13);
     }
 
     /// <summary>
