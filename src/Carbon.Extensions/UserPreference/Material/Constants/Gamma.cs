@@ -1,4 +1,6 @@
-﻿namespace HizenLabs.Extensions.UserPreference.Material.Constants;
+﻿using HizenLabs.Extensions.UserPreference.Material.Structs;
+
+namespace HizenLabs.Extensions.UserPreference.Material.Constants;
 
 /// <summary>
 /// Provides constants for gamma correction and encoding used in color space conversions.
@@ -39,4 +41,9 @@ internal static class Gamma
     /// Threshold used in sRGB linearization for determining whether to apply the linear or exponential segment.
     /// </summary>
     public const double LinearThreshold = 0.040449936d;
+
+    /// <summary>
+    /// The threshold for the linear segment in sRGB gamma encoding.
+    /// </summary>
+    public static readonly LinearRgb YFromLinearRgb = new(0.2126, 0.7152, 0.0722);
 }
