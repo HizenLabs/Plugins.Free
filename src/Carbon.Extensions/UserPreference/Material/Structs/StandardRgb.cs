@@ -89,9 +89,9 @@ public readonly struct StandardRgb
     {
         return new
         (
-            ColorUtils.Linearized(R),
-            ColorUtils.Linearized(G),
-            ColorUtils.Linearized(B)
+            ColorUtils.LinearizeComponent(R),
+            ColorUtils.LinearizeComponent(G),
+            ColorUtils.LinearizeComponent(B)
         );
     }
 

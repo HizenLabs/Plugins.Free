@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HizenLabs.Extensions.UserPreference.Material.Constants;
+using System;
 using System.Runtime.InteropServices;
 
 namespace HizenLabs.Extensions.UserPreference.Material.Structs;
@@ -16,7 +17,7 @@ public readonly struct WhitePoint
     public readonly double X;
 
     /// <summary>
-    /// The Y component of the white point. Typically normalized to 1.0.
+    /// The Y component of the white point. For MD3 this is scaled to 100.
     /// </summary>
     public readonly double Y;
 
@@ -46,9 +47,9 @@ public readonly struct WhitePoint
     {
         return new
         (
-            x / y * 100,
-            100.0,
-            (1.0 - x - y) / y * 100
+            x / y * Gamma.LuminanceScale,
+            Gamma.LuminanceScale,
+            (1.0 - x - y) / y * Gamma.LuminanceScale
         );
     }
 }

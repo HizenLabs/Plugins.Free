@@ -160,29 +160,33 @@ public static class ColorUtils
     {
         return new
         (
-            Linearized(color.R),
-            Linearized(color.G),
-            Linearized(color.B)
+            LinearizeComponent(color.R),
+            LinearizeComponent(color.G),
+            LinearizeComponent(color.B)
         );
     }
 
     /// <summary>
-    /// Linearizes an RGB component.
+    /// Converts an sRGB component (0-255) to a linear RGB value (0-1) and then scales it according to the scaling factor (default 100).
     /// </summary>
     /// <param name="rgbComponent">RGB component (0-255).</param>
     /// <returns>Linearized value (0-100).</returns>
-    public static double Linearized(byte rgbComponent)
+    /// <remarks>
+    /// A lot of this is defined in the 
+    /// <a href="https://cdn.standards.iteh.ai/samples/10795/ae461684569b40bbbb2d9a22b1047f05/IEC-61966-2-1-1999-AMD1-2003.pdf">
+    /// IEC 61966-2-1
+    /// </a> international standard.
+    /// </remarks>
+    public static double LinearizeComponent(byte rgbComponent)
     {
         double normalized = rgbComponent / 255d;
 
-        if (normalized <= Gamma.LinearThreshold)
+        if (normalized <= Gamma.SrgbToLinearThreshold)
         {
-            return normalized / Gamma.LinearScale * 100d;
+            return normalized / Gamma.LinearScale * Gamma.LuminanceScale;
         }
-        else
-        {
-            return Math.Pow((normalized + Gamma.Offset) / Gamma.Scale, Gamma.DecodingExponent) * 100d;
-        }
+
+        return Math.Pow((normalized + Gamma.Offset) / Gamma.Scale, Gamma.DecodingExponent) * Gamma.LuminanceScale;
     }
 
     /// <summary>
@@ -213,9 +217,13 @@ public static class ColorUtils
     private static double DelinearizeCore(double rgbComponent)
     {
         double normalized = rgbComponent / 100d;
-        return normalized <= Gamma.Threshold
-            ? normalized * Gamma.LinearScale
-            : Gamma.Scale * Math.Pow(normalized, Gamma.EncodingExponent) - Gamma.Offset;
+
+        if (normalized <= Gamma.LinearToSrgbThreshold)
+        {
+            return normalized * Gamma.LinearScale;
+        }
+
+        return Gamma.Scale * Math.Pow(normalized, Gamma.EncodingExponent) - Gamma.Offset;
     }
 
 
