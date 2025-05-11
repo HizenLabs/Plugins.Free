@@ -550,6 +550,7 @@
     <Compile Include="Material\Structs\ColorXyz.cs" />
     <Compile Include="Material\Structs\ColorConversionMatrix.cs" />
     <Compile Include="Material\Structs\LinearRgb.cs" />
+    <Compile Include="Material\Structs\ScaledDiscountRgb.cs" />
     <Compile Include="Material\Utils\ColorUtils.cs" />
     <Compile Include="Material\Utils\MathUtils.cs" />
     <Compile Include="Material\Utils\StringUtils.cs" />

@@ -43,6 +43,17 @@ public readonly struct LinearRgb
     }
 
     /// <summary>
+    /// Converts the LinearRgb instance to a ColorArgb instance using the linear RGB to sRGB transformation.
+    /// </summary>
+    /// <returns>A ColorArgb instance representing the color in ARGB format.</returns>
+    public LinearRgb ToScaledDiscount()
+    {
+        var sd = ColorTransforms.ScaledDiscountFromLinearRgb * this;
+
+        return new(sd.R, sd.G, sd.B);
+    }
+
+    /// <summary>
     /// Converts the LinearRgb instance to a ColorArgb instance using the linear RGB to XYZ transformation.
     /// </summary>
     /// <returns>A ColorArgb instance representing the color in ARGB format.</returns>
