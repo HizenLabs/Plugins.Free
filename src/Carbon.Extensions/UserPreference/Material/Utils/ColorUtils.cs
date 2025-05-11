@@ -201,20 +201,38 @@ public static class ColorUtils
     }
 
     /// <summary>
-    /// Applies sRGB gamma encoding to a linear RGB component.
+    /// Applies sRGB gamma encoding to a linear RGB component and returns a byte value.
     /// </summary>
-    /// <param name="rgbComponent">Linear RGB component in range [0, 100].</param>
-    /// <returns>Delinearized byte value (0–255).</returns>
+    /// <param name="rgbComponent">Linear RGB component in the range [0, 100].</param>
+    /// <returns>Gamma-encoded sRGB value in the range [0, 255].</returns>
     public static byte Delinearized(double rgbComponent)
     {
-        double normalized = rgbComponent / 100d;
+        return (byte)MathUtils.Clamp(0, 255, (int)Math.Round(DelinearizeCore(rgbComponent) * 255));
+    }
 
-        double delinearized = normalized <= Gamma.Threshold
+    /// <summary>
+    /// Applies sRGB gamma encoding to a linear RGB component and returns the full-precision result.
+    /// </summary>
+    /// <param name="rgbComponent">Linear RGB component in the range [0, 100].</param>
+    /// <returns>Gamma-encoded sRGB value in the range [0.0, 255.0].</returns>
+    public static double TrueDelinearized(double rgbComponent)
+    {
+        return DelinearizeCore(rgbComponent) * 255.0;
+    }
+
+    /// <summary>
+    /// Performs the core sRGB gamma encoding operation on a normalized linear RGB component.
+    /// </summary>
+    /// <param name="rgbComponent">Linear RGB component in the range [0, 100].</param>
+    /// <returns>Normalized gamma-encoded sRGB value in the range [0.0, 1.0].</returns>
+    private static double DelinearizeCore(double rgbComponent)
+    {
+        double normalized = rgbComponent / 100d;
+        return normalized <= Gamma.Threshold
             ? normalized * Gamma.LinearScale
             : Gamma.Scale * Math.Pow(normalized, Gamma.EncodingExponent) - Gamma.Offset;
-
-        return (byte)MathUtils.Clamp(0, 255, (int)Math.Round(delinearized * 255));
     }
+
 
     /// <summary>
     /// Applies the LabF function to the values of a ColorXyz color.
