@@ -15,10 +15,11 @@ public static class ColorUtils
     /// </summary>
     /// <param name="linearRgb">Linear RGB components in range [0, 100].</param>
     /// <returns>An ARGB integer with full alpha (255).</returns>
+    [Obsolete("Use ToStandardRgb() instead.")]
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ColorArgb ArgbFromLinearArgb(LinearRgb linearRgb)
+    public static StandardRgb ArgbFromLinearArgb(LinearRgb linearRgb)
     {
-        return Delinearized(linearRgb);
+        return linearRgb.ToStandardRgb();
     }
 
     /// <summary>
@@ -26,11 +27,10 @@ public static class ColorUtils
     /// </summary>
     /// <param name="colorXyz">The XYZ vector.</param>
     /// <returns>An ARGB integer.</returns>
-    public static ColorArgb ArgbFromXyz(ColorXyz colorXyz)
+    [Obsolete("Use ToStandardRgb() instead.")]
+    public static StandardRgb ArgbFromXyz(CieXyz colorXyz)
     {
-        var linearRgb = colorXyz.ToLinearRgb();
-
-        return Delinearized(linearRgb);
+        return colorXyz.ToStandardRgb();
     }
 
     /// <summary>
@@ -38,7 +38,8 @@ public static class ColorUtils
     /// </summary>
     /// <param name="color">The ARGB integer.</param>
     /// <returns>A ColorXyz representing the XYZ color.</returns>
-    public static ColorXyz XyzFromArgb(ColorArgb color)
+    [Obsolete("Use ToColorXyz() instead.")]
+    public static CieXyz XyzFromArgb(StandardRgb color)
     {
         var linearRgb = Linearized(color);
 
@@ -52,17 +53,17 @@ public static class ColorUtils
     /// <param name="a">a* (green–red) component of the Lab color.</param>
     /// <param name="b">b* (blue–yellow) component of the Lab color.</param>
     /// <returns>An ARGB color converted from the Lab input.</returns>
-    public static ColorArgb ArgbFromLab(ColorXyz lab)
+    public static StandardRgb ArgbFromLab(CieXyz lab)
     {
         // Convert L*a*b* to intermediate f(x), f(y), f(z) values
         // These represent cube root–transformed XYZ values, normalized to the white point
-        double fy = (lab.X + Lab.FOffset) / Lab.FScale;
-        double fx = lab.Y / Lab.A_Scale + fy;
-        double fz = fy - lab.Z / Lab.B_Scale;
+        double fy = (lab.X + Constants.LabConstants.FOffset) / Constants.LabConstants.FScale;
+        double fx = lab.Y / Constants.LabConstants.A_Scale + fy;
+        double fz = fy - lab.Z / Constants.LabConstants.B_Scale;
 
         // Convert normalized f(x), f(y), f(z) values to relative XYZ
         // (i.e., where white point Y is 1.0)
-        ColorXyz relativeXyz = new
+        CieXyz relativeXyz = new
         (
             LabInvF(fx),
             LabInvF(fy),
@@ -71,7 +72,7 @@ public static class ColorUtils
 
         // Scale relative XYZ to absolute XYZ using the D65 white point
         // (i.e., where white point Y is 100.0 and XYZ reflects actual luminance)
-        ColorXyz absoluteXyz = relativeXyz * WhitePoints.D65;
+        CieXyz absoluteXyz = relativeXyz * WhitePoints.D65;
 
         // Convert absolute XYZ to sRGB (ARGB representation)
         return ArgbFromXyz(absoluteXyz);
@@ -83,21 +84,21 @@ public static class ColorUtils
     /// </summary>
     /// <param name="argb">The ARGB color as an unsigned integer.</param>
     /// <returns>An array containing L\*, a\*, and b\* values.</returns>
-    public static ColorXyz LabFromArgb(ColorArgb argb)
+    public static CieXyz LabFromArgb(StandardRgb argb)
     {
         // Convert ARGB to absolute XYZ (under D65 white point)
-        ColorXyz absoluteXyz = XyzFromArgb(argb);
+        CieXyz absoluteXyz = XyzFromArgb(argb);
 
         // Normalize XYZ by dividing by the D65 white point
-        ColorXyz relativeXyz = absoluteXyz / WhitePoints.D65;
+        CieXyz relativeXyz = absoluteXyz / WhitePoints.D65;
 
         // Convert normalized XYZ to intermediate f(x), f(y), f(z) values
-        ColorXyz labF = LabF(relativeXyz);
+        CieXyz labF = LabF(relativeXyz);
 
         // Convert to Lab using standard formulas
-        double l = Lab.FScale * labF.Y - Lab.FOffset;
-        double a = Lab.A_Scale * (labF.X - labF.Y);
-        double b = Lab.B_Scale * (labF.Y - labF.Z);
+        double l = Constants.LabConstants.FScale * labF.Y - Constants.LabConstants.FOffset;
+        double a = Constants.LabConstants.A_Scale * (labF.X - labF.Y);
+        double b = Constants.LabConstants.B_Scale * (labF.Y - labF.Z);
 
         return new(l, a, b);
     }
@@ -108,7 +109,7 @@ public static class ColorUtils
     /// </summary>
     /// <param name="lstar">L* value.</param>
     /// <returns>An ARGB integer.</returns>
-    public static ColorArgb ArgbFromLstar(double lstar)
+    public static StandardRgb ArgbFromLstar(double lstar)
     {
         var y = YFromLstar(lstar);
         var component = Delinearized(y);
@@ -121,11 +122,11 @@ public static class ColorUtils
     /// </summary>
     /// <param name="argb">The ARGB integer.</param>
     /// <returns>The L* value.</returns>
-    public static double LstarFromArgb(ColorArgb argb)
+    public static double LstarFromArgb(StandardRgb argb)
     {
         double y = XyzFromArgb(argb)[1];
 
-        return Lab.FScale * LabF(y / 100d) - Lab.FOffset;
+        return Constants.LabConstants.FScale * LabF(y / 100d) - Constants.LabConstants.FOffset;
     }
 
     /// <summary>
@@ -135,7 +136,7 @@ public static class ColorUtils
     /// <returns>Y value.</returns>
     public static double YFromLstar(double lstar)
     {
-        return 100d * LabInvF((lstar + Lab.FOffset) / Lab.FScale);
+        return 100d * LabInvF((lstar + Constants.LabConstants.FOffset) / Constants.LabConstants.FScale);
     }
 
     /// <summary>
@@ -146,7 +147,7 @@ public static class ColorUtils
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static double LstarFromY(double y)
     {
-        return LabF(y / 100d) * Lab.FScale - Lab.FOffset;
+        return LabF(y / 100d) * Constants.LabConstants.FScale - Constants.LabConstants.FOffset;
     }
 
     /// <summary>
@@ -155,7 +156,7 @@ public static class ColorUtils
     /// <param name="color">The RGB components in range [0, 255].</param>
     /// <returns>A ColorXyz representing the linearized RGB color.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static LinearRgb Linearized(ColorArgb color)
+    public static LinearRgb Linearized(StandardRgb color)
     {
         return new
         (
@@ -182,22 +183,6 @@ public static class ColorUtils
         {
             return Math.Pow((normalized + Gamma.Offset) / Gamma.Scale, Gamma.DecodingExponent) * 100d;
         }
-    }
-
-    /// <summary>
-    /// Converts a linear RGB color to a Vector3i representation.
-    /// </summary>
-    /// <param name="linearRgb">Linear RGB components in range [0, 100].</param>
-    /// <returns>A Vector3i representing the linear RGB color.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static ColorArgb Delinearized(LinearRgb linearRgb)
-    {
-        return new
-        (
-            Delinearized(linearRgb.R),
-            Delinearized(linearRgb.G),
-            Delinearized(linearRgb.B)
-        );
     }
 
     /// <summary>
@@ -239,7 +224,7 @@ public static class ColorUtils
     /// </summary>
     /// <param name="xyz">The ColorXyz color.</param>
     /// <returns>A new ColorXyz with the LabF transformation applied.</returns>
-    internal static ColorXyz LabF(ColorXyz xyz)
+    internal static CieXyz LabF(CieXyz xyz)
     {
         return new
         (
@@ -254,13 +239,13 @@ public static class ColorUtils
     /// </summary>
     internal static double LabF(double t)
     {
-        if (t > Lab.Epsilon)
+        if (t > Constants.LabConstants.Epsilon)
         {
             return Math.Pow(t, 1d / 3d);
         }
         else
         {
-            return (Lab.Kappa * t + Lab.FOffset) / Lab.FScale;
+            return (Constants.LabConstants.Kappa * t + Constants.LabConstants.FOffset) / Constants.LabConstants.FScale;
         }
     }
 
@@ -271,13 +256,13 @@ public static class ColorUtils
     {
         double ft3 = ft * ft * ft;
 
-        if (ft3 > Lab.Epsilon)
+        if (ft3 > Constants.LabConstants.Epsilon)
         {
             return ft3;
         }
         else
         {
-            return (Lab.FScale * ft - Lab.FOffset) / Lab.Kappa;
+            return (Constants.LabConstants.FScale * ft - Constants.LabConstants.FOffset) / Constants.LabConstants.Kappa;
         }
     }
 }

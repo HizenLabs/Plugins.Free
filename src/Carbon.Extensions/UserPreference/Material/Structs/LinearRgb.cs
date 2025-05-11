@@ -1,4 +1,6 @@
 ﻿using HizenLabs.Extensions.UserPreference.Material.Constants;
+using HizenLabs.Extensions.UserPreference.Material.Utils;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace HizenLabs.Extensions.UserPreference.Material.Structs;
@@ -46,9 +48,9 @@ public readonly struct LinearRgb
     /// Converts the LinearRgb instance to an XYZ color space using the linear RGB to XYZ transformation.
     /// </summary>
     /// <returns>A ColorArgb instance representing the color in ARGB format.</returns>
-    public ColorXyz ToColorXyz()
+    public CieXyz ToColorXyz()
     {
-        var xyz = ColorTransforms.SrgbToXyz * this;
+        var xyz = ColorTransforms.LinearRgbToCieXyz * this;
 
         return new(xyz.R, xyz.G, xyz.B);
     }
@@ -59,8 +61,24 @@ public readonly struct LinearRgb
     /// <returns>A ColorArgb instance representing the color in ARGB format.</returns>
     public Cam16PreAdaptRgb ToScaledDiscount()
     {
-        var sd = ColorTransforms.ScaledDiscountFromLinearRgb * this;
+        var sd = ColorTransforms.LinearRgbToCam16ScaledDiscount * this;
 
         return new(sd.R, sd.G, sd.B);
+    }
+
+    /// <summary>
+    /// Converts a linear RGB color to a Vector3i representation.
+    /// </summary>
+    /// <param name="linearRgb">Linear RGB components in range [0, 100].</param>
+    /// <returns>A Vector3i representing the linear RGB color.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public StandardRgb ToStandardRgb()
+    {
+        return new
+        (
+            ColorUtils.Delinearized(R),
+            ColorUtils.Delinearized(G),
+            ColorUtils.Delinearized(B)
+        );
     }
 }

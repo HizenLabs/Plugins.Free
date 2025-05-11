@@ -128,7 +128,7 @@ public sealed class ViewingConditions : IDisposable, Pool.IPooled
     /// <param name="discountingIlluminant">Whether to discount the illuminant.</param>
     /// <returns>A new instance of <see cref="ViewingConditions"/>.</returns>
     public static ViewingConditions Create(
-        ColorXyz whitePoint,
+        CieXyz whitePoint,
         double adaptingLuminance,
         double backgroundLstar,
         double surround,
@@ -136,7 +136,7 @@ public sealed class ViewingConditions : IDisposable, Pool.IPooled
     {
         backgroundLstar = Math.Max(0.1, backgroundLstar);
 
-        var rgbW = whitePoint.ToCam16Rgb();
+        var rgbW = whitePoint.ToCam16PreAdaptRgb();
 
         double f = 0.8 + (surround / 10.0);
         double c = f >= 0.9
@@ -167,11 +167,7 @@ public sealed class ViewingConditions : IDisposable, Pool.IPooled
         double nbb = 0.725 / Math.Pow(n, 0.2);
         double ncb = nbb;
 
-        var rgbA = rgbD.ToChromaticAdaptation(fl, rgbW, false);
-
-        double aw = (2.0 * rgbA.R + rgbA.G + 0.05 * rgbA.B) * nbb;
-
-        return Create(n, aw, nbb, ncb, c, nc, rgbD, fl, Math.Pow(fl, 0.25), z);
+        throw new NotImplementedException();
     }
 
     public static ViewingConditions CreateDefaultWithBackgroundLstar(double lstar)

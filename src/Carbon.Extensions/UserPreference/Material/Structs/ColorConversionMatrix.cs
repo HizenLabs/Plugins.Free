@@ -81,7 +81,7 @@ public readonly struct ColorConversionMatrix
     /// <param name="matrix">The 3x3 matrix.</param>
     /// <param name="colorXyz">The 3D vector.</param>
     /// <returns>The resulting 3D vector after multiplication.</returns>
-    public static ColorXyz operator *(ColorConversionMatrix matrix, ColorXyz colorXyz)
+    public static CieXyz operator *(ColorConversionMatrix matrix, CieXyz colorXyz)
     {
         return new
         (
@@ -91,8 +91,8 @@ public readonly struct ColorConversionMatrix
         );
     }
 
-    /// <inheritdoc cref="operator *(ColorConversionMatrix, ColorXyz)"/>
-    public static ColorXyz operator *(ColorXyz colorXyz, ColorConversionMatrix matrix)
+    /// <inheritdoc cref="operator *(ColorConversionMatrix, CieXyz)"/>
+    public static CieXyz operator *(CieXyz colorXyz, ColorConversionMatrix matrix)
     {
         return matrix * colorXyz;
     }

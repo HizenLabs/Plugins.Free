@@ -537,7 +537,7 @@
   <ItemGroup>
     <Compile Include="Material\Constants\ColorTransforms.cs" />
     <Compile Include="Material\Constants\Gamma.cs" />
-    <Compile Include="Material\Constants\Lab.cs" />
+    <Compile Include="Material\Constants\LabConstants.cs" />
     <Compile Include="Material\Constants\Perceptual.cs" />
     <Compile Include="Material\Constants\WhitePoints.cs" />
     <Compile Include="Material\DynamicScheme\DynamicScheme.cs" />
@@ -546,8 +546,10 @@
     <Compile Include="Material\Hct\HctSolver.cs" />
     <Compile Include="Material\Hct\ViewingConditions.cs" />
     <Compile Include="Material\Structs\Cam16Rgb.cs" />
-    <Compile Include="Material\Structs\ColorArgb.cs" />
-    <Compile Include="Material\Structs\ColorXyz.cs" />
+    <Compile Include="Material\Structs\Cam16ScaledDiscountRgb.cs" />
+    <Compile Include="Material\Structs\Lab.cs" />
+    <Compile Include="Material\Structs\StandardRgb.cs" />
+    <Compile Include="Material\Structs\CieXyz.cs" />
     <Compile Include="Material\Structs\ColorConversionMatrix.cs" />
     <Compile Include="Material\Structs\LinearRgb.cs" />
     <Compile Include="Material\Structs\Cam16PreAdaptRgb.cs" />

@@ -42,14 +42,14 @@ public readonly struct Cam16PreAdaptRgb
 
     /// <summary>
     /// Converts this pre-adapted CAM16 RGB color to linear RGB using the 
-    /// <see cref="ColorTransforms.LinearRgbFromScaledDiscount"/> matrix.
+    /// <see cref="ColorTransforms.Cam16ScaledDiscountToLinearRgb"/> matrix.
     /// </summary>
     /// <returns>
     /// A <see cref="LinearRgb"/> instance representing the color in linear RGB space.
     /// </returns>
     public LinearRgb ToLinearRgb()
     {
-        var linrgb = ColorTransforms.LinearRgbFromScaledDiscount * this;
+        var linrgb = ColorTransforms.Cam16ScaledDiscountToLinearRgb * this;
         return new LinearRgb(linrgb.R, linrgb.G, linrgb.B);
     }
 }

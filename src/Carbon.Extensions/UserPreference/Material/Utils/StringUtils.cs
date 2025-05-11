@@ -11,7 +11,7 @@ public static class StringUtils
     /// <param name="argb">The ARGB color value.</param>
     /// <returns>The hex string representation of the color.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static string HexFromArgb(ColorArgb color)
+    public static string HexFromArgb(StandardRgb color)
     {
         return $"#{color.R:X2}{color.G:X2}{color.B:X2}";
     }

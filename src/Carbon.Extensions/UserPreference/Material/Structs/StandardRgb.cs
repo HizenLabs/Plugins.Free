@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using HizenLabs.Extensions.UserPreference.Material.Utils;
+using System.Runtime.InteropServices;
 using UnityEngine;
 
 namespace HizenLabs.Extensions.UserPreference.Material.Structs;
@@ -7,7 +8,7 @@ namespace HizenLabs.Extensions.UserPreference.Material.Structs;
 /// Represents a color in ARGB format.
 /// </summary>
 [StructLayout(LayoutKind.Explicit)]
-public readonly struct ColorArgb
+public readonly struct StandardRgb
 {
     /// <summary>
     /// The ARGB value of the color.
@@ -45,23 +46,23 @@ public readonly struct ColorArgb
     public bool IsOpaque => A == 255;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ColorArgb"/> struct with the specified ARGB value.
+    /// Initializes a new instance of the <see cref="StandardRgb"/> struct with the specified ARGB value.
     /// </summary>
     /// <param name="argb">The ARGB value of the color.</param>
-    public ColorArgb(uint argb)
+    public StandardRgb(uint argb)
     {
         B = G = R = A = 0;
         Value = argb;
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ColorArgb"/> struct with the specified alpha, red, green, and blue values.
+    /// Initializes a new instance of the <see cref="StandardRgb"/> struct with the specified alpha, red, green, and blue values.
     /// </summary>
     /// <param name="a">The alpha component of the color (0-255).</param>
     /// <param name="r">The red component of the color (0-255).</param>
     /// <param name="g">The green component of the color (0-255).</param>
     /// <param name="b">The blue component of the color (0-255).</param>
-    public ColorArgb(byte a, byte r, byte g, byte b)
+    public StandardRgb(byte a, byte r, byte g, byte b)
     {
         Value = 0;
         A = a;
@@ -71,23 +72,33 @@ public readonly struct ColorArgb
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ColorArgb"/> struct with the specified red, green, and blue values.
+    /// Initializes a new instance of the <see cref="StandardRgb"/> struct with the specified red, green, and blue values.
     /// </summary>
     /// <param name="r">The red component of the color (0-255).</param>
     /// <param name="g">The green component of the color (0-255).</param>
     /// <param name="b">The blue component of the color (0-255).</param>
-    public ColorArgb(byte r, byte g, byte b) : this(255, r, g, b)
+    public StandardRgb(byte r, byte g, byte b) : this(255, r, g, b)
     {
     }
 
-    public ColorXyz ToXyz()
+    public LinearRgb ToLinearRgb()
     {
-        throw null;
+        return new
+        (
+            ColorUtils.Linearized(R),
+            ColorUtils.Linearized(G),
+            ColorUtils.Linearized(B)
+        );
+    }
+
+    public CieXyz ToXyz()
+    {
+        return ToLinearRgb().ToColorXyz();
     }
 
     /// <summary>
-    /// Converts the <see cref="ColorArgb"/> struct to a <see cref="Color"/> object.
+    /// Converts the <see cref="StandardRgb"/> struct to a <see cref="Color"/> object.
     /// </summary>
     /// <param name="argb"></param>
-    public static implicit operator ColorArgb(uint argb) => new(argb);
+    public static implicit operator StandardRgb(uint argb) => new(argb);
 }

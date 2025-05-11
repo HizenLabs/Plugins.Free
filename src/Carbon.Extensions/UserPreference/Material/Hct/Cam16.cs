@@ -106,7 +106,7 @@ public sealed class Cam16 : IDisposable, Pool.IPooled
     /// </summary>
     /// <param name="color">The color to convert to CAM16.</param>
     /// <returns>A CAM16 object representing the color.</returns>
-    public static Cam16 FromColor(ColorArgb color)
+    public static Cam16 FromColor(StandardRgb color)
     {
         return FromColorInViewingConditions(color, ViewingConditions.Default);
     }
@@ -117,7 +117,7 @@ public sealed class Cam16 : IDisposable, Pool.IPooled
     /// <param name="color">The color to convert to CAM16.</param>
     /// <param name="viewingConditions">The viewing conditions under which the color was viewed.</param>
     /// <returns>A CAM16 object representing the color.</returns>
-    public static Cam16 FromColorInViewingConditions(ColorArgb color, ViewingConditions viewingConditions)
+    public static Cam16 FromColorInViewingConditions(StandardRgb color, ViewingConditions viewingConditions)
     {
         // Transform ARGB int to XYZ
         var colorXyz = color.ToXyz();
@@ -131,71 +131,12 @@ public sealed class Cam16 : IDisposable, Pool.IPooled
     /// <param name="color">The XYZ color to convert to CAM16.</param>
     /// <param name="viewingConditions">The viewing conditions under which the color was viewed.</param>
     /// <returns>A CAM16 object representing the color.</returns>
-    public static Cam16 FromXyzInViewingConditions(ColorXyz color, ViewingConditions viewingConditions)
+    public static Cam16 FromXyzInViewingConditions(CieXyz color, ViewingConditions viewingConditions)
     {
         // Transform XYZ to 'cone'/'rgb' responses
-        var rgbT = color.ToCam16Rgb();
+        var rgbT = color.ToCam16PreAdaptRgb();
 
-        // Discount illuminant
-        var rgbD = viewingConditions.RgbD * rgbT;
-
-        // Chromatic adaptation
-        var ca = rgbD.ToChromaticAdaptation(viewingConditions.Fl);
-
-        // redness-greenness
-        double a = (11.0 * ca.R + -12.0 * ca.G + ca.B) / 11.0;
-        // yellowness-blueness
-        double b = (ca.R + ca.G - 2.0 * ca.B) / 9.0;
-
-        // auxiliary components
-        double u = (20.0 * ca.R + 20.0 * ca.G + 21.0 * ca.B) / 20.0;
-        double p2 = (40.0 * ca.R + 20.0 * ca.G + ca.B) / 20.0;
-
-        // hue
-        double atan2 = Math.Atan2(b, a);
-        double atanDegrees = MathUtils.ToDegrees(atan2);
-        double hue =
-            atanDegrees < 0
-                ? atanDegrees + 360.0
-                : atanDegrees >= 360 ? atanDegrees - 360.0 : atanDegrees;
-        double hueRadians = MathUtils.ToRadians(hue);
-
-        // achromatic response to color
-        double ac = p2 * viewingConditions.Nbb;
-
-        // CAM16 lightness and brightness
-        double j =
-            100.0
-                * Math.Pow(
-                    ac / viewingConditions.Aw,
-                    viewingConditions.C * viewingConditions.Z);
-        double q =
-            4.0
-                / viewingConditions.C
-                * Math.Sqrt(j / 100.0)
-                * (viewingConditions.Aw + 4.0)
-                * viewingConditions.FlRoot;
-
-        // CAM16 chroma, colorfulness, and saturation.
-        double huePrime = (hue < 20.14) ? hue + 360 : hue;
-        double eHue = 0.25 * (Math.Cos(MathUtils.ToRadians(huePrime) + 2.0) + 3.8);
-        double p1 = 50000.0 / 13.0 * eHue * viewingConditions.Nc * viewingConditions.Ncb;
-        double t = p1 * MathUtils.Hypotenuse(a, b) / (u + 0.305);
-        double alpha =
-            Math.Pow(1.64 - Math.Pow(0.29, viewingConditions.N), 0.73) * Math.Pow(t, 0.9);
-        // CAM16 chroma, colorfulness, saturation
-        double c = alpha * Math.Sqrt(j / 100.0);
-        double m = c * viewingConditions.FlRoot;
-        double s =
-            50.0 * Math.Sqrt((alpha * viewingConditions.C) / (viewingConditions.Aw + 4.0));
-
-        // CAM16-UCS components
-        double jstar = (1.0 + 100.0 * 0.007) * j / (1.0 + 0.007 * j);
-        double mstar = 1.0 / 0.0228 * Math.Log(1.0 + 0.0228 * m);
-        double astar = mstar * Math.Cos(hueRadians);
-        double bstar = mstar * Math.Sin(hueRadians);
-
-        return Create(hue, c, j, q, m, s, jstar, astar, bstar);
+        throw new NotImplementedException();
     }
 
     /// <summary>

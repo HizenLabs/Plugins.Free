@@ -11,7 +11,7 @@ internal static class ColorTransforms
     /// 3×3 matrix for converting from linear sRGB to CIE XYZ using a D65 white point.
     /// Each row corresponds to the contribution of R, G, and B to X, Y, and Z respectively.
     /// </summary>
-    public static readonly ColorConversionMatrix SrgbToXyz = new
+    public static readonly ColorConversionMatrix LinearRgbToCieXyz = new
     (
         0.41233895d, 0.35762064d, 0.18051042d,
         0.2126d, 0.7152d, 0.0722d,
@@ -22,7 +22,7 @@ internal static class ColorTransforms
     /// 3×3 matrix for converting from CIE XYZ (D65) to linear sRGB.
     /// Each row maps X, Y, and Z to R, G, and B output channels.
     /// </summary>
-    public static readonly ColorConversionMatrix XyzToSrgb = new
+    public static readonly ColorConversionMatrix CieXyzToLinearRgb = new
     (
         3.2413774792388685, -1.5376652402851851, -0.49885366846268053,
         -0.9691452513005321, 1.8758853451067872, 0.04156585616912061,
@@ -33,7 +33,7 @@ internal static class ColorTransforms
     /// 3×3 matrix for converting from CIE XYZ to CAM16 RGB.
     /// This matrix applies the forward linear transformation for CAM16 adaptation.
     /// </summary>
-    public static readonly ColorConversionMatrix XyzToCam16rgb = new
+    public static readonly ColorConversionMatrix CieXyzToCam16PreAdaptRgb = new
     (
         0.401288, 0.650173, -0.051461,
         -0.250268, 1.204414, 0.045854,
@@ -42,9 +42,9 @@ internal static class ColorTransforms
 
     /// <summary>
     /// 3×3 matrix for converting from CAM16 RGB back to CIE XYZ.
-    /// This is the inverse of <see cref="XyzToCam16rgb"/>.
+    /// This is the inverse of <see cref="CieXyzToCam16PreAdaptRgb"/>.
     /// </summary>
-    public static readonly ColorConversionMatrix Cam16rgbToXyz = new
+    public static readonly ColorConversionMatrix Cam16PreAdaptRgbToCieXyz = new
     (
         1.8620678, -1.0112547, 0.14918678,
         0.38752654, 0.62144744, -0.00897398,
@@ -55,7 +55,7 @@ internal static class ColorTransforms
     /// 3×3 matrix used in CAM16 for converting from linear sRGB to scaled and discounted CAM16 RGB values.
     /// Applies both chromatic adaptation and perceptual scaling for appearance modeling.
     /// </summary>
-    public static readonly ColorConversionMatrix ScaledDiscountFromLinearRgb = new
+    public static readonly ColorConversionMatrix LinearRgbToCam16ScaledDiscount = new
     (
         0.001200833568784504, 0.002389694492170889, 0.0002795742885861124,
         0.0005891086651375999, 0.0029785502573438758, 0.0003270666104008398,
@@ -64,9 +64,9 @@ internal static class ColorTransforms
 
     /// <summary>
     /// 3×3 matrix used in CAM16 for converting from scaled and discounted CAM16 RGB values back to linear sRGB.
-    /// This is the inverse of <see cref="ScaledDiscountFromLinearRgb"/>.
+    /// This is the inverse of <see cref="LinearRgbToCam16ScaledDiscount"/>.
     /// </summary>
-    public static readonly ColorConversionMatrix LinearRgbFromScaledDiscount = new
+    public static readonly ColorConversionMatrix Cam16ScaledDiscountToLinearRgb = new
     (
         1373.2198709594231, -1100.4251190754821, -7.278681089101213,
         -271.815969077903, 559.6580465940733, -32.46047482791194,

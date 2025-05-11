@@ -116,10 +116,10 @@ public readonly struct Cam16Rgb
     /// <summary>
     /// Converts this CAM16 RGB color to CIE XYZ (D65) color space using the inverse CAM16 RGB transformation.
     /// </summary>
-    /// <returns>A <see cref="ColorXyz"/> representing the equivalent color in the XYZ color space.</returns>
-    public ColorXyz ToColorXyz()
+    /// <returns>A <see cref="CieXyz"/> representing the equivalent color in the XYZ color space.</returns>
+    public CieXyz ToCieXyz()
     {
-        var xyz = ColorTransforms.Cam16rgbToXyz * this;
+        var xyz = ColorTransforms.Cam16PreAdaptRgbToCieXyz * this;
 
         return new(xyz.R, xyz.G, xyz.B);
     }

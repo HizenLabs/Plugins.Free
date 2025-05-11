@@ -3,7 +3,7 @@
 /// <summary>
 /// Contains constants for color science, specifically for CIE L*a*b* color space.
 /// </summary>
-internal static class Lab
+internal static class LabConstants
 {
     /// <summary>
     /// Threshold constant (ε) used in CIE L*a*b* conversion.  

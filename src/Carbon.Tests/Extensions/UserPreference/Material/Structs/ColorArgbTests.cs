@@ -5,7 +5,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Carbon.Tests.Extensions.UserPreference.Material.Structs;
 
 /// <summary>
-/// Tests for the <see cref="ColorArgb"/> struct.
+/// Tests for the <see cref="StandardRgb"/> struct.
 /// </summary>
 [TestClass]
 public class ColorArgbTests
@@ -21,7 +21,7 @@ public class ColorArgbTests
     [DataRow(0x00FFFFFFu, false)]
     public void IsOpaque_ShouldReturnCorrectValue(uint argb, bool expected)
     {
-        ColorArgb color = new(argb);
+        StandardRgb color = new(argb);
         Assert.AreEqual(expected, color.IsOpaque);
     }
 
