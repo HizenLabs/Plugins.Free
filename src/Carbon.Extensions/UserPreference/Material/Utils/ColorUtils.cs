@@ -57,9 +57,9 @@ public static class ColorUtils
     {
         // Convert L*a*b* to intermediate f(x), f(y), f(z) values
         // These represent cube root–transformed XYZ values, normalized to the white point
-        double fy = (lab.X + Constants.LabConstants.FOffset) / Constants.LabConstants.FScale;
-        double fx = lab.Y / Constants.LabConstants.A_Scale + fy;
-        double fz = fy - lab.Z / Constants.LabConstants.B_Scale;
+        double fy = (lab.X + LabConstants.FOffset) / LabConstants.FScale;
+        double fx = lab.Y / LabConstants.A_Scale + fy;
+        double fz = fy - lab.Z / LabConstants.B_Scale;
 
         // Convert normalized f(x), f(y), f(z) values to relative XYZ
         // (i.e., where white point Y is 1.0)
@@ -96,9 +96,9 @@ public static class ColorUtils
         CieXyz labF = LabF(relativeXyz);
 
         // Convert to Lab using standard formulas
-        double l = Constants.LabConstants.FScale * labF.Y - Constants.LabConstants.FOffset;
-        double a = Constants.LabConstants.A_Scale * (labF.X - labF.Y);
-        double b = Constants.LabConstants.B_Scale * (labF.Y - labF.Z);
+        double l = LabConstants.FScale * labF.Y - LabConstants.FOffset;
+        double a = LabConstants.A_Scale * (labF.X - labF.Y);
+        double b = LabConstants.B_Scale * (labF.Y - labF.Z);
 
         return new(l, a, b);
     }
@@ -126,7 +126,7 @@ public static class ColorUtils
     {
         double y = XyzFromArgb(argb)[1];
 
-        return Constants.LabConstants.FScale * LabF(y / 100d) - Constants.LabConstants.FOffset;
+        return LabConstants.FScale * LabF(y / 100d) - LabConstants.FOffset;
     }
 
     /// <summary>
@@ -136,7 +136,7 @@ public static class ColorUtils
     /// <returns>Y value.</returns>
     public static double YFromLstar(double lstar)
     {
-        return 100d * LabInvF((lstar + Constants.LabConstants.FOffset) / Constants.LabConstants.FScale);
+        return 100d * LabInvF((lstar + LabConstants.FOffset) / LabConstants.FScale);
     }
 
     /// <summary>
@@ -147,7 +147,7 @@ public static class ColorUtils
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static double LstarFromY(double y)
     {
-        return LabF(y / 100d) * Constants.LabConstants.FScale - Constants.LabConstants.FOffset;
+        return LabF(y / 100d) * LabConstants.FScale - LabConstants.FOffset;
     }
 
     /// <summary>
@@ -239,13 +239,13 @@ public static class ColorUtils
     /// </summary>
     internal static double LabF(double t)
     {
-        if (t > Constants.LabConstants.Epsilon)
+        if (t > LabConstants.Epsilon)
         {
             return Math.Pow(t, 1d / 3d);
         }
         else
         {
-            return (Constants.LabConstants.Kappa * t + Constants.LabConstants.FOffset) / Constants.LabConstants.FScale;
+            return (LabConstants.Kappa * t + LabConstants.FOffset) / LabConstants.FScale;
         }
     }
 
@@ -256,13 +256,13 @@ public static class ColorUtils
     {
         double ft3 = ft * ft * ft;
 
-        if (ft3 > Constants.LabConstants.Epsilon)
+        if (ft3 > LabConstants.Epsilon)
         {
             return ft3;
         }
         else
         {
-            return (Constants.LabConstants.FScale * ft - Constants.LabConstants.FOffset) / Constants.LabConstants.Kappa;
+            return (LabConstants.FScale * ft - LabConstants.FOffset) / LabConstants.Kappa;
         }
     }
 }
