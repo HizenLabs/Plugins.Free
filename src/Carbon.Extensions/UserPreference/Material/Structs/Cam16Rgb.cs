@@ -38,6 +38,8 @@ public readonly struct Cam16Rgb
         B = b;
     }
 
+    public static readonly Cam16Rgb DefaultFactor = new(1d, 1d, 1d);
+
     /// <summary>
     /// Applies chromatic adaptation to this CAM16 RGB color using the specified luminance-level adaptation factor (FL).
     /// This simulates the human visual system’s nonlinear response to light based on the viewing conditions.
@@ -50,12 +52,18 @@ public readonly struct Cam16Rgb
     /// A new <see cref="Cam16Rgb"/> instance representing the chromatically adapted color,
     /// transformed using the CAM16 non-linear response function.
     /// </returns>
-
-    public Cam16Rgb ToChromaticAdaptation(double fl = 1.0)
+    public Cam16Rgb ToChromaticAdaptation(double fl = 1.0, bool signed = true)
     {
-        double rA = ChromaticAdaptation(R, fl);
-        double gA = ChromaticAdaptation(G, fl);
-        double bA = ChromaticAdaptation(B, fl);
+        return ToChromaticAdaptation(fl, DefaultFactor);
+    }
+
+    /// <inheritdoc cref="ToChromaticAdaptation(double)"/>
+    /// <param name="factor">The chromatic adaptation factor.</param>
+    public Cam16Rgb ToChromaticAdaptation(double fl, Cam16Rgb factor, bool signed = true)
+    {
+        double rA = ChromaticAdaptation(R, fl, factor.R, signed);
+        double gA = ChromaticAdaptation(G, fl, factor.G, signed);
+        double bA = ChromaticAdaptation(B, fl, factor.B, signed);
 
         return new(rA, gA, bA);
     }
@@ -65,12 +73,43 @@ public readonly struct Cam16Rgb
     /// </summary>
     /// <param name="component">The color component to adapt.</param>
     /// <param name="fl">The luminance-level adaptation factor (FL).</param>
+    /// <param name="factor">The chromatic adaptation factor.</param>
+    /// <param name="signed">Indicates whether to return a signed value.</param>
     /// <returns>The adapted color component value.</returns>
-    private static double ChromaticAdaptation(double component, double fl)
+    private static double ChromaticAdaptation(double component, double fl, double factor, bool signed = true)
     {
-        double rAF = Math.Pow(fl * Math.Abs(component) / 100.0, 0.42);
+        double baseValue = fl * component * factor / 100.0;
+        double adapted = Math.Pow(Math.Abs(baseValue), 0.42);
+        double result = 400.0 * adapted / (adapted + 27.13);
+        return signed ? Math.Sign(baseValue) * result : result;
+    }
 
-        return Math.Sign(component) * 400.0 * rAF / (rAF + 27.13);
+    /// <summary>
+    /// Converts this CAM16 RGB color to its inverse using the inverse CAM16 RGB transformation.
+    /// </summary>
+    /// <returns>A new <see cref="Cam16Rgb"/> instance representing the inverse of this color.</returns>
+    /// <remarks>
+    /// This does not perfectly align with <see cref="ChromaticAdaptation(double, double, double, bool)"/>, it's just following the design spec.
+    /// </remarks>
+    public Cam16Rgb ToChromaticAdaptationInverse()
+    {
+        double r = ChromaticAdaptationInverse(R);
+        double g = ChromaticAdaptationInverse(G);
+        double b = ChromaticAdaptationInverse(B);
+
+        return new(r, g, b);
+    }
+
+    /// <summary>
+    /// Applies the inverse chromatic adaptation to a single component of the CAM16 RGB color space.
+    /// </summary>
+    /// <param name="adapted">The adapted color component to inverse.</param>
+    /// <returns>The inverse adapted color component value.</returns>
+    private static double ChromaticAdaptationInverse(double adapted)
+    {
+        double abs = Math.Abs(adapted);
+        double baseVal = Math.Max(0, 27.13 * abs / (400.0 - abs));
+        return Math.Sign(adapted) * Math.Pow(baseVal, 1.0 / 0.42);
     }
 
     /// <summary>

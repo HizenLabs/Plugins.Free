@@ -167,19 +167,7 @@ public sealed class ViewingConditions : IDisposable, Pool.IPooled
         double nbb = 0.725 / Math.Pow(n, 0.2);
         double ncb = nbb;
 
-        Cam16Rgb rgbAFactors = new
-        (
-            Math.Pow(fl * rgbD.R * rgbW.R / 100.0, 0.42),
-            Math.Pow(fl * rgbD.G * rgbW.G / 100.0, 0.42),
-            Math.Pow(fl * rgbD.B * rgbW.B / 100.0, 0.42)
-        );
-
-        Cam16Rgb rgbA = new
-        (
-            400.0 * rgbAFactors.R / (rgbAFactors.R + 27.13),
-            400.0 * rgbAFactors.G / (rgbAFactors.G + 27.13),
-            400.0 * rgbAFactors.B / (rgbAFactors.B + 27.13)
-        );
+        var rgbA = rgbD.ToChromaticAdaptation(fl, rgbW, false);
 
         double aw = (2.0 * rgbA.R + rgbA.G + 0.05 * rgbA.B) * nbb;
 
