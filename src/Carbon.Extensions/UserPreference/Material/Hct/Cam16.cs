@@ -1,6 +1,5 @@
 ﻿using Facepunch;
 using HizenLabs.Extensions.UserPreference.Material.Structs;
-using HizenLabs.Extensions.UserPreference.Material.Utils;
 using System;
 
 namespace HizenLabs.Extensions.UserPreference.Material.Hct;
