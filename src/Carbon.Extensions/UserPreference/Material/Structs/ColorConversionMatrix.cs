@@ -147,7 +147,7 @@ public readonly struct ColorConversionMatrix
     /// <param name="matrix">The 3x3 matrix.</param>
     /// <param name="scaledDiscountRgb">The ScaledDiscountRgb vector.</param>
     /// <returns>The resulting ScaledDiscountRgb vector after multiplication.</returns>
-    public static ScaledDiscountRgb operator *(ColorConversionMatrix matrix, ScaledDiscountRgb scaledDiscountRgb)
+    public static Cam16PreAdaptRgb operator *(ColorConversionMatrix matrix, Cam16PreAdaptRgb scaledDiscountRgb)
     {
         return new
         (
@@ -157,8 +157,8 @@ public readonly struct ColorConversionMatrix
         );
     }
 
-    /// <inheritdoc cref="operator *(ColorConversionMatrix, ScaledDiscountRgb)"/>
-    public static ScaledDiscountRgb operator *(ScaledDiscountRgb scaledDiscountRgb, ColorConversionMatrix matrix)
+    /// <inheritdoc cref="operator *(ColorConversionMatrix, Cam16PreAdaptRgb)"/>
+    public static Cam16PreAdaptRgb operator *(Cam16PreAdaptRgb scaledDiscountRgb, ColorConversionMatrix matrix)
     {
         return matrix * scaledDiscountRgb;
     }
