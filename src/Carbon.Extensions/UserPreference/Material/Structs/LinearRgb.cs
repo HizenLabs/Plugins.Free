@@ -43,18 +43,7 @@ public readonly struct LinearRgb
     }
 
     /// <summary>
-    /// Converts the LinearRgb instance to a ColorArgb instance using the linear RGB to sRGB transformation.
-    /// </summary>
-    /// <returns>A ColorArgb instance representing the color in ARGB format.</returns>
-    public LinearRgb ToScaledDiscount()
-    {
-        var sd = ColorTransforms.ScaledDiscountFromLinearRgb * this;
-
-        return new(sd.R, sd.G, sd.B);
-    }
-
-    /// <summary>
-    /// Converts the LinearRgb instance to a ColorArgb instance using the linear RGB to XYZ transformation.
+    /// Converts the LinearRgb instance to an XYZ color space using the linear RGB to XYZ transformation.
     /// </summary>
     /// <returns>A ColorArgb instance representing the color in ARGB format.</returns>
     public ColorXyz ToColorXyz()
@@ -62,5 +51,16 @@ public readonly struct LinearRgb
         var xyz = ColorTransforms.SrgbToXyz * this;
 
         return new(xyz.R, xyz.G, xyz.B);
+    }
+
+    /// <summary>
+    /// Converts the LinearRgb instance to a CAM16 pre-adapted RGB color.
+    /// </summary>
+    /// <returns>A ColorArgb instance representing the color in ARGB format.</returns>
+    public Cam16PreAdaptRgb ToScaledDiscount()
+    {
+        var sd = ColorTransforms.ScaledDiscountFromLinearRgb * this;
+
+        return new(sd.R, sd.G, sd.B);
     }
 }
