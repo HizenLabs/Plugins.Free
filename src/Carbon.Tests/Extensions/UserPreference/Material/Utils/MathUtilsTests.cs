@@ -67,7 +67,7 @@ public class MathUtilsTests
 
     #endregion
 
-    #region SanitizeDegrees Tests
+    #region Sanitize Tests
 
     /// <summary>
     /// Tests that <see cref="MathUtils.SanitizeDegrees(int)"/> wraps angles correctly to the range [0, 360).
@@ -107,6 +107,25 @@ public class MathUtilsTests
     {
         double result = MathUtils.SanitizeDegrees(degrees);
         Assert.AreEqual(expected, result, 0.000001);
+    }
+
+    [TestMethod]
+    [DataRow(0, 0)]
+    [DataRow(Math.PI, Math.PI)]
+    [DataRow(2 * Math.PI, 0)]
+    [DataRow(-Math.PI, Math.PI)]
+    [DataRow(-2 * Math.PI, 0)]
+    [DataRow(3 * Math.PI, Math.PI)]
+    [DataRow(-3 * Math.PI, Math.PI)]
+    [DataRow(7 * Math.PI, Math.PI)]
+    [DataRow(-7 * Math.PI, Math.PI)]
+    public void SanitizeRadians_ReturnsValueWithin_0_To_2PI(double input, double expected)
+    {
+        // Act
+        double result = MathUtils.SanitizeRadians(input);
+
+        // Assert
+        Assert.AreEqual(expected, result, 1e-10, $"Input: {input}, Expected: {expected}, Got: {result}");
     }
 
     #endregion

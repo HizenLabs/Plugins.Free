@@ -95,6 +95,16 @@ public static class MathUtils
     }
 
     /// <summary>
+    /// Sanitize radians to be in the range of [0, 2π].
+    /// </summary>
+    /// <param name="angle">The angle in radians.</param>
+    /// <returns>The sanitized angle in radians.</returns>
+    public static double SanitizeRadians(double angle)
+    {
+        return (angle + Math.PI * 8) % (Math.PI * 2);
+    }
+
+    /// <summary>
     /// Calculates the direction of rotation between two angles.
     /// </summary>
     /// <param name="from">The starting angle in degrees.</param>
