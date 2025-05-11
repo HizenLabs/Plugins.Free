@@ -20,5 +20,5 @@ internal static class WhitePoints
     /// <summary>
     /// The D65 white point represented in CIE 1931 XYZ tristimulus values, normalized such that Y = 1.0.
     /// </summary>
-    public static readonly WhitePoint D65 = WhitePoint.FromChromaticity(D65X, D65Y);
+    public static readonly CieXyz D65 = CieXyz.FromChromaticity(D65X, D65Y, Gamma.LuminanceScale);
 }

@@ -7,27 +7,29 @@ namespace HizenLabs.Extensions.UserPreference.Material.Constants;
 /// </summary>
 internal static class ColorTransforms
 {
+    private const double
+        sRgbRx = 0.64, sRgbRy = 0.33,
+        sRgbGx = 0.3, sRgbGy = 0.6,
+        sRgbBx = 0.15, sRgbBy = 0.06;
+
+    static ColorTransforms()
+    {
+        LinearRgbToCieXyz = CreateCieXyzToLinearRgbConversionMatrix();
+
+        CieXyzToLinearRgb = LinearRgbToCieXyz.ToInverted();
+    }
+
     /// <summary>
     /// 3×3 matrix for converting from linear sRGB to CIE XYZ using a D65 white point.
     /// Each row corresponds to the contribution of R, G, and B to X, Y, and Z respectively.
     /// </summary>
-    public static readonly ColorConversionMatrix LinearRgbToCieXyz = new
-    (
-        0.41233895d, 0.35762064d, 0.18051042d,
-        0.2126d, 0.7152d, 0.0722d,
-        0.01932141d, 0.11916382d, 0.95034478d
-    );
+    public static readonly ColorConversionMatrix LinearRgbToCieXyz;
 
     /// <summary>
     /// 3×3 matrix for converting from CIE XYZ (D65) to linear sRGB.
     /// Each row maps X, Y, and Z to R, G, and B output channels.
     /// </summary>
-    public static readonly ColorConversionMatrix CieXyzToLinearRgb = new
-    (
-        3.2413774792388685, -1.5376652402851851, -0.49885366846268053,
-        -0.9691452513005321, 1.8758853451067872, 0.04156585616912061,
-        0.05562093689691305, -0.20395524564742123, 1.0571799111220335
-    );
+    public static readonly ColorConversionMatrix CieXyzToLinearRgb;
 
     /// <summary>
     /// 3×3 matrix for converting from CIE XYZ to CAM16 RGB.
@@ -72,4 +74,36 @@ internal static class ColorTransforms
         -271.815969077903, 559.6580465940733, -32.46047482791194,
         1.9622899599665666, -57.173814538844006, 308.7233197812385
     );
+
+    /// <summary>
+    /// Creates a conversion matrix from CIE XYZ to linear RGB using the sRGB color space.
+    /// </summary>
+    /// <returns>A <see cref="ColorConversionMatrix"/> representing the conversion from CIE XYZ to linear RGB.</returns>
+    private static ColorConversionMatrix CreateCieXyzToLinearRgbConversionMatrix()
+    {
+        var r = CieXyz.FromChromaticity(sRgbRx, sRgbRy);
+        var g = CieXyz.FromChromaticity(sRgbGx, sRgbGy);
+        var b = CieXyz.FromChromaticity(sRgbBx, sRgbBy);
+
+        var m = new ColorConversionMatrix
+        (
+            r.X, g.X, b.X,
+            r.Y, g.Y, b.Y,
+            r.Z, g.Z, b.Z
+        );
+
+        var d65Normalized = WhitePoints.D65 / Gamma.LuminanceScale;
+        var s = m.ToInverted() * d65Normalized;
+
+        var colR = r * s.X;
+        var colG = g * s.Y;
+        var colB = b * s.Z;
+
+        return new
+        (
+            colR.X, colG.X, colB.X,
+            colR.Y, colG.Y, colB.Y,
+            colR.Z, colG.Z, colB.Z
+        );
+    }
 }

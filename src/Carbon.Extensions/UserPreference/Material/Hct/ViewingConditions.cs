@@ -128,7 +128,7 @@ public sealed class ViewingConditions : IDisposable, Pool.IPooled
     /// <param name="discountingIlluminant">Whether to discount the illuminant.</param>
     /// <returns>A new instance of <see cref="ViewingConditions"/>.</returns>
     public static ViewingConditions Create(
-        WhitePoint whitePoint,
+        CieXyz whitePoint,
         double adaptingLuminance,
         double backgroundLstar,
         double surround,

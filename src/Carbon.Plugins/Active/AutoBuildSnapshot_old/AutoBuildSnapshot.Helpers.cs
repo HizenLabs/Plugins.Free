@@ -252,7 +252,7 @@ public partial class AutoBuildSnapshot_old
     /// <param name="position">The position to check.</param>
     /// <param name="snapshotIds">The list to store the snapshot IDs.</param>
     /// <returns>True if snapshot IDs were found, false otherwise.</returns>
-    private bool TryGetSnapshotIdsAtPosition(Vector3 position, List<System.Guid> snapshotIds)
+    private bool TryGetSnapshotIdsAtPosition(Vector3 position, List<Guid> snapshotIds)
     {
         var zones = _zoneSnapshotIndex
             .Where(idx => ZoneContains(idx.Key, position))
@@ -278,7 +278,7 @@ public partial class AutoBuildSnapshot_old
     /// </summary>
     /// <param name="snapshotId">The snapshot ID to check.</param>
     /// <returns>The snapshot state.</returns>
-    private SnapshotState GetSnapshotState(BasePlayer player, System.Guid snapshotId)
+    private SnapshotState GetSnapshotState(BasePlayer player, Guid snapshotId)
     {
         if (_snapshotHandles.TryGetValue(snapshotId, out var handle))
         {
@@ -298,7 +298,7 @@ public partial class AutoBuildSnapshot_old
     /// </summary>
     /// <param name="timeSpan">The time span to format.</param>
     /// <returns>The formatted relative time string.</returns>
-    private static string FormatRelativeTime(System.TimeSpan timeSpan)
+    private static string FormatRelativeTime(TimeSpan timeSpan)
     {
         List<string> parts = Pool.Get<List<string>>();
 

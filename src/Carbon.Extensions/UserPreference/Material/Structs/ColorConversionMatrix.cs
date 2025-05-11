@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System;
+using System.Runtime.InteropServices;
 
 namespace HizenLabs.Extensions.UserPreference.Material.Structs;
 
@@ -8,16 +9,17 @@ namespace HizenLabs.Extensions.UserPreference.Material.Structs;
 [StructLayout(LayoutKind.Sequential)]
 public readonly struct ColorConversionMatrix
 {
-    public readonly double m00, m01, m02;
-    public readonly double m10, m11, m12;
-    public readonly double m20, m21, m22;
+    public readonly double
+        m00, m01, m02,
+        m10, m11, m12,
+        m20, m21, m22;
 
     /// <summary>
     /// Gets or sets the matrix element by linear index [0-8].
     /// </summary>
     /// <param name="index"> The index of the element, ranging from 0 (m00) to 8 (m22).</param>
     /// <returns>The float value at the specified index.</returns>
-    /// <exception cref="System.IndexOutOfRangeException">Thrown if the index is not in the range 0–8.</exception>
+    /// <exception cref="IndexOutOfRangeException">Thrown if the index is not in the range 0–8.</exception>
     public double this[int index]
     {
         get => index switch
@@ -31,7 +33,7 @@ public readonly struct ColorConversionMatrix
             6 => m20,
             7 => m21,
             8 => m22,
-            _ => throw new System.IndexOutOfRangeException("Invalid matrix index!"),
+            _ => throw new IndexOutOfRangeException("Invalid matrix index!"),
         };
     }
 
@@ -41,7 +43,7 @@ public readonly struct ColorConversionMatrix
     /// <param name="row">The row index (0–2).</param>
     /// <param name="column">The column index (0–2).</param>
     /// <returns>The float value at the specified (row, column) position.</returns>
-    /// <exception cref="System.IndexOutOfRangeException">Thrown if either <paramref name="row"/> or <paramref name="column"/> is outside the range 0–2.</exception>
+    /// <exception cref="IndexOutOfRangeException">Thrown if either <paramref name="row"/> or <paramref name="column"/> is outside the range 0–2.</exception>
     public double this[int row, int column]
     {
         get => this[row * 3 + column];
@@ -74,6 +76,67 @@ public readonly struct ColorConversionMatrix
         this.m21 = m21;
         this.m22 = m22;
     }
+
+    /// <summary>
+    /// Computes the inverse of this 3x3 matrix.
+    /// </summary>
+    /// <returns>A new <see cref="ColorConversionMatrix"/> representing the inverse.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the matrix is not invertible (determinant is zero).</exception>
+    /// <remarks>
+    /// Given a matrix:
+    /// <code>
+    /// | m00 | m01 | m02 |
+    /// | m10 | m11 | m12 |
+    /// | m20 | m21 | m22 |
+    /// </code>
+    /// We can get the a-i values as:
+    /// <code>
+    /// | a | b | c |
+    /// | d | e | f |
+    /// | g | h | i |
+    /// </code>
+    /// And then compute the determinant using the formula:
+    /// <code>
+    /// det(M) = a(ei − fh) − b(di − fg) + c(dh − eg)
+    /// </code>
+    /// Finally, the inverse is computed using the adjugate matrix and the determinant:
+    /// <code>
+    /// inv(M) = (1 / det(M) ) * adj(M)
+    /// </code>
+    /// </remarks>
+    public ColorConversionMatrix ToInverted()
+    {
+        // Extract the matrix variables
+        double a = m00, b = m01, c = m02,
+               d = m10, e = m11, f = m12,
+               g = m20, h = m21, i = m22;
+
+        // Calculate the determinant
+        double det = a * (e * i - f * h) - b * (d * i - f * g) + c * (d * h - e * g);
+
+        // If determinant is too close to zero, matrix is not invertible
+        if (Math.Abs(det) < 1e-12)
+        {
+            throw new InvalidOperationException("Matrix is not invertible, determinant is too small.");
+        }
+
+        double invDet = 1.0 / det;
+
+        // Compute the inverse using the adjugate matrix and determinant
+        return new ColorConversionMatrix
+        (
+            invDet * (e * i - f * h),
+            invDet * (c * h - b * i),
+            invDet * (b * f - c * e),
+            invDet * (f * g - d * i),
+            invDet * (a * i - c * g),
+            invDet * (c * d - a * f),
+            invDet * (d * h - e * g),
+            invDet * (b * g - a * h),
+            invDet * (a * e - b * d)
+        );
+    }
+
 
     /// <summary>
     /// Multiplies a 3x3 matrix by a 3D vector.

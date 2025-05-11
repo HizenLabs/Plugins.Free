@@ -15,7 +15,7 @@ namespace Carbon.Tests.Extensions.ObjectSerializer.Extensions;
 public class TypeExtensionsTests
 {
     /// <summary>
-    /// Tests the <see cref="TypeExtensions.GetTypeMarker(System.Type)"/> method.
+    /// Tests the <see cref="TypeExtensions.GetTypeMarker(Type)"/> method.
     /// </summary>
     /// <param name="type">The type to test.</param>
     /// <param name="expected">The expected <see cref="TypeMarker"/>.</param>

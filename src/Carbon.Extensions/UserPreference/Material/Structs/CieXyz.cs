@@ -1,6 +1,7 @@
 ﻿using HizenLabs.Extensions.UserPreference.Material.Constants;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using UnityEngine;
 
 namespace HizenLabs.Extensions.UserPreference.Material.Structs;
 
@@ -59,6 +60,24 @@ public readonly struct CieXyz
     }
 
     /// <summary>
+    /// Creates a <see cref="CieXyz"/> from 2D chromaticity coordinates (x, y).
+    /// Assumes a Y luminance value of 1.0, producing a unit-normalized white point.
+    /// </summary>
+    /// <param name="x">The x chromaticity coordinate.</param>
+    /// <param name="y">The y chromaticity coordinate.</param>
+    /// <param name="luminance">The luminance value (default is 1.0).</param>
+    /// <returns>A new <see cref="CieXyz"/> with computed XYZ values.</returns>
+    public static CieXyz FromChromaticity(double x, double y, double luminance = 1.0)
+    {
+        return new
+        (
+            x / y * luminance,
+            luminance,
+            (1.0 - x - y) / y * luminance
+        );
+    }
+
+    /// <summary>
     /// Converts the ColorXyz instance to a Cam16Rgb instance using the XYZ to CAM16 RGB transformation.
     /// </summary>
     /// <returns>A Cam16Rgb instance representing the color in CAM16 RGB space.</returns>
@@ -109,13 +128,27 @@ public readonly struct CieXyz
         return new(a.X / b.X, a.Y / b.Y, a.Z / b.Z);
     }
 
-    public static CieXyz operator *(CieXyz a, WhitePoint b)
+    /// <summary>
+    /// Multiplies a ColorXyz instance by a scalar value.
+    /// </summary>
+    /// <param name="a">The ColorXyz instance.</param>
+    /// <param name="b">The scalar value.</param>
+    /// <returns>A new ColorXyz instance representing the product of the color and the scalar.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static CieXyz operator *(CieXyz a, double b)
     {
-        return new(a.X * b.X, a.Y * b.Y, a.Z * b.Z);
+        return new(a.X * b, a.Y * b, a.Z * b);
     }
 
-    public static CieXyz operator /(CieXyz a, WhitePoint b)
+    /// <summary>
+    /// Divides a ColorXyz instance by a scalar value.
+    /// </summary>
+    /// <param name="a">The ColorXyz instance.</param>
+    /// <param name="b">The scalar value.</param>
+    /// <returns>A new ColorXyz instance representing the quotient of the color and the scalar.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static CieXyz operator /(CieXyz a, double b)
     {
-        return new(a.X / b.X, a.Y / b.Y, a.Z / b.Z);
+        return new(a.X / b, a.Y / b, a.Z / b);
     }
 }
