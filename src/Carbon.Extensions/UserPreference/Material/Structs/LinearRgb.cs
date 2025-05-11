@@ -76,9 +76,9 @@ public readonly struct LinearRgb
     {
         return new
         (
-            ColorUtils.Delinearized(R),
-            ColorUtils.Delinearized(G),
-            ColorUtils.Delinearized(B)
+            ColorUtils.DelinearizeComponent(R),
+            ColorUtils.DelinearizeComponent(G),
+            ColorUtils.DelinearizeComponent(B)
         );
     }
 }

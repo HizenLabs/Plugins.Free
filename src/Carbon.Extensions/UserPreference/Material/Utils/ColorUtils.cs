@@ -11,29 +11,6 @@ namespace HizenLabs.Extensions.UserPreference.Material.Utils;
 public static class ColorUtils
 {
     /// <summary>
-    /// Converts a color from linear RGB components to ARGB format.
-    /// </summary>
-    /// <param name="linearRgb">Linear RGB components in range [0, 100].</param>
-    /// <returns>An ARGB integer with full alpha (255).</returns>
-    [Obsolete("Use ToStandardRgb() instead.")]
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static StandardRgb ArgbFromLinearArgb(LinearRgb linearRgb)
-    {
-        return linearRgb.ToStandardRgb();
-    }
-
-    /// <summary>
-    /// Converts a color from XYZ to ARGB.
-    /// </summary>
-    /// <param name="colorXyz">The XYZ vector.</param>
-    /// <returns>An ARGB integer.</returns>
-    [Obsolete("Use ToStandardRgb() instead.")]
-    public static StandardRgb ArgbFromXyz(CieXyz colorXyz)
-    {
-        return colorXyz.ToStandardRgb();
-    }
-
-    /// <summary>
     /// Converts a color from ARGB to XYZ.
     /// </summary>
     /// <param name="color">The ARGB integer.</param>
@@ -47,64 +24,6 @@ public static class ColorUtils
     }
 
     /// <summary>
-    /// Converts a color from CIE L*a*b* to ARGB.
-    /// </summary>
-    /// <param name="l">L* (lightness) component of the Lab color.</param>
-    /// <param name="a">a* (green–red) component of the Lab color.</param>
-    /// <param name="b">b* (blue–yellow) component of the Lab color.</param>
-    /// <returns>An ARGB color converted from the Lab input.</returns>
-    public static StandardRgb ArgbFromLab(CieXyz lab)
-    {
-        // Convert L*a*b* to intermediate f(x), f(y), f(z) values
-        // These represent cube root–transformed XYZ values, normalized to the white point
-        double fy = (lab.X + LabConstants.FOffset) / LabConstants.FScale;
-        double fx = lab.Y / LabConstants.A_Scale + fy;
-        double fz = fy - lab.Z / LabConstants.B_Scale;
-
-        // Convert normalized f(x), f(y), f(z) values to relative XYZ
-        // (i.e., where white point Y is 1.0)
-        CieXyz relativeXyz = new
-        (
-            LabInvF(fx),
-            LabInvF(fy),
-            LabInvF(fz)
-        );
-
-        // Scale relative XYZ to absolute XYZ using the D65 white point
-        // (i.e., where white point Y is 100.0 and XYZ reflects actual luminance)
-        CieXyz absoluteXyz = relativeXyz * WhitePoints.D65;
-
-        // Convert absolute XYZ to sRGB (ARGB representation)
-        return ArgbFromXyz(absoluteXyz);
-    }
-
-
-    /// <summary>
-    /// Converts an ARGB color to the CIE L\*a\*b\* color space.
-    /// </summary>
-    /// <param name="argb">The ARGB color as an unsigned integer.</param>
-    /// <returns>An array containing L\*, a\*, and b\* values.</returns>
-    public static CieXyz LabFromArgb(StandardRgb argb)
-    {
-        // Convert ARGB to absolute XYZ (under D65 white point)
-        CieXyz absoluteXyz = XyzFromArgb(argb);
-
-        // Normalize XYZ by dividing by the D65 white point
-        CieXyz relativeXyz = absoluteXyz / WhitePoints.D65;
-
-        // Convert normalized XYZ to intermediate f(x), f(y), f(z) values
-        CieXyz labF = LabF(relativeXyz);
-
-        // Convert to Lab using standard formulas
-        double l = LabConstants.FScale * labF.Y - LabConstants.FOffset;
-        double a = LabConstants.A_Scale * (labF.X - labF.Y);
-        double b = LabConstants.B_Scale * (labF.Y - labF.Z);
-
-        return new(l, a, b);
-    }
-
-
-    /// <summary>
     /// Converts an L* value to an ARGB representation (grayscale).
     /// </summary>
     /// <param name="lstar">L* value.</param>
@@ -112,7 +31,7 @@ public static class ColorUtils
     public static StandardRgb ArgbFromLstar(double lstar)
     {
         var y = YFromLstar(lstar);
-        var component = Delinearized(y);
+        var component = DelinearizeComponent(y);
 
         return new(component, component, component);
     }
@@ -194,9 +113,11 @@ public static class ColorUtils
     /// </summary>
     /// <param name="rgbComponent">Linear RGB component in the range [0, 100].</param>
     /// <returns>Gamma-encoded sRGB value in the range [0, 255].</returns>
-    public static byte Delinearized(double rgbComponent)
+    public static byte DelinearizeComponent(double rgbComponent)
     {
-        return (byte)MathUtils.Clamp(0, 255, (int)Math.Round(DelinearizeCore(rgbComponent) * 255));
+        var delinearized = DelinearizeCore(rgbComponent) * 255;
+
+        return (byte)MathUtils.Clamp(0, 255, (int)Math.Round(delinearized, MidpointRounding.AwayFromZero));
     }
 
     /// <summary>
