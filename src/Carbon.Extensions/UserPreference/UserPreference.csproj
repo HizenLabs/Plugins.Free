@@ -538,6 +538,7 @@
     <Compile Include="Material\Constants\ColorTransforms.cs" />
     <Compile Include="Material\Constants\Gamma.cs" />
     <Compile Include="Material\Constants\Lab.cs" />
+    <Compile Include="Material\Constants\Perceptual.cs" />
     <Compile Include="Material\Constants\WhitePoints.cs" />
     <Compile Include="Material\DynamicScheme\DynamicScheme.cs" />
     <Compile Include="Material\Hct\Cam16.cs" />
