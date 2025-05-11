@@ -93,11 +93,12 @@ public readonly struct Cam16Rgb
     /// </remarks>
     public Cam16Rgb ToChromaticAdaptationInverse()
     {
-        double r = ChromaticAdaptationInverse(R);
-        double g = ChromaticAdaptationInverse(G);
-        double b = ChromaticAdaptationInverse(B);
-
-        return new(r, g, b);
+        return new
+        (
+            ChromaticAdaptationInverse(R),
+            ChromaticAdaptationInverse(G),
+            ChromaticAdaptationInverse(B)
+        );
     }
 
     /// <summary>
@@ -119,6 +120,7 @@ public readonly struct Cam16Rgb
     public ColorXyz ToColorXyz()
     {
         var xyz = ColorTransforms.Cam16rgbToXyz * this;
+
         return new(xyz.R, xyz.G, xyz.B);
     }
 
