@@ -3,10 +3,11 @@
 namespace HizenLabs.Extensions.UserPreference.Material.Constants;
 
 /// <summary>
-/// Contains color transformation matrices for converting between linear sRGB and CIE XYZ color spaces.
+/// Contains color transformation matrices for converting between various color spaces.
 /// </summary>
 internal static class ColorTransforms
 {
+    // sRGB color space chromaticity coordinates
     private const double
         sRgbRx = 0.64, sRgbRy = 0.33,
         sRgbGx = 0.3, sRgbGy = 0.6,
