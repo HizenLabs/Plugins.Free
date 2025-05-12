@@ -10,6 +10,36 @@ namespace Carbon.Tests.Extensions.UserPreference.Material.Structs;
 [TestClass]
 public class StandardRgbTests
 {
+    #region Construction
+
+    [TestMethod]
+    [DataRow(0x00000000u, 0, 0, 0, 0)]
+    [DataRow(0x00FF1234u, 0, 255, 18, 52)]
+    [DataRow(0x00FFFFFFu, 0, 255, 255, 255)]
+    [DataRow(0x80FF1234u, 128, 255, 18, 52)]
+    [DataRow(0xFF000000u, 255, 0, 0, 0)]
+    [DataRow(0xFF0000FFu, 255, 0, 0, 255)]
+    [DataRow(0xFF00FF00u, 255, 0, 255, 0)]
+    [DataRow(0xFF123456u, 255, 18, 52, 86)]
+    [DataRow(0xFFFF0000u, 255, 255, 0, 0)]
+    [DataRow(0xFFFFFFFFu, 255, 255, 255, 255)]
+    public void Constructor_ShouldSetCorrectValues(uint argb, int expectedA, int expectedR, int expectedG, int expectedB)
+    {
+        // Arrange
+
+        // Act
+        StandardRgb color = argb;
+
+        // Assert
+        Assert.AreEqual(argb, color.Value);
+        Assert.AreEqual(expectedA, color.A);
+        Assert.AreEqual(expectedR, color.R);
+        Assert.AreEqual(expectedG, color.G);
+        Assert.AreEqual(expectedB, color.B);
+    }
+
+    #endregion
+
     #region IsOpaque
 
     /// <summary>
