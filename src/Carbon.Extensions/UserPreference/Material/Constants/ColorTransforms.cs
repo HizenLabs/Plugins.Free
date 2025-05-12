@@ -14,7 +14,7 @@ internal static class ColorTransforms
 
     static ColorTransforms()
     {
-        LinearRgbToCieXyz = CreateCieXyzToLinearRgbConversionMatrix();
+        LinearRgbToCieXyz = ComputeCieXyzToLinearRgbConversionMatrix();
         CieXyzToLinearRgb = LinearRgbToCieXyz.ToInverted();
 
         Cam16PreAdaptRgbToCieXyz = CieXyzToCam16PreAdaptRgb.ToInverted();
@@ -75,7 +75,7 @@ internal static class ColorTransforms
     /// Creates a conversion matrix from CIE XYZ to linear RGB using the sRGB color space.
     /// </summary>
     /// <returns>A <see cref="ColorConversionMatrix"/> representing the conversion from CIE XYZ to linear RGB.</returns>
-    private static ColorConversionMatrix CreateCieXyzToLinearRgbConversionMatrix()
+    private static ColorConversionMatrix ComputeCieXyzToLinearRgbConversionMatrix()
     {
         var r = CieXyz.FromChromaticity(sRgbRx, sRgbRy);
         var g = CieXyz.FromChromaticity(sRgbGx, sRgbGy);
