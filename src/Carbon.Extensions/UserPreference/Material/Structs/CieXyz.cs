@@ -59,6 +59,13 @@ public readonly struct CieXyz
         Z = z;
     }
 
+    public CieXyz(Vector3d vector)
+    {
+        X = vector.X;
+        Y = vector.Y;
+        Z = vector.Z;
+    }
+
     /// <summary>
     /// Creates a <see cref="CieXyz"/> from 2D chromaticity coordinates (x, y).
     /// Assumes a Y luminance value of 1.0, producing a unit-normalized white point.
@@ -85,7 +92,7 @@ public readonly struct CieXyz
     {
         var cam16 = ColorTransforms.CieXyzToCam16PreAdaptRgb * this;
 
-        return new(cam16.X, cam16.Y, cam16.Z);
+        return new(cam16);
     }
 
     /// <summary>
@@ -96,7 +103,7 @@ public readonly struct CieXyz
     {
         var rgb = ColorTransforms.CieXyzToLinearRgb * this;
 
-        return new(rgb.X, rgb.Y, rgb.Z);
+        return new(rgb);
     }
 
     public StandardRgb ToStandardRgb()
@@ -151,4 +158,21 @@ public readonly struct CieXyz
     {
         return new(a.X / b, a.Y / b, a.Z / b);
     }
+
+    /// <summary>
+    /// Converts a CieXyz instance to a Vector3d instance.
+    /// </summary>
+    /// <param name="xyz">The CieXyz instance.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static implicit operator Vector3d(CieXyz xyz)
+    {
+        return new(xyz.X, xyz.Y, xyz.Z);
+    }
+
+    /// <summary>
+    /// Converts a Vector3d instance to a CieXyz instance.
+    /// </summary>
+    /// <param name="xyz">The Vector3d instance.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static implicit operator CieXyz(Vector3d xyz) => new(xyz);
 }

@@ -144,7 +144,7 @@ public readonly struct ColorConversionMatrix
     /// <param name="matrix">The 3x3 matrix.</param>
     /// <param name="colorXyz">The 3D vector.</param>
     /// <returns>The resulting 3D vector after multiplication.</returns>
-    public static CieXyz operator *(ColorConversionMatrix matrix, CieXyz colorXyz)
+    public static Vector3d operator *(ColorConversionMatrix matrix, Vector3d colorXyz)
     {
         return new
         (
@@ -155,74 +155,23 @@ public readonly struct ColorConversionMatrix
     }
 
     /// <inheritdoc cref="operator *(ColorConversionMatrix, CieXyz)"/>
-    public static CieXyz operator *(CieXyz colorXyz, ColorConversionMatrix matrix)
+    public static Vector3d operator *(Vector3d colorXyz, ColorConversionMatrix matrix)
     {
         return matrix * colorXyz;
     }
 
-    /// <summary>
-    /// Multiplies a 3x3 matrix by a LinearRgb vector.
-    /// </summary>
-    /// <param name="matrix">The 3x3 matrix.</param>
-    /// <param name="linearRgb">The LinearRgb vector.</param>
-    /// <returns>The resulting LinearRgb vector after multiplication.</returns>
-    public static LinearRgb operator *(ColorConversionMatrix matrix, LinearRgb linearRgb)
+    public static Vector3i operator *(ColorConversionMatrix matrix, Vector3i colorXyz)
     {
         return new
         (
-            matrix.m00 * linearRgb.R + matrix.m01 * linearRgb.G + matrix.m02 * linearRgb.B,
-            matrix.m10 * linearRgb.R + matrix.m11 * linearRgb.G + matrix.m12 * linearRgb.B,
-            matrix.m20 * linearRgb.R + matrix.m21 * linearRgb.G + matrix.m22 * linearRgb.B
+            (int)(matrix.m00 * colorXyz.x + matrix.m01 * colorXyz.y + matrix.m02 * colorXyz.z),
+            (int)(matrix.m10 * colorXyz.x + matrix.m11 * colorXyz.y + matrix.m12 * colorXyz.z),
+            (int)(matrix.m20 * colorXyz.x + matrix.m21 * colorXyz.y + matrix.m22 * colorXyz.z)
         );
     }
 
-    /// <inheritdoc cref="operator *(ColorConversionMatrix, LinearRgb)"/>
-    public static LinearRgb operator *(LinearRgb linearRgb, ColorConversionMatrix matrix)
+    public static Vector3i operator *(Vector3i colorXyz, ColorConversionMatrix matrix)
     {
-        return matrix * linearRgb;
-    }
-
-    /// <summary>
-    /// Multiplies a 3x3 matrix by a Cam16Rgb vector.
-    /// </summary>
-    /// <param name="matrix">The 3x3 matrix.</param>
-    /// <param name="cam16Rgb">The Cam16Rgb vector.</param>
-    /// <returns>The resulting Cam16Rgb vector after multiplication.</returns>
-    public static Cam16Rgb operator *(ColorConversionMatrix matrix, Cam16Rgb cam16Rgb)
-    {
-        return new
-        (
-            matrix.m00 * cam16Rgb.R + matrix.m01 * cam16Rgb.G + matrix.m02 * cam16Rgb.B,
-            matrix.m10 * cam16Rgb.R + matrix.m11 * cam16Rgb.G + matrix.m12 * cam16Rgb.B,
-            matrix.m20 * cam16Rgb.R + matrix.m21 * cam16Rgb.G + matrix.m22 * cam16Rgb.B
-        );
-    }
-
-    /// <inheritdoc cref="operator *(ColorConversionMatrix, Cam16Rgb)"/>
-    public static Cam16Rgb operator *(Cam16Rgb cam16Rgb, ColorConversionMatrix matrix)
-    {
-        return matrix * cam16Rgb;
-    }
-
-    /// <summary>
-    /// Multiplies a 3x3 matrix by a ScaledDiscountRgb vector.
-    /// </summary>
-    /// <param name="matrix">The 3x3 matrix.</param>
-    /// <param name="scaledDiscountRgb">The ScaledDiscountRgb vector.</param>
-    /// <returns>The resulting ScaledDiscountRgb vector after multiplication.</returns>
-    public static Cam16PreAdaptRgb operator *(ColorConversionMatrix matrix, Cam16PreAdaptRgb scaledDiscountRgb)
-    {
-        return new
-        (
-            matrix.m00 * scaledDiscountRgb.R + matrix.m01 * scaledDiscountRgb.G + matrix.m02 * scaledDiscountRgb.B,
-            matrix.m10 * scaledDiscountRgb.R + matrix.m11 * scaledDiscountRgb.G + matrix.m12 * scaledDiscountRgb.B,
-            matrix.m20 * scaledDiscountRgb.R + matrix.m21 * scaledDiscountRgb.G + matrix.m22 * scaledDiscountRgb.B
-        );
-    }
-
-    /// <inheritdoc cref="operator *(ColorConversionMatrix, Cam16PreAdaptRgb)"/>
-    public static Cam16PreAdaptRgb operator *(Cam16PreAdaptRgb scaledDiscountRgb, ColorConversionMatrix matrix)
-    {
-        return matrix * scaledDiscountRgb;
+        return matrix * colorXyz;
     }
 }

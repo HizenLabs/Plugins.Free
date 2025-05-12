@@ -1,4 +1,5 @@
 ﻿using HizenLabs.Extensions.UserPreference.Material.Constants;
+using HizenLabs.Extensions.UserPreference.Material.Hct;
 using HizenLabs.Extensions.UserPreference.Material.Utils;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -44,6 +45,13 @@ public readonly struct LinearRgb
         B = b;
     }
 
+    public LinearRgb(Vector3d vector)
+    {
+        R = vector.X;
+        G = vector.Y;
+        B = vector.Z;
+    }
+
     /// <summary>
     /// Converts the LinearRgb instance to an XYZ color space using the linear RGB to XYZ transformation.
     /// </summary>
@@ -52,7 +60,7 @@ public readonly struct LinearRgb
     {
         var xyz = ColorTransforms.LinearRgbToCieXyz * this;
 
-        return new(xyz.R, xyz.G, xyz.B);
+        return new(xyz);
     }
 
     /// <summary>
@@ -63,7 +71,7 @@ public readonly struct LinearRgb
     {
         var sd = ColorTransforms.LinearRgbToCam16ScaledDiscount * this;
 
-        return new(sd.R, sd.G, sd.B);
+        return new(sd);
     }
 
     /// <summary>
@@ -81,4 +89,21 @@ public readonly struct LinearRgb
             ColorUtils.DelinearizeComponent(B)
         );
     }
+
+    /// <summary>
+    /// Converts a CieXyz instance to a Vector3d instance.
+    /// </summary>
+    /// <param name="xyz">The CieXyz instance.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static implicit operator Vector3d(LinearRgb lin)
+    {
+        return new(lin.R, lin.G, lin.B);
+    }
+
+    /// <summary>
+    /// Converts a Vector3d instance to a CieXyz instance.
+    /// </summary>
+    /// <param name="xyz">The Vector3d instance.</param>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static implicit operator LinearRgb(Vector3d xyz) => new(xyz);
 }

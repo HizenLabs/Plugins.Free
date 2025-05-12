@@ -40,6 +40,13 @@ public readonly struct Cam16PreAdaptRgb
         B = b;
     }
 
+    public Cam16PreAdaptRgb(Vector3d vector)
+    {
+        R = vector.X;
+        G = vector.Y;
+        B = vector.Z;
+    }
+
     /// <summary>
     /// Converts this pre-adapted CAM16 RGB color to linear RGB using the 
     /// <see cref="ColorTransforms.Cam16ScaledDiscountToLinearRgb"/> matrix.
@@ -50,6 +57,14 @@ public readonly struct Cam16PreAdaptRgb
     public LinearRgb ToLinearRgb()
     {
         var linrgb = ColorTransforms.Cam16ScaledDiscountToLinearRgb * this;
-        return new LinearRgb(linrgb.R, linrgb.G, linrgb.B);
+
+        return new(linrgb);
     }
+
+    public static implicit operator Vector3d(Cam16PreAdaptRgb cam16)
+    {
+        return new Vector3d(cam16.R, cam16.G, cam16.B);
+    }
+
+    public static implicit operator Cam16PreAdaptRgb(Vector3d vector) => new(vector);
 }
