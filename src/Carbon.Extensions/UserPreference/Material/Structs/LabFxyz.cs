@@ -1,4 +1,5 @@
 ﻿using HizenLabs.Extensions.UserPreference.Material.Constants;
+using HizenLabs.Extensions.UserPreference.Material.Utils;
 using System;
 
 namespace HizenLabs.Extensions.UserPreference.Material.Structs;
@@ -63,41 +64,5 @@ public readonly struct LabFxyz
         double b = LabConstants.B_Scale * (Fy - Fz);
 
         return new(l, a, b);
-    }
-
-    /// <summary>
-    /// Creates a new <see cref="LabFxyz"/> instance from CIE XYZ values by applying the Lab transformation function.
-    /// </summary>
-    /// <param name="xyz">The XYZ values to transform.</param>
-    /// <returns>A new LabFxyz instance with transformed values.</returns>
-    public static LabFxyz FromXyz(CieXyz xyz)
-    {
-        return new
-        (
-            ApplyLabFunction(xyz.X),
-            ApplyLabFunction(xyz.Y),
-            ApplyLabFunction(xyz.Z)
-        );
-    }
-
-    /// <summary>
-    /// Applies the CIE L*a*b* transformation function to a value.
-    /// </summary>
-    /// <param name="value">The value to transform.</param>
-    /// <returns>The transformed value according to the L*a*b* function.</returns>
-    /// <remarks>
-    /// For values > ε (0.008856...), applies a cube root function.
-    /// For values ≤ ε, applies a linear function to avoid numerical issues near zero.
-    /// </remarks>
-    internal static double ApplyLabFunction(double value)
-    {
-        if (value > LabConstants.Epsilon)
-        {
-            return Math.Pow(value, 1d / 3d);
-        }
-        else
-        {
-            return (LabConstants.Kappa * value + LabConstants.FOffset) / LabConstants.FScale;
-        }
     }
 }

@@ -38,6 +38,18 @@ public class StandardRgbTests
         Assert.AreEqual(expectedB, color.B);
     }
 
+    [TestMethod]
+    public void Constructor_Rgb_ShouldSetCorrectValues()
+    {
+        Assert.Fail("Test not implemented.");
+    }
+
+    [TestMethod]
+    public void Constructor_Argb_ShouldSetCorrectValues()
+    {
+        Assert.Fail("Test not implemented.");
+    }
+
     #endregion
 
     #region IsOpaque

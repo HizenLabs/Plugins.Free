@@ -35,4 +35,12 @@ public readonly struct Cam16ScaledDiscountRgb
         G = g;
         B = b;
     }
+
+    /// <summary>
+    /// Converts to LinearRgb by applying the inverse of the gamma correction matrix.
+    /// </summary>
+    public void ToLinearRgb()
+    {
+
+    }
 }

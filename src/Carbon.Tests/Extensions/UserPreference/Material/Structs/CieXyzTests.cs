@@ -49,6 +49,13 @@ public class CieXyzTests
     }
 
     [TestMethod]
+    public void ToLabFxyz_ShouldBeCorrect()
+    {
+        Assert.Fail("Test not implemented.");
+    }
+
+
+    [TestMethod]
     [DataRow(0d, 0d, 0d, 0d, 0d, 0d)]
     [DataRow(.180437, .072175, .950304, 0d, 0d, 1d)] //~0000FF D65
     [DataRow(.357576, .715152, .119192, 0d, 1d, 0d)] //~00FF00 D65

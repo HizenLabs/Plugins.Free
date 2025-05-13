@@ -1,4 +1,5 @@
 ﻿using HizenLabs.Extensions.UserPreference.Material.Constants;
+using HizenLabs.Extensions.UserPreference.Material.Utils;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using UnityEngine;
@@ -93,6 +94,23 @@ public readonly struct CieXyz
         var cam16 = ColorTransforms.CieXyzToCam16PreAdaptRgb * this;
 
         return new(cam16);
+    }
+
+    /// <summary>
+    /// Converts the ColorXyz instance to a LabFxyz instance using the CIE L*a*b* transformation function
+    /// </summary>
+    /// <returns>A LabFxyz instance representing the color in L*a*b* space.</returns>
+    /// <remarks>
+    /// Values created with <see cref="ColorUtils.ApplyLabFunction(double)"/>
+    /// </remarks>
+    public LabFxyz ToLabFxyz()
+    {
+        return new
+        (
+            ColorUtils.ApplyLabFunction(X),
+            ColorUtils.ApplyLabFunction(Y),
+            ColorUtils.ApplyLabFunction(Z)
+        );
     }
 
     /// <summary>

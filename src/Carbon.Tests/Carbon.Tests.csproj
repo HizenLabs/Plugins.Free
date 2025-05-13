@@ -689,6 +689,13 @@
     <Compile Include="Extensions\ObjectSerializer\Internal\Delegates\GenericDelegateFactoryTests.cs" />
     <Compile Include="Extensions\UserPreference\Material\Constants\ColorTransformsTests.cs" />
     <Compile Include="Extensions\UserPreference\Material\Htc\ViewingConditionsTests.cs" />
+    <Compile Include="Extensions\UserPreference\Material\Structs\Cam16ScaledDiscountRgbTests.cs" />
+    <Compile Include="Extensions\UserPreference\Material\Structs\Cam16RgbTests.cs" />
+    <Compile Include="Extensions\UserPreference\Material\Structs\Cam16PreAdaptRgbTests.cs" />
+    <Compile Include="Extensions\UserPreference\Material\Structs\LabFxyzTests.cs" />
+    <Compile Include="Extensions\UserPreference\Material\Structs\Vector3dTests.cs" />
+    <Compile Include="Extensions\UserPreference\Material\Structs\LinearRgbTests.cs" />
+    <Compile Include="Extensions\UserPreference\Material\Structs\LabTests.cs" />
     <Compile Include="Extensions\UserPreference\Material\Structs\ColorConversionMatrixTests.cs" />
     <Compile Include="Extensions\UserPreference\Material\Structs\StandardRgbTests.cs" />
     <Compile Include="Extensions\UserPreference\Material\Structs\CieXyzTests.cs" />

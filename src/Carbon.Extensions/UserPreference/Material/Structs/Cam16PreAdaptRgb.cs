@@ -1,4 +1,5 @@
 ﻿using HizenLabs.Extensions.UserPreference.Material.Constants;
+using System;
 using System.Runtime.InteropServices;
 
 namespace HizenLabs.Extensions.UserPreference.Material.Structs;
@@ -45,6 +46,16 @@ public readonly struct Cam16PreAdaptRgb
         R = vector.X;
         G = vector.Y;
         B = vector.Z;
+    }
+
+    /// <summary>
+    /// Applies chromatic adaptation to this pre-adapted CAM16 RGB color to obtain the adapted CAM16 RGB color.
+    /// </summary>
+    /// <returns></returns>
+    /// <exception cref="NotImplementedException"></exception>
+    public Cam16Rgb ToCam16Rgb()
+    {
+        throw new NotImplementedException();
     }
 
     /// <summary>
