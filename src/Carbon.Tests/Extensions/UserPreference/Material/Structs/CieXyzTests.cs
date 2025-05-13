@@ -48,5 +48,26 @@ public class CieXyzTests
         Assert.AreEqual(expected.B, actualCam16.B, 0.0001);
     }
 
+    [TestMethod]
+    [DataRow(0d, 0d, 0d, 0d, 0d, 0d)]
+    [DataRow(.180437, .072175, .950304, 0d, 0d, 1d)] //~0000FF D65
+    [DataRow(.357576, .715152, .119192, 0d, 1d, 0d)] //~00FF00 D65
+    [DataRow(.412456, .212673, .019334, 1d, 0d, 0d)] //~FF0000 D65
+    [DataRow(.950470, 1d, 1.088830, 1d, 1d, 1d)] // FFFFFF D65
+    public void ToLinearRgb_ShouldBeCorrect(double x, double y, double z, double linR, double linG, double linB)
+    {
+        // Arrange
+        CieXyz cieXyz = new(x, y, z);
+        LinearRgb expected = new(linR, linG, linB);
+
+        // Act
+        LinearRgb actualLin = cieXyz.ToLinearRgb();
+
+        // Assert
+        Assert.AreEqual(expected.R, actualLin.R, 0.001);
+        Assert.AreEqual(expected.G, actualLin.G, 0.001);
+        Assert.AreEqual(expected.B, actualLin.B, 0.001);
+    }
+
     #endregion
 }
