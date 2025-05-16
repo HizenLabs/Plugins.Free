@@ -204,43 +204,53 @@ internal static class ColorUtils
     #region Chromatic Adaptation
 
     /// <summary>
-    /// Applies chromatic adaptation to a linear CAM16 RGB color.
-    /// This includes illuminant discounting, nonlinear response compression, and sigmoidal perceptual scaling.
+    /// Applies chromatic adaptation to a pre-adapted CAM16 RGB color using the specified degree of adaptation (D).
     /// </summary>
-    public static Cam16Rgb ChromaticAdaptation(Cam16PreAdaptRgb cam16, ViewingConditions viewingConditions)
+    /// <param name="cam16">
+    /// The pre-adapted CAM16 RGB color, representing the white point in a linear RGB space before adaptation.
+    /// </param>
+    /// <param name="degree">
+    /// The degree of adaptation (D), typically in the range [0, 1], representing how much the visual system adapts
+    /// to the illuminant. A value of 1.0 simulates full adaptation (discounting the illuminant entirely).
+    /// </param>
+    /// <returns>
+    /// A <see cref="Cam16Rgb"/> representing the adapted white point after applying chromatic adaptation, but before
+    /// any nonlinear compression or perceptual scaling.
+    /// </returns>
+    /// <remarks>
+    /// This implements the CAM16 formula:
+    /// <code>
+    /// R_d = D * (100 / R_w) + (1 - D)
+    /// </code>
+    /// applied element-wise for each RGB channel. The result is the adapted RGB value under incomplete adaptation conditions.
+    /// </remarks>
+    public static Cam16Rgb ChromaticAdaptation(Cam16PreAdaptRgb cam16, double degree)
     {
-        return ChromaticAdaptation(cam16, viewingConditions.RgbD, viewingConditions.Fl);
-    }
-
-    public static Cam16Rgb ChromaticAdaptation(Cam16PreAdaptRgb cam16, Cam16Rgb discountFactors, double fl)
-    {
-        // 1. Discount the illuminant (element-wise multiplication with D)
-        Cam16Rgb discounted = discountFactors * cam16;
-
-        // 2. Apply nonlinear response compression
-        Cam16Rgb compressed = ApplyCompression(discountFactors, fl);
-
-        // 3. Apply post-adaptation perceptual scaling (sigmoid-like mapping)
-        return PostAdaptationScale(compressed, discounted);
+        return new
+        (
+            degree * (Gamma.LuminanceScale / cam16.R) + 1.0 - degree,
+            degree * (Gamma.LuminanceScale / cam16.G) + 1.0 - degree,
+            degree * (Gamma.LuminanceScale / cam16.B) + 1.0 - degree
+        );
     }
 
     /// <summary>
     /// Applies nonlinear response compression to each component of a CAM16 RGB color.
     /// Formula: (Fl * abs(component) / 100.0) ^ 0.42
     /// </summary>
-    public static Cam16Rgb ApplyCompression(Cam16Rgb input, double fl)
+    public static Cam16Rgb ApplyCompression(Cam16PreAdaptRgb input, Cam16Rgb discount, double fl)
     {
         return new
         (
-            ApplyCompression(input.R, fl),
-            ApplyCompression(input.G, fl),
-            ApplyCompression(input.B, fl)
+            ApplyCompression(input.R, discount.R, fl),
+            ApplyCompression(input.G, discount.G, fl),
+            ApplyCompression(input.B, discount.B, fl)
         );
     }
 
-    internal static double ApplyCompression(double component, double fl)
+    internal static double ApplyCompression(double component, double discount, double fl)
     {
-        return Math.Pow(fl * Math.Abs(component) / Gamma.LuminanceScale, Cam16Constants.NonlinearResponseExponent);
+        return Math.Pow(fl * discount * component / Gamma.LuminanceScale, Cam16Constants.NonlinearResponseExponent);
     }
 
     /// <summary>

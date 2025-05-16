@@ -51,19 +51,63 @@ public readonly struct Cam16PreAdaptRgb
     }
 
     /// <summary>
-    /// Converts this pre-adapted CAM16 RGB color to a CAM16 RGB color by applying chromatic adaptation.
+    /// Converts this pre-adapted CAM16 RGB color to a fully adapted <see cref="Cam16Rgb"/> using the provided viewing conditions.
     /// </summary>
-    /// <param name="viewingConditions"></param>
-    /// <returns></returns>
-    /// <exception cref="NotImplementedException"></exception>
+    /// <param name="viewingConditions">
+    /// The viewing conditions under which the color is perceived, including degree of adaptation and luminance scaling.
+    /// </param>
+    /// <returns>
+    /// A perceptually adapted <see cref="Cam16Rgb"/> color.
+    /// </returns>
     public Cam16Rgb ToCam16Rgb(ViewingConditions viewingConditions)
     {
         return ToCam16Rgb(viewingConditions.RgbD, viewingConditions.Fl);
     }
 
-    public Cam16Rgb ToCam16Rgb(Cam16Rgb discountFactors, double fl)
+    /// <summary>
+    /// Converts this pre-adapted CAM16 RGB color to a fully adapted <see cref="Cam16Rgb"/> by applying chromatic adaptation,
+    /// nonlinear response compression, and sigmoid perceptual scaling.
+    /// </summary>
+    /// <param name="degreeOfAdaptation">
+    /// A scalar representing the degree of adaptation (D), typically in the range [0, 1].
+    /// </param>
+    /// <param name="fl">
+    /// The luminance-level adaptation factor (<c>Fl</c>) from the viewing conditions.
+    /// </param>
+    /// <param name="adaptedRgb">
+    /// Outputs the intermediate chromatically adapted linear RGB color (prior to compression and scaling).
+    /// </param>
+    /// <returns>
+    /// The final perceptually adapted <see cref="Cam16Rgb"/> color.
+    /// </returns>
+    public Cam16Rgb ToCam16Rgb(double degreeOfAdaptation, double fl, out Cam16Rgb adaptedRgb)
     {
-        return ColorUtils.ChromaticAdaptation(this, discountFactors, fl);
+        // Step 1: Chromatic adaptation
+        adaptedRgb = ColorUtils.ChromaticAdaptation(this, degreeOfAdaptation);
+
+        return ToCam16Rgb(adaptedRgb, fl);
+    }
+
+    /// <summary>
+    /// Converts a chromatically adapted CAM16 RGB color to its final perceptual form by applying compression
+    /// and post-adaptation scaling.
+    /// </summary>
+    /// <param name="adaptedRgb">
+    /// The chromatically adapted linear RGB color (D-adapted), typically from <see cref="ViewingConditions.RgbD"/>.
+    /// </param>
+    /// <param name="fl">
+    /// The luminance-level adaptation factor (<c>Fl</c>) from the viewing conditions.
+    /// </param>
+    /// <returns>
+    /// A perceptually scaled <see cref="Cam16Rgb"/> color under CAM16.
+    /// </returns>
+    public Cam16Rgb ToCam16Rgb(Cam16Rgb adaptedRgb, double fl)
+    {
+        // Step 2: Nonlinear brightness response compression
+        Cam16Rgb compressed = ColorUtils.ApplyCompression(this, adaptedRgb, fl);
+
+        // Step 3: Sigmoid scaling to simulate perceptual saturation
+        return ColorUtils.PostAdaptationScale(compressed, adaptedRgb);
     }
 
     /// <summary>

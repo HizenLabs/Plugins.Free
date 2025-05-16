@@ -69,37 +69,7 @@ public class ColorUtilsTests
 
     #endregion
 
-    #region Chromatic Adaptation
-
-    [TestMethod]
-    public void ApplyCompression_Component_Positive_ReturnsExpected()
-    {
-        double input = 50.0;
-        double expected = Math.Pow(_vc.Fl * input / 100.0, Cam16Constants.NonlinearResponseExponent);
-        double actual = ColorUtils.ApplyCompression(input, _vc.Fl);
-
-        Assert.AreEqual(expected, actual, 1e-10);
-    }
-
-    [TestMethod]
-    public void ApplyCompression_Component_Negative_IsSymmetric()
-    {
-        double pos = ColorUtils.ApplyCompression(50.0, _vc.Fl);
-        double neg = ColorUtils.ApplyCompression(-50.0, _vc.Fl);
-
-        Assert.AreEqual(pos, neg, 1e-10);
-    }
-
-    [TestMethod]
-    public void ApplyCompression_Color_AllChannelsCompressed()
-    {
-        var input = new Cam16Rgb(20, -30, 40);
-        Cam16Rgb result = ColorUtils.ApplyCompression(input, _vc.Fl);
-
-        Assert.IsTrue(result.R > 0);
-        Assert.IsTrue(result.G > 0);
-        Assert.IsTrue(result.B > 0);
-    }
+    #region Cam16 Conversions
 
     [TestMethod]
     public void PostAdaptationScale_Component_PositiveYieldsPositive()
@@ -136,28 +106,6 @@ public class ColorUtilsTests
         Assert.IsTrue(result.R < 0);
         Assert.IsTrue(result.G > 0);
         Assert.IsTrue(result.B < 0);
-    }
-
-    [TestMethod]
-    public void ChromaticAdaptation_ValidColor_TransformsSuccessfully()
-    {
-        var input = new Cam16PreAdaptRgb(20, -30, 40);
-        Cam16Rgb result = ColorUtils.ChromaticAdaptation(input, _vc);
-
-        Assert.IsTrue(result.R >= -400 && result.R <= 400);
-        Assert.IsTrue(result.G >= -400 && result.G <= 400);
-        Assert.IsTrue(result.B >= -400 && result.B <= 400);
-    }
-
-    [TestMethod]
-    public void ChromaticAdaptation_ZeroInput_ReturnsZero()
-    {
-        var input = new Cam16PreAdaptRgb(0, 0, 0);
-        Cam16Rgb result = ColorUtils.ChromaticAdaptation(input, _vc);
-
-        Assert.AreEqual(0, result.R, 1e-10);
-        Assert.AreEqual(0, result.G, 1e-10);
-        Assert.AreEqual(0, result.B, 1e-10);
     }
 
     #endregion

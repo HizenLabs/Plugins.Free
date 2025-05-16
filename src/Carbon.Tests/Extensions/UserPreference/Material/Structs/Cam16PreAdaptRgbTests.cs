@@ -1,5 +1,9 @@
-﻿using HizenLabs.Extensions.UserPreference.Material.Structs;
+﻿using HizenLabs.Extensions.UserPreference.Material.Constants;
+using HizenLabs.Extensions.UserPreference.Material.Hct;
+using HizenLabs.Extensions.UserPreference.Material.Structs;
+using HizenLabs.Extensions.UserPreference.Material.Utils;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 
 namespace Carbon.Tests.Extensions.UserPreference.Material.Structs;
 
@@ -53,13 +57,32 @@ public class Cam16PreAdaptRgbTests
     [TestMethod]
     public void ToCam16Rgb_ShouldBeCorrect()
     {
-        Assert.Fail("Test not implemented.");
+        // Arrange
+        var vc = ViewingConditions.Default;
+        var rgbW = WhitePoints.D65.ToCam16PreAdaptRgb();
+
+        // Act
+        Cam16Rgb result = rgbW.ToCam16Rgb(vc);
+
+        // Assert (matches Java's output)
+        Assert.AreEqual(9.656952240716015, result.R, 1e-4, "R channel mismatch.");
+        Assert.AreEqual(9.682086762132320, result.G, 1e-4, "G channel mismatch.");
+        Assert.AreEqual(9.723831595138450, result.B, 1e-4, "B channel mismatch.");
     }
 
     [TestMethod]
     public void ToLinearRgb_ShouldBeCorrect()
     {
-        Assert.Fail("Test not implemented.");
+        // Arrange: known sRGB white point
+        var argb = new StandardRgb(255, 255, 255);
+
+        // Act
+        var linear = argb.ToLinearRgb(); // or ToCieXyz, depending on your structure
+
+        // Assert: verify conversion is accurate within expected tolerance
+        Assert.AreEqual(100.0, linear.R, 1e-3, "R linear mismatch.");
+        Assert.AreEqual(100.0, linear.G, 1e-3, "G linear mismatch.");
+        Assert.AreEqual(100.0, linear.B, 1e-3, "B linear mismatch.");
     }
 
     #endregion
