@@ -162,4 +162,16 @@ public static class MathUtils
     {
         return Math.Sqrt(x * x + y * y);
     }
+
+    /// <summary>
+    /// Calculates the real cube root of a number, preserving the sign.
+    /// </summary>
+    /// <param name="x">The number to find the cube root of.</param>
+    /// <returns>The cube root of the number.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static double Cbrt(double x)
+    {
+        return Math.Sign(x) * Math.Pow(Math.Abs(x), 1.0 / 3.0);
+    }
+
 }

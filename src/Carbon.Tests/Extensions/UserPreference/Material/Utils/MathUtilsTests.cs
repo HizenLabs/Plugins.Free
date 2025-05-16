@@ -210,7 +210,7 @@ public class MathUtilsTests
 
     #endregion
 
-    #region Hypotenuse Tests
+    #region Miscellaneous Tests
 
     /// <summary>
     /// Tests that <see cref="MathUtils.Hypotenuse"/> returns the correct length for the hypotenuse.
@@ -227,6 +227,22 @@ public class MathUtilsTests
         double result = MathUtils.Hypotenuse(x, y);
         Assert.AreEqual(expected, result, 0.000001);
     }
+
+    [TestMethod]
+    [DataRow(0.0, 0.0)]
+    [DataRow(1.0, 1.0)]
+    [DataRow(8.0, 2.0)]
+    [DataRow(27.0, 3.0)]
+    [DataRow(-1.0, -1.0)]
+    [DataRow(-8.0, -2.0)]
+    [DataRow(-27.0, -3.0)]
+    [DataRow(58.6, 3.88417872675)]
+    public void Cbrt_ReturnsCorrectValue(double input, double expected)
+    {
+        double result = MathUtils.Cbrt(input);
+        Assert.AreEqual(expected, result, 1e-10);
+    }
+
 
     #endregion
 }

@@ -1,4 +1,5 @@
 ﻿using HizenLabs.Extensions.UserPreference.Material.Constants;
+using HizenLabs.Extensions.UserPreference.Material.Hct;
 using HizenLabs.Extensions.UserPreference.Material.Structs;
 using System;
 using System.Runtime.CompilerServices;
@@ -99,13 +100,16 @@ internal static class ColorUtils
     /// </summary>
     public static double LabF(double t)
     {
-        if (t > LabConstants.Epsilon)
+        double e = LabConstants.Epsilon;
+        double kappa = LabConstants.Kappa;
+
+        if (t > e)
         {
-            return Math.Pow(t, 1d / 3d);
+            return MathUtils.Cbrt(t);
         }
         else
         {
-            return (LabConstants.Kappa * t + LabConstants.FOffset) / LabConstants.FScale;
+            return (kappa * t + LabConstants.FOffset) / LabConstants.FScale;
         }
     }
 
@@ -114,15 +118,17 @@ internal static class ColorUtils
     /// </summary>
     public static double LabInvF(double ft)
     {
-        double ft3 = ft * ft * ft;
+        double e = LabConstants.Epsilon;
+        double kappa = LabConstants.Kappa;
+        double ft3 = Math.Pow(ft, 3);
 
-        if (ft3 > LabConstants.Epsilon)
+        if (ft3 > e)
         {
             return ft3;
         }
         else
         {
-            return (LabConstants.FScale * ft - LabConstants.FOffset) / LabConstants.Kappa;
+            return (LabConstants.FScale * ft - LabConstants.FOffset) / kappa;
         }
     }
 
@@ -158,7 +164,7 @@ internal static class ColorUtils
     /// <returns>Y value.</returns>
     public static double YFromLstar(double lstar)
     {
-        return 100d * LabInvF((lstar + LabConstants.FOffset) / LabConstants.FScale);
+        return Gamma.LuminanceScale * LabInvF((lstar + LabConstants.FOffset) / LabConstants.FScale);
     }
 
     /// <summary>
@@ -198,32 +204,74 @@ internal static class ColorUtils
     #region Chromatic Adaptation
 
     /// <summary>
-    /// Applies chromatic adaptation to a single component of the CAM16 RGB color space.
+    /// Applies chromatic adaptation to a linear CAM16 RGB color.
+    /// This includes illuminant discounting, nonlinear response compression, and sigmoidal perceptual scaling.
     /// </summary>
-    /// <param name="component">The color component to adapt.</param>
-    /// <param name="fl">The luminance-level adaptation factor (FL).</param>
-    /// <param name="factor">The chromatic adaptation factor.</param>
-    /// <param name="signed">Indicates whether to return a signed value.</param>
-    /// <returns>The adapted color component value.</returns>
-    public static double ChromaticAdaptation(double component, double fl, double factor, bool signed = true)
+    public static Cam16Rgb ChromaticAdaptation(Cam16PreAdaptRgb cam16, ViewingConditions viewingConditions)
     {
-        double baseValue = fl * component * factor / 100.0;
-        double adapted = Math.Pow(Math.Abs(baseValue), 0.42);
-        double result = 400.0 * adapted / (adapted + 27.13);
-        return signed ? Math.Sign(baseValue) * result : result;
+        return ChromaticAdaptation(cam16, viewingConditions.RgbD, viewingConditions.Fl);
+    }
+
+    public static Cam16Rgb ChromaticAdaptation(Cam16PreAdaptRgb cam16, Cam16Rgb discountFactors, double fl)
+    {
+        // 1. Discount the illuminant (element-wise multiplication with D)
+        Cam16Rgb discounted = discountFactors * cam16;
+
+        // 2. Apply nonlinear response compression
+        Cam16Rgb compressed = ApplyCompression(discountFactors, fl);
+
+        // 3. Apply post-adaptation perceptual scaling (sigmoid-like mapping)
+        return PostAdaptationScale(compressed, discounted);
     }
 
     /// <summary>
-    /// Applies the inverse chromatic adaptation to a single component of the CAM16 RGB color space.
+    /// Applies nonlinear response compression to each component of a CAM16 RGB color.
+    /// Formula: (Fl * abs(component) / 100.0) ^ 0.42
     /// </summary>
-    /// <param name="adapted">The adapted color component to inverse.</param>
-    /// <returns>The inverse adapted color component value.</returns>
-    public static double ChromaticAdaptationInverse(double adapted)
+    public static Cam16Rgb ApplyCompression(Cam16Rgb input, double fl)
     {
-        double abs = Math.Abs(adapted);
-        double baseVal = Math.Max(0, 27.13 * abs / (400.0 - abs));
-        return Math.Sign(adapted) * Math.Pow(baseVal, 1.0 / 0.42);
+        return new
+        (
+            ApplyCompression(input.R, fl),
+            ApplyCompression(input.G, fl),
+            ApplyCompression(input.B, fl)
+        );
     }
+
+    internal static double ApplyCompression(double component, double fl)
+    {
+        return Math.Pow(fl * Math.Abs(component) / Gamma.LuminanceScale, Cam16Constants.NonlinearResponseExponent);
+    }
+
+    /// <summary>
+    /// Applies sigmoidal post-adaptation scaling to simulate perceptual saturation.
+    /// Formula: sign(original) * 400 * compressed / (compressed + 27.13)
+    /// </summary>
+    public static Cam16Rgb PostAdaptationScale(Cam16Rgb compressed, Cam16Rgb original)
+    {
+        return new
+        (
+            PostAdaptationScale(compressed.R, original.R),
+            PostAdaptationScale(compressed.G, original.G),
+            PostAdaptationScale(compressed.B, original.B)
+        );
+    }
+
+    /// <summary>
+    /// Applies sigmoidal post-adaptation scaling to a single component.
+    /// This uses the sign of the input to preserve chromatic direction.
+    /// </summary>
+    /// <param name="compressed">The compressed response value.</param>
+    /// <param name="component">The original component (for sign).</param>
+    /// <returns>The final perceptual component.</returns>
+    internal static double PostAdaptationScale(double compressed, double component)
+    {
+        var num = Math.Sign(component) * Cam16Constants.MaxAdaptedResponse * compressed;
+        var denom = compressed + Cam16Constants.AdaptedResponseOffset;
+
+        return num / denom;
+    }
+
 
     #endregion
 }

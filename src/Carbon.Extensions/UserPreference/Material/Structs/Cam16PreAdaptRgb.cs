@@ -1,4 +1,6 @@
 ﻿using HizenLabs.Extensions.UserPreference.Material.Constants;
+using HizenLabs.Extensions.UserPreference.Material.Hct;
+using HizenLabs.Extensions.UserPreference.Material.Utils;
 using System;
 using System.Runtime.InteropServices;
 
@@ -49,13 +51,19 @@ public readonly struct Cam16PreAdaptRgb
     }
 
     /// <summary>
-    /// Applies chromatic adaptation to this pre-adapted CAM16 RGB color to obtain the adapted CAM16 RGB color.
+    /// Converts this pre-adapted CAM16 RGB color to a CAM16 RGB color by applying chromatic adaptation.
     /// </summary>
+    /// <param name="viewingConditions"></param>
     /// <returns></returns>
     /// <exception cref="NotImplementedException"></exception>
-    public Cam16Rgb ToCam16Rgb()
+    public Cam16Rgb ToCam16Rgb(ViewingConditions viewingConditions)
     {
-        throw new NotImplementedException();
+        return ToCam16Rgb(viewingConditions.RgbD, viewingConditions.Fl);
+    }
+
+    public Cam16Rgb ToCam16Rgb(Cam16Rgb discountFactors, double fl)
+    {
+        return ColorUtils.ChromaticAdaptation(this, discountFactors, fl);
     }
 
     /// <summary>

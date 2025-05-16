@@ -119,14 +119,34 @@ public sealed class ViewingConditions : IDisposable, Pool.IPooled
     }
 
     /// <summary>
-    /// Creates a new instance of <see cref="ViewingConditions"/> with the specified parameters.
+    /// Creates a new <see cref="ViewingConditions"/> instance by calculating the necessary viewing environment parameters
+    /// used in the CAM16 color appearance model. This includes computations based on the white point, ambient luminance,
+    /// background lightness, and perceptual surround conditions.
     /// </summary>
-    /// <param name="whitePoint">The white point of the viewing conditions.</param>
-    /// <param name="adaptingLuminance">The adapting luminance of the viewing conditions.</param>
-    /// <param name="backgroundLstar">The background lightness (L*) of the viewing conditions.</param>
-    /// <param name="surround">The surround factor of the viewing conditions.</param>
-    /// <param name="discountingIlluminant">Whether to discount the illuminant.</param>
-    /// <returns>A new instance of <see cref="ViewingConditions"/>.</returns>
+    /// <param name="whitePoint">
+    /// The white point of the environment in CIE XYZ coordinates. Typically D65: (95.047, 100.0, 108.883).
+    /// </param>
+    /// <param name="adaptingLuminance">
+    /// The adapting field luminance (in cd/m²), representing ambient light. Commonly derived from lux using:
+    /// <c>lux × 0.0586</c>. A value of ~11.72 corresponds to 200 lux under D65.
+    /// </param>
+    /// <param name="backgroundLstar">
+    /// The L* value (in CIE Lab) of the background surrounding the color stimulus. Mid-gray is 50.0.
+    /// </param>
+    /// <param name="surround">
+    /// A parameter between 0.0 and 2.0 indicating the perceptual surround:
+    /// <list type="bullet">
+    ///   <item><description>0.0 = dark surround (e.g., cinema)</description></item>
+    ///   <item><description>1.0 = dim surround (e.g., TV viewing)</description></item>
+    ///   <item><description>2.0 = average surround (e.g., paper viewing)</description></item>
+    /// </list>
+    /// </param>
+    /// <param name="discountingIlluminant">
+    /// Whether to simulate full chromatic adaptation (like seeing a red apple as red under green light). For self-luminous
+    /// sources like screens, this should be false.
+    /// </param>
+    /// <returns>A fully initialized <see cref="ViewingConditions"/> instance with derived CAM16 parameters.</returns>
+
     public static ViewingConditions Create(
         CieXyz whitePoint,
         double adaptingLuminance,
@@ -134,9 +154,66 @@ public sealed class ViewingConditions : IDisposable, Pool.IPooled
         double surround,
         bool discountingIlluminant)
     {
+        // Avoids divide-by-zero in adaptation calculations
         backgroundLstar = Math.Max(0.1, backgroundLstar);
 
-        throw new NotImplementedException();
+        // Transform XYZ white point into CAM16's cone response (pre-adapted RGB space)
+        var rgbW = whitePoint.ToCam16PreAdaptRgb();
+
+        // Compute surround-related factors
+        double f = 0.8 + (surround / 10.0);
+        double c = f >= 0.9
+            ? MathUtils.Lerp(0.59, 0.69, (f - 0.9) * 10.0)
+            : MathUtils.Lerp(0.525, 0.59, (f - 0.8) * 10.0);
+
+        // Degree of adaptation (D) for illuminant discounting
+        double d = discountingIlluminant
+            ? 1.0
+            : f * (1.0 - (1.0 / 3.6 * Math.Exp((-adaptingLuminance - 42.0) / 92.0)));
+
+        d = MathUtils.Clamp(0.0, 1.0, d);
+        double nc = f; // Nc is equal to f in CAM16
+
+        // Adaptation gain computation (FL)
+        double k = 1.0 / (5.0 * adaptingLuminance + 1.0);
+        double k4 = k * k * k * k;
+        double k4F = 1.0 - k4;
+        double fl = (k4 * adaptingLuminance) + (0.1 * k4F * k4F * MathUtils.Cbrt(5.0 * adaptingLuminance));
+
+        // Discounting the white point RGB by D
+        Cam16Rgb rgbD = new
+        (
+            d * (100.0 / rgbW.R) + 1.0 - d,
+            d * (100.0 / rgbW.G) + 1.0 - d,
+            d * (100.0 / rgbW.B) + 1.0 - d
+        );
+
+        // Nonlinear compression of the adapted white
+        Cam16Rgb rgbAFactors = new
+        (
+            Math.Pow(fl * rgbD.R * rgbW.R / 100.0, 0.42),
+            Math.Pow(fl * rgbD.G * rgbW.G / 100.0, 0.42),
+            Math.Pow(fl * rgbD.B * rgbW.B / 100.0, 0.42)
+        );
+
+        // Post-adaptation sigmoid-like compression
+        Cam16Rgb rgbA = new
+        (
+            400.0 * rgbAFactors.R / (rgbAFactors.R + 27.13),
+            400.0 * rgbAFactors.G / (rgbAFactors.G + 27.13),
+            400.0 * rgbAFactors.B / (rgbAFactors.B + 27.13)
+        );
+
+        // Relative luminance of background compared to the white point
+        double n = ColorUtils.YFromLstar(backgroundLstar) / whitePoint.Y;
+        double z = 1.48 + Math.Sqrt(n);
+        double nbb = 0.725 / Math.Pow(n, 0.2);
+        double ncb = nbb;
+
+        // Overall achromatic response to white
+        double aw = ((2.0 * rgbA.R) + rgbA.G + (0.05 * rgbA.B)) * nbb;
+
+        return Create(n, aw, nbb, ncb, c, nc, rgbD, fl, Math.Pow(fl, 0.25), z);
     }
 
     public static ViewingConditions CreateDefaultWithBackgroundLstar(double lstar)

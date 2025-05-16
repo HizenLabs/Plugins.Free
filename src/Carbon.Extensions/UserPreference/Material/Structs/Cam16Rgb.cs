@@ -92,4 +92,14 @@ public readonly struct Cam16Rgb
     {
         return new(xyz.X, xyz.Y, xyz.Z);
     }
+
+    public static Cam16Rgb operator *(Cam16Rgb cam16, Vector3d vector)
+    {
+        return new
+        (
+            cam16.R * vector.X,
+            cam16.G * vector.Y,
+            cam16.B * vector.Z
+        );
+    }
 }
