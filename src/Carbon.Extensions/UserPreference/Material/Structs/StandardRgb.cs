@@ -80,6 +80,11 @@ public readonly struct StandardRgb : IEquatable<StandardRgb>
         ColorUtils.LinearizeComponent(B)
     );
 
+    public override string ToString()
+    {
+        return StringUtils.HexFromColor(this);
+    }
+
     /// <summary>
     /// Implicit conversion from uint (packed ARGB) to <see cref="StandardRgb"/>.
     /// </summary>

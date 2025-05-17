@@ -12,7 +12,7 @@ public class StringUtilsTests
     #region HexFromArgb Tests
 
     /// <summary>
-    /// Tests that <see cref="StringUtils.HexFromArgb"/> strips the alpha component and returns the correct hex color string.
+    /// Tests that <see cref="StringUtils.HexFromColor"/> strips the alpha component and returns the correct hex color string.
     /// </summary>
     /// <param name="argb">The input ARGB value as an unsigned integer.</param>
     /// <param name="expected">The expected hex color string (without alpha).</param>
@@ -29,7 +29,7 @@ public class StringUtilsTests
     public void HexFromArgb_ReturnsExpectedHex(uint argb, string expected)
     {
         // Act
-        string hex = StringUtils.HexFromArgb(argb);
+        string hex = StringUtils.HexFromColor(argb);
 
         // Assert
         Assert.AreEqual(expected, hex);
