@@ -1,4 +1,4 @@
-﻿using HizenLabs.Extensions.UserPreference.Material.Hct;
+﻿using HizenLabs.Extensions.UserPreference.Material.ColorSpaces;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Carbon.Tests.Extensions.UserPreference.Material.Hct;

@@ -545,10 +545,12 @@
     <Compile Include="Material\DynamicColor\DynamicScheme.cs" />
     <Compile Include="Material\Enums\Platform.cs" />
     <Compile Include="Material\Enums\SpecVersion.cs" />
-    <Compile Include="Material\Hct\Cam16.cs" />
-    <Compile Include="Material\Hct\Hct.cs" />
-    <Compile Include="Material\Hct\HctSolver.cs" />
-    <Compile Include="Material\Hct\ViewingConditions.cs" />
+    <Compile Include="Material\Enums\Variant.cs" />
+    <Compile Include="Material\ColorSpaces\Cam16.cs" />
+    <Compile Include="Material\ColorSpaces\Hct.cs" />
+    <Compile Include="Material\ColorSpaces\HctSolver.cs" />
+    <Compile Include="Material\ColorSpaces\ViewingConditions.cs" />
+    <Compile Include="Material\Palettes\TonalPalette.cs" />
     <Compile Include="Material\Structs\Cam16Rgb.cs" />
     <Compile Include="Material\Structs\Cam16ScaledDiscountRgb.cs" />
     <Compile Include="Material\Structs\Lab.cs" />

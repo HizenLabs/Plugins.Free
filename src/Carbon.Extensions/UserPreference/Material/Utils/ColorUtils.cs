@@ -1,5 +1,5 @@
 ﻿using HizenLabs.Extensions.UserPreference.Material.Constants;
-using HizenLabs.Extensions.UserPreference.Material.Hct;
+using HizenLabs.Extensions.UserPreference.Material.ColorSpaces;
 using HizenLabs.Extensions.UserPreference.Material.Structs;
 using System;
 using System.Runtime.CompilerServices;

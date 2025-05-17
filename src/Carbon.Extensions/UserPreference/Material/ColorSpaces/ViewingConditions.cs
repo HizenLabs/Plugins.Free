@@ -4,7 +4,7 @@ using HizenLabs.Extensions.UserPreference.Material.Structs;
 using HizenLabs.Extensions.UserPreference.Material.Utils;
 using System;
 
-namespace HizenLabs.Extensions.UserPreference.Material.Hct;
+namespace HizenLabs.Extensions.UserPreference.Material.ColorSpaces;
 
 /// <summary>
 /// Represents a set of viewing conditions used in the CAM16 color appearance model.
