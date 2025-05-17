@@ -561,6 +561,7 @@
     <Compile Include="Material\Utils\MathUtils.cs" />
     <Compile Include="Material\Utils\StringUtils.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Scheme\SchemeTonalSpot.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
