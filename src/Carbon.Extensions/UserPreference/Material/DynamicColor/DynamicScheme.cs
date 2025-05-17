@@ -1,6 +1,6 @@
 ﻿using HizenLabs.Extensions.UserPreference.Material.Enums;
 
-namespace HizenLabs.Extensions.UserPreference.Material.DynamicScheme;
+namespace HizenLabs.Extensions.UserPreference.Material.DynamicColor;
 
 public class DynamicScheme
 {
