@@ -6,12 +6,14 @@ namespace HizenLabs.Extensions.UserPreference.Material.DynamicColors;
 
 public static class ColorSpecs
 {
+	private static readonly ColorSpec2021 _spec2021 = new();
+
 	public static IColorSpec Get(SpecVersion specVersion)
 	{
 		return specVersion switch
 		{
-			SpecVersion.SPEC_2021 => Pool.Get<ColorSpec2021>(),
-			_ => throw new ArgumentOutOfRangeException(nameof(specVersion), specVersion, null)
+			SpecVersion.SPEC_2021 => _spec2021,
+            _ => throw new ArgumentOutOfRangeException(nameof(specVersion), specVersion, null)
 		};
 	}
 }
