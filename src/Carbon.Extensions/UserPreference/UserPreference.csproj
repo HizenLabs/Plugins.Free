@@ -535,6 +535,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Material\ColorSpaces\HctSolver.cs" />
     <Compile Include="Material\Constants\Cam16Constants.cs" />
     <Compile Include="Material\Constants\ColorTransforms.cs" />
     <Compile Include="Material\Constants\ContrastLevel.cs" />
@@ -542,14 +543,23 @@
     <Compile Include="Material\Constants\LabConstants.cs" />
     <Compile Include="Material\Constants\Perceptual.cs" />
     <Compile Include="Material\Constants\WhitePoints.cs" />
-    <Compile Include="Material\DynamicColor\DynamicScheme.cs" />
+    <Compile Include="Material\Dislike\DislikeAnalyzer.cs" />
+    <Compile Include="Material\DynamicColors\ColorSpec2021.cs" />
+    <Compile Include="Material\DynamicColors\ContrastCurve.cs" />
+    <Compile Include="Material\DynamicColors\DynamicColor.cs" />
+    <Compile Include="Material\DynamicColors\IColorSpec.cs" />
+    <Compile Include="Material\DynamicColors\ColorSpecs.cs" />
+    <Compile Include="Material\DynamicColors\DynamicScheme.cs" />
+    <Compile Include="Material\DynamicColors\ToneDeltaPair.cs" />
+    <Compile Include="Material\Enums\DeltaConstraint.cs" />
     <Compile Include="Material\Enums\Platform.cs" />
     <Compile Include="Material\Enums\SpecVersion.cs" />
+    <Compile Include="Material\Enums\TonePolarity.cs" />
     <Compile Include="Material\Enums\Variant.cs" />
     <Compile Include="Material\ColorSpaces\Cam16.cs" />
     <Compile Include="Material\ColorSpaces\Hct.cs" />
-    <Compile Include="Material\ColorSpaces\HctSolver.cs" />
     <Compile Include="Material\ColorSpaces\ViewingConditions.cs" />
+    <Compile Include="Material\Palettes\KeyColor.cs" />
     <Compile Include="Material\Palettes\TonalPalette.cs" />
     <Compile Include="Material\Structs\Cam16Rgb.cs" />
     <Compile Include="Material\Structs\Cam16ScaledDiscountRgb.cs" />
@@ -561,7 +571,9 @@
     <Compile Include="Material\Structs\LinearRgb.cs" />
     <Compile Include="Material\Structs\Cam16PreAdaptRgb.cs" />
     <Compile Include="Material\Structs\Vector3d.cs" />
+    <Compile Include="Material\Temperature\TemperatureCache.cs" />
     <Compile Include="Material\Utils\ColorUtils.cs" />
+    <Compile Include="Material\Utils\Contrast.cs" />
     <Compile Include="Material\Utils\MathUtils.cs" />
     <Compile Include="Material\Utils\StringUtils.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -1,5 +1,4 @@
 ﻿using HizenLabs.Extensions.UserPreference.Material.Constants;
-using HizenLabs.Extensions.UserPreference.Material.ColorSpaces;
 using HizenLabs.Extensions.UserPreference.Material.Structs;
 using System;
 using System.Runtime.CompilerServices;
@@ -85,13 +84,13 @@ internal static class ColorUtils
     /// </summary>
     /// <param name="xyz">The ColorXyz color.</param>
     /// <returns>A new ColorXyz with the LabF transformation applied.</returns>
-    public static CieXyz LabF(CieXyz xyz)
+    public static LabFxyz LabF(CieXyz normalized)
     {
         return new
         (
-            LabF(xyz.X),
-            LabF(xyz.Y),
-            LabF(xyz.Z)
+            LabF(normalized.X),
+            LabF(normalized.Y),
+            LabF(normalized.Z)
         );
     }
 
@@ -137,7 +136,7 @@ internal static class ColorUtils
     /// </summary>
     /// <param name="lstar">L* value.</param>
     /// <returns>An ARGB integer.</returns>
-    public static StandardRgb ArgbFromLstar(double lstar)
+    public static StandardRgb ColorFromLstar(double lstar)
     {
         var y = YFromLstar(lstar);
         var component = DelinearizeComponent(y);
@@ -224,6 +223,7 @@ internal static class ColorUtils
     /// </code>
     /// applied element-wise for each RGB channel. The result is the adapted RGB value under incomplete adaptation conditions.
     /// </remarks>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Cam16Rgb ChromaticAdaptation(Cam16PreAdaptRgb cam16, double degree)
     {
         return new
@@ -234,10 +234,48 @@ internal static class ColorUtils
         );
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Cam16Rgb ChromaticAdaptationDiscount(Cam16ScaledDiscountRgb discount)
+    {
+        return new
+        (
+            ChromaticAdaptationDiscount(discount.R),
+            ChromaticAdaptationDiscount(discount.G),
+            ChromaticAdaptationDiscount(discount.B)
+        );
+    }
+
+    private static double ChromaticAdaptationDiscount(double component)
+    {
+        double af = Math.Pow(Math.Abs(component), 0.42);
+
+        return Math.Sign(component) * 400.0 * af / (af + 27.13);
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Cam16ScaledDiscountRgb InverseChromaticAdaptationDiscount(Cam16Rgb adapted)
+    {
+        return new
+        (
+            InverseChromaticAdaptationDiscount(adapted.R),
+            InverseChromaticAdaptationDiscount(adapted.G),
+            InverseChromaticAdaptationDiscount(adapted.B)
+        );
+    }
+
+    private static double InverseChromaticAdaptationDiscount(double adapted)
+    {
+        double adaptedAbs = Math.Abs(adapted);
+        double @base = Math.Max(0, Cam16Constants.AdaptedResponseOffset * adaptedAbs / (Cam16Constants.MaxAdaptedResponse - adaptedAbs));
+
+        return Math.Sign(adapted) * Math.Pow(@base, 1.0 / Cam16Constants.NonlinearResponseExponent);
+    }
+
     /// <summary>
     /// Applies nonlinear response compression to each component of a CAM16 RGB color.
     /// Formula: (Fl * abs(component) / 100.0) ^ 0.42
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Cam16Rgb ApplyCompression(Cam16PreAdaptRgb input, Cam16Rgb discount, double fl)
     {
         return new
@@ -256,6 +294,7 @@ internal static class ColorUtils
     /// <param name="discount">The discounting illuminant factor.</param>
     /// <param name="fl">The luminance-level adaptation factor.</param>
     /// <returns>The compressed component value.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static double ApplyCompression(double component, double discount, double fl)
     {
         return Math.Pow(fl * discount * component / Gamma.LuminanceScale, Cam16Constants.NonlinearResponseExponent);
@@ -265,6 +304,7 @@ internal static class ColorUtils
     /// Applies sigmoidal post-adaptation scaling to simulate perceptual saturation.
     /// Formula: sign(original) * 400 * compressed / (compressed + 27.13)
     /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Cam16Rgb PostAdaptationScale(Cam16Rgb compressed, Cam16Rgb original)
     {
         return new

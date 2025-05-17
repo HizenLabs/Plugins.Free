@@ -1,6 +1,4 @@
 ﻿using HizenLabs.Extensions.UserPreference.Material.Constants;
-using HizenLabs.Extensions.UserPreference.Material.Utils;
-using System;
 
 namespace HizenLabs.Extensions.UserPreference.Material.Structs;
 

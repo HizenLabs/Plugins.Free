@@ -1,7 +1,7 @@
 ﻿using HizenLabs.Extensions.UserPreference.Material.ColorSpaces;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Carbon.Tests.Extensions.UserPreference.Material.Htc;
+namespace Carbon.Tests.Extensions.UserPreference.Material.ColorSpaces;
 
 [TestClass]
 public class Cam16Tests

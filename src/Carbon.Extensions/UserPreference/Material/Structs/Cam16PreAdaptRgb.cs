@@ -1,7 +1,6 @@
 ﻿using HizenLabs.Extensions.UserPreference.Material.Constants;
 using HizenLabs.Extensions.UserPreference.Material.ColorSpaces;
 using HizenLabs.Extensions.UserPreference.Material.Utils;
-using System;
 using System.Runtime.InteropServices;
 
 namespace HizenLabs.Extensions.UserPreference.Material.Structs;

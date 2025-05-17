@@ -3,7 +3,6 @@ using HizenLabs.Extensions.UserPreference.Material.Constants;
 using HizenLabs.Extensions.UserPreference.Material.Utils;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using UnityEngine;
 
 namespace HizenLabs.Extensions.UserPreference.Material.Structs;
 

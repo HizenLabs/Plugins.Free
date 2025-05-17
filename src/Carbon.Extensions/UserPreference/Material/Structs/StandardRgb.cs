@@ -1,70 +1,44 @@
-﻿using HizenLabs.Extensions.UserPreference.Material.Utils;
+﻿using HizenLabs.Extensions.UserPreference.Material.Constants;
+using HizenLabs.Extensions.UserPreference.Material.Utils;
+using System;
 using System.Runtime.InteropServices;
 using UnityEngine;
 
 namespace HizenLabs.Extensions.UserPreference.Material.Structs;
 
 /// <summary>
-/// Represents a color in ARGB format.
+/// Represents a color in ARGB format (Alpha, Red, Green, Blue), packed into a 32-bit unsigned integer.
+/// Provides both individual component access and color space conversion utilities.
 /// </summary>
 [StructLayout(LayoutKind.Explicit)]
-public readonly struct StandardRgb
+public readonly struct StandardRgb : IEquatable<StandardRgb>
 {
-    /// <summary>
-    /// The ARGB value of the color.
-    /// </summary>
-    [FieldOffset(0)]
-    public readonly uint Value;
+    [FieldOffset(0)] public readonly uint Value;
+    [FieldOffset(0)] public readonly byte B;
+    [FieldOffset(1)] public readonly byte G;
+    [FieldOffset(2)] public readonly byte R;
+    [FieldOffset(3)] public readonly byte A;
 
     /// <summary>
-    /// The blue component of the color (0-255).
-    /// </summary>
-    [FieldOffset(0)]
-    public readonly byte B;
-
-    /// <summary>
-    /// The green component of the color (0-255).
-    /// </summary>
-    [FieldOffset(1)]
-    public readonly byte G;
-
-    /// <summary>
-    /// The red component of the color (0-255).
-    /// </summary>
-    [FieldOffset(2)]
-    public readonly byte R;
-
-    /// <summary>
-    /// The alpha component of the color (0-255).
-    /// </summary>
-    [FieldOffset(3)]
-    public readonly byte A;
-
-    /// <summary>
-    /// Returns true if the color is opaque (alpha = 255).
+    /// Returns true if the alpha component is fully opaque (255).
     /// </summary>
     public bool IsOpaque => A == 255;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="StandardRgb"/> struct with the specified ARGB value.
+    /// Initializes from a packed ARGB value.
     /// </summary>
-    /// <param name="argb">The ARGB value of the color.</param>
     public StandardRgb(uint argb)
     {
-        B = G = R = A = 0;
+        B = G = R = A = 0; // Required before setting `Value` due to readonly struct + FieldOffset
         Value = argb;
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="StandardRgb"/> struct with the specified alpha, red, green, and blue values.
+    /// Initializes from individual ARGB components.
     /// </summary>
-    /// <param name="a">The alpha component of the color (0-255).</param>
-    /// <param name="r">The red component of the color (0-255).</param>
-    /// <param name="g">The green component of the color (0-255).</param>
-    /// <param name="b">The blue component of the color (0-255).</param>
     public StandardRgb(byte a, byte r, byte g, byte b)
     {
-        Value = 0;
+        Value = 0; // Required for readonly struct + FieldOffset
         A = a;
         R = r;
         G = g;
@@ -72,41 +46,50 @@ public readonly struct StandardRgb
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="StandardRgb"/> struct with the specified red, green, and blue values.
+    /// Initializes from RGB, with alpha defaulting to 255 (opaque).
     /// </summary>
-    /// <param name="r">The red component of the color (0-255).</param>
-    /// <param name="g">The green component of the color (0-255).</param>
-    /// <param name="b">The blue component of the color (0-255).</param>
-    public StandardRgb(byte r, byte g, byte b) : this(255, r, g, b)
+    public StandardRgb(byte r, byte g, byte b) : this(255, r, g, b) { }
+
+    /// <summary>
+    /// Initializes from another RGB and replaces the alpha value.
+    /// </summary>
+    public StandardRgb(StandardRgb rgb, byte a) : this(a, rgb.R, rgb.G, rgb.B) { }
+
+    /// <summary>
+    /// Converts to CIE XYZ using linear RGB conversion.
+    /// </summary>
+    public CieXyz ToCieXyz() => ToLinearRgb().ToColorXyz();
+
+    /// <summary>
+    /// Converts to Lab color space.
+    /// </summary>
+    public Lab ToLab()
     {
+        var xyz = ToCieXyz();
+        var normalized = xyz / WhitePoints.D65;
+        var labFxyz = ColorUtils.LabF(normalized);
+        return labFxyz.ToLab();
     }
 
     /// <summary>
-    /// Converts the <see cref="StandardRgb"/> struct to a <see cref="CieXyz"/> object.
+    /// Converts to linear RGB.
     /// </summary>
-    /// <returns></returns>
-    public CieXyz ToCieXyz()
-    {
-        return ToLinearRgb().ToColorXyz();
-    }
+    public LinearRgb ToLinearRgb() => new(
+        ColorUtils.LinearizeComponent(R),
+        ColorUtils.LinearizeComponent(G),
+        ColorUtils.LinearizeComponent(B)
+    );
 
     /// <summary>
-    /// Converts the <see cref="StandardRgb"/> struct to a <see cref="LinearRgb"/> object.
+    /// Implicit conversion from uint (packed ARGB) to <see cref="StandardRgb"/>.
     /// </summary>
-    /// <returns></returns>
-    public LinearRgb ToLinearRgb()
-    {
-        return new
-        (
-            ColorUtils.LinearizeComponent(R),
-            ColorUtils.LinearizeComponent(G),
-            ColorUtils.LinearizeComponent(B)
-        );
-    }
-
-    /// <summary>
-    /// Converts the <see cref="StandardRgb"/> struct to a <see cref="Color"/> object.
-    /// </summary>
-    /// <param name="argb"></param>
     public static implicit operator StandardRgb(uint argb) => new(argb);
+
+    // Equality and hash code implementation
+    public static bool operator ==(StandardRgb left, StandardRgb right) => left.Value == right.Value;
+    public static bool operator !=(StandardRgb left, StandardRgb right) => left.Value != right.Value;
+
+    public bool Equals(StandardRgb other) => Value == other.Value;
+    public override bool Equals(object obj) => obj is StandardRgb other && Equals(other);
+    public override int GetHashCode() => (int)Value;
 }
