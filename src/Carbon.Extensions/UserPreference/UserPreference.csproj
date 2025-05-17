@@ -537,7 +537,7 @@
   <ItemGroup>
     <Compile Include="Material\Constants\Cam16Constants.cs" />
     <Compile Include="Material\Constants\ColorTransforms.cs" />
-    <Compile Include="Material\Constants\Contrast.cs" />
+    <Compile Include="Material\Constants\ContrastLevel.cs" />
     <Compile Include="Material\Constants\Gamma.cs" />
     <Compile Include="Material\Constants\LabConstants.cs" />
     <Compile Include="Material\Constants\Perceptual.cs" />

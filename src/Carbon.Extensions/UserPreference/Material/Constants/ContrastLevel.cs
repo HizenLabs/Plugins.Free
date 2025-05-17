@@ -1,6 +1,6 @@
 ﻿namespace HizenLabs.Extensions.UserPreference.Material.Constants;
 
-internal static class Contrast
+internal static class ContrastLevel
 {
     public static readonly double Standard = 0.0;
 
