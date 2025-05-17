@@ -1,5 +1,6 @@
 ﻿using Facepunch;
 using HizenLabs.Extensions.UserPreference.Material.Structs;
+using HizenLabs.Extensions.UserPreference.Material.Utils;
 using System;
 
 namespace HizenLabs.Extensions.UserPreference.Material.Hct;
@@ -133,9 +134,62 @@ public sealed class Cam16 : IDisposable, Pool.IPooled
     public static Cam16 FromXyzInViewingConditions(CieXyz color, ViewingConditions viewingConditions)
     {
         // Transform XYZ to 'cone'/'rgb' responses
-        var rgbT = color.ToCam16PreAdaptRgb();
+        var rgbA = color.ToCam16Rgb(viewingConditions);
 
-        throw new NotImplementedException();
+        // redness-greenness
+        double a = (11.0 * rgbA.R + -12.0 * rgbA.G + rgbA.B) / 11.0;
+
+        // yellowness-blueness
+        double b = (rgbA.R + rgbA.G - 2.0 * rgbA.B) / 9.0;
+
+        // auxiliary components
+        double u = (20.0 * rgbA.R + 20.0 * rgbA.G + 21.0 * rgbA.B) / 20.0;
+        double p2 = (40.0 * rgbA.R + 20.0 * rgbA.G + rgbA.B) / 20.0;
+
+        // hue
+        double atan2 = Math.Atan2(b, a);
+        double atanDegrees = MathUtils.ToDegrees(atan2);
+        double hue = atanDegrees < 0
+                ? atanDegrees + 360.0
+                : atanDegrees >= 360 ? atanDegrees - 360.0 : atanDegrees;
+        double hueRadians = MathUtils.ToRadians(hue);
+
+        // achromatic response to color
+        double ac = p2 * viewingConditions.Nbb;
+
+        // CAM16 lightness and brightness
+        double j =
+            100.0
+                * Math.Pow(
+                    ac / viewingConditions.Aw,
+                    viewingConditions.C * viewingConditions.Z);
+        double q =
+            4.0
+                / viewingConditions.C
+                * Math.Sqrt(j / 100.0)
+                * (viewingConditions.Aw + 4.0)
+                * viewingConditions.FlRoot;
+
+        // CAM16 chroma, colorfulness, and saturation.
+        double huePrime = (hue < 20.14) ? hue + 360 : hue;
+        double eHue = 0.25 * (Math.Cos(MathUtils.ToRadians(huePrime) + 2.0) + 3.8);
+        double p1 = 50000.0 / 13.0 * eHue * viewingConditions.Nc * viewingConditions.Ncb;
+        double t = p1 * MathUtils.Hypot(a, b) / (u + 0.305);
+        double alpha =
+            Math.Pow(1.64 - Math.Pow(0.29, viewingConditions.N), 0.73) * Math.Pow(t, 0.9);
+        // CAM16 chroma, colorfulness, saturation
+        double c = alpha * Math.Sqrt(j / 100.0);
+        double m = c * viewingConditions.FlRoot;
+        double s =
+            50.0 * Math.Sqrt((alpha * viewingConditions.C) / (viewingConditions.Aw + 4.0));
+
+        // CAM16-UCS components
+        double jstar = (1.0 + 100.0 * 0.007) * j / (1.0 + 0.007 * j);
+        double mstar = 1.0 / 0.0228 * MathUtils.Log1p(0.0228 * m);
+        double astar = mstar * Math.Cos(hueRadians);
+        double bstar = mstar * Math.Sin(hueRadians);
+
+        return Create(hue, c, j, q, m, s, jstar, astar, bstar);
     }
 
     /// <summary>

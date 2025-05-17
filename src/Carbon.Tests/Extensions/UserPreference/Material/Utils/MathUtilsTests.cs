@@ -213,7 +213,7 @@ public class MathUtilsTests
     #region Miscellaneous Tests
 
     /// <summary>
-    /// Tests that <see cref="MathUtils.Hypotenuse"/> returns the correct length for the hypotenuse.
+    /// Tests that <see cref="MathUtils.Hypot"/> returns the correct length for the hypotenuse.
     /// </summary>
     [TestMethod]
     [DataRow(3.0, 4.0, 5.0)]
@@ -224,7 +224,7 @@ public class MathUtilsTests
     [DataRow(0.0, 0.0, 0.0)]
     public void Hypotenuse_ReturnsCorrectValue(double x, double y, double expected)
     {
-        double result = MathUtils.Hypotenuse(x, y);
+        double result = MathUtils.Hypot(x, y);
         Assert.AreEqual(expected, result, 0.000001);
     }
 
@@ -240,6 +240,24 @@ public class MathUtilsTests
     public void Cbrt_ReturnsCorrectValue(double input, double expected)
     {
         double result = MathUtils.Cbrt(input);
+        Assert.AreEqual(expected, result, 1e-10);
+    }
+
+    [TestMethod]
+    [DataRow(0.0, 0.0)]
+    [DataRow(1e-10, 9.999999999500001e-11)]
+    [DataRow(1e-5, 9.999950000333332e-6)]
+    [DataRow(0.01, 0.009950330853168092)]
+    [DataRow(0.1, 0.0953101798043249)]
+    [DataRow(1.0, 0.6931471805599453)]
+    [DataRow(Math.E - 1, 1.0)]
+    [DataRow(9.0, 2.302585092994046)]
+    [DataRow(99.0, 4.605170185988092)]
+    [DataRow(-0.5, -0.6931471805599453)]
+    [DataRow(-0.9999999999, -23.02585084720009)]
+    public void Log1p_ReturnsCorrectValue(double input, double expected)
+    {
+        double result = MathUtils.Log1p(input);
         Assert.AreEqual(expected, result, 1e-10);
     }
 

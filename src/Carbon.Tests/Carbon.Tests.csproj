@@ -688,6 +688,7 @@
     <Compile Include="Extensions\ObjectSerializer\Extensions\TypeExtensionsTests.cs" />
     <Compile Include="Extensions\ObjectSerializer\Internal\Delegates\GenericDelegateFactoryTests.cs" />
     <Compile Include="Extensions\UserPreference\Material\Constants\ColorTransformsTests.cs" />
+    <Compile Include="Extensions\UserPreference\Material\Htc\Cam16Tests.cs" />
     <Compile Include="Extensions\UserPreference\Material\Htc\ViewingConditionsTests.cs" />
     <Compile Include="Extensions\UserPreference\Material\Structs\Cam16ScaledDiscountRgbTests.cs" />
     <Compile Include="Extensions\UserPreference\Material\Structs\Cam16RgbTests.cs" />

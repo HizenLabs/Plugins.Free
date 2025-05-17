@@ -1,4 +1,5 @@
 ﻿using HizenLabs.Extensions.UserPreference.Material.Constants;
+using HizenLabs.Extensions.UserPreference.Material.Hct;
 using HizenLabs.Extensions.UserPreference.Material.Utils;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -94,6 +95,11 @@ public readonly struct CieXyz
         var cam16 = ColorTransforms.CieXyzToCam16PreAdaptRgb * this;
 
         return new(cam16);
+    }
+
+    public Cam16Rgb ToCam16Rgb(ViewingConditions viewingConditions)
+    {
+        return ToCam16PreAdaptRgb().ToCam16Rgb(viewingConditions);
     }
 
     /// <summary>

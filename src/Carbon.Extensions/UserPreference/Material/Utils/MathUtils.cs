@@ -158,7 +158,7 @@ public static class MathUtils
     /// <param name="y">The length of the other side.</param>
     /// <returns>The length of the hypotenuse.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static double Hypotenuse(double x, double y)
+    public static double Hypot(double x, double y)
     {
         return Math.Sqrt(x * x + y * y);
     }
@@ -172,6 +172,17 @@ public static class MathUtils
     public static double Cbrt(double x)
     {
         return Math.Sign(x) * Math.Pow(Math.Abs(x), 1.0 / 3.0);
+    }
+
+    /// <summary>
+    /// Calculates the natural logarithm of (1 + x).
+    /// </summary>
+    /// <param name="x">The value to calculate the logarithm for.</param>
+    /// <returns>The natural logarithm of (1 + x).</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static double Log1p(double x)
+    {
+        return Math.Log(1 + x);
     }
 
 }
