@@ -10,31 +10,20 @@ public class LinearRgbTests
     #region Construction
 
     [TestMethod]
-    public void Constructor_ShouldSetCorrectValues()
+    [DataRow(0d, 0d, 0d)]
+    [DataRow(0.25d, 0.5d, 0.75d)]
+    [DataRow(0.5d, 0.5d, 0.5d)]
+    [DataRow(0.75d, 0.25d, 0.5d)]
+    public void Constructor_ShouldSetCorrectValues(double r, double g, double b)
     {
-        Assert.Fail("Test not implemented.");
-    }
+        // Arrange
+        // Act
+        var color = new LinearRgb(r, g, b);
 
-    #endregion
-
-    #region Conversions
-
-    [TestMethod]
-    public void ToColorXyz_ShouldBeCorrect()
-    {
-        Assert.Fail("Test not implemented.");
-    }
-
-    [TestMethod]
-    public void ToScaledDiscount_ShouldBeCorrect()
-    {
-        Assert.Fail("Test not implemented.");
-    }
-
-    [TestMethod]
-    public void ToStandardRgb_ShouldBeCorrect()
-    {
-        Assert.Fail("Test not implemented.");
+        // Assert
+        Assert.AreEqual(r, color.R);
+        Assert.AreEqual(g, color.G);
+        Assert.AreEqual(b, color.B);
     }
 
     #endregion

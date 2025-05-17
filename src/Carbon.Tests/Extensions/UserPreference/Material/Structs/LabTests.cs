@@ -10,9 +10,20 @@ public class LabTests
     #region Construction
 
     [TestMethod]
-    public void Constructor_ShouldSetCorrectValues()
+    [DataRow(0d, 0d, 0d)]
+    [DataRow(0.25d, 0.5d, 0.75d)]
+    [DataRow(0.5d, 0.5d, 0.5d)]
+    [DataRow(0.75d, 0.25d, 0.5d)]
+    public void Constructor_ShouldSetCorrectValues(double l, double a, double b)
     {
-        Assert.Fail("Test not implemented.");
+        // Arrange
+        // Act
+        var color = new Lab(l, a, b);
+
+        // Assert
+        Assert.AreEqual(l, color.L);
+        Assert.AreEqual(a, color.A);
+        Assert.AreEqual(b, color.B);
     }
 
     #endregion

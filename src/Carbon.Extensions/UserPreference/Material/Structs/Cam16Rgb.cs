@@ -1,4 +1,6 @@
 ﻿using HizenLabs.Extensions.UserPreference.Material.Constants;
+using HizenLabs.Extensions.UserPreference.Material.Hct;
+using HizenLabs.Extensions.UserPreference.Material.Utils;
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -37,29 +39,6 @@ public readonly struct Cam16Rgb
         R = r;
         G = g;
         B = b;
-    }
-
-    public static readonly Cam16Rgb DefaultFactor = new(1d, 1d, 1d);
-
-    /// <summary>
-    /// Inverts the chromatic adaptation of this CAM16 RGB color to obtain the pre-adapted CAM16 RGB color.
-    /// </summary>
-    /// <returns></returns>
-    /// <exception cref="NotImplementedException"></exception>
-    public Cam16PreAdaptRgb ToCam16PreAdaptRgb()
-    {
-        throw new NotImplementedException();
-    }
-
-    /// <summary>
-    /// Converts this CAM16 RGB color to CIE XYZ (D65) color space using the inverse CAM16 RGB transformation.
-    /// </summary>
-    /// <returns>A <see cref="CieXyz"/> representing the equivalent color in the XYZ color space.</returns>
-    public CieXyz ToCieXyz()
-    {
-        var xyz = ColorTransforms.Cam16PreAdaptRgbToCieXyz * this;
-
-        return new(xyz.X, xyz.Y, xyz.Z);
     }
 
     /// <summary>

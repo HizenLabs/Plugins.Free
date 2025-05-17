@@ -39,15 +39,59 @@ public class StandardRgbTests
     }
 
     [TestMethod]
-    public void Constructor_Rgb_ShouldSetCorrectValues()
+    [DataRow(0, 0, 0)]
+    [DataRow(0, 0, 255)]
+    [DataRow(0, 255, 0)]
+    [DataRow(0, 255, 255)]
+    [DataRow(125, 252, 35)]
+    [DataRow(255, 0, 0)]
+    [DataRow(255, 0, 255)]
+    [DataRow(255, 255, 0)]
+    [DataRow(255, 255, 255)]
+    public void Constructor_Rgb_ShouldSetCorrectValues(int r, int g, int b)
     {
-        Assert.Fail("Test not implemented.");
+        // Arrange
+        byte byteR = (byte)r;
+        byte byteG = (byte)g;
+        byte byteB = (byte)b;
+
+        // Act
+        StandardRgb color = new(byteR, byteG, byteB);
+
+        // Assert
+        Assert.AreEqual(255, color.A);
+        Assert.AreEqual(r, color.R);
+        Assert.AreEqual(g, color.G);
+        Assert.AreEqual(b, color.B);
     }
 
     [TestMethod]
-    public void Constructor_Argb_ShouldSetCorrectValues()
+    [DataRow(0, 0, 0, 0)]
+    [DataRow(0, 125, 252, 35)]
+    [DataRow(255, 0, 0, 0)]
+    [DataRow(255, 0, 0, 255)]
+    [DataRow(255, 0, 255, 0)]
+    [DataRow(255, 0, 255, 255)]
+    [DataRow(255, 255, 0, 0)]
+    [DataRow(255, 255, 0, 255)]
+    [DataRow(255, 255, 255, 0)]
+    [DataRow(255, 255, 255, 255)]
+    public void Constructor_Argb_ShouldSetCorrectValues(int a, int r, int g, int b)
     {
-        Assert.Fail("Test not implemented.");
+        // Arrange
+        byte byteA = (byte)a;
+        byte byteR = (byte)r;
+        byte byteG = (byte)g;
+        byte byteB = (byte)b;
+
+        // Act
+        StandardRgb color = new(byteA, byteR, byteG, byteB);
+
+        // Assert
+        Assert.AreEqual(a, color.A);
+        Assert.AreEqual(r, color.R);
+        Assert.AreEqual(g, color.G);
+        Assert.AreEqual(b, color.B);
     }
 
     #endregion

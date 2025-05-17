@@ -111,6 +111,20 @@ public readonly struct Cam16PreAdaptRgb
     }
 
     /// <summary>
+    /// Converts this pre-adapted CAM16 RGB color to CIE XYZ using the
+    /// <see cref="ColorTransforms.Cam16PreAdaptRgbToCieXyz"/> matrix.
+    /// </summary>
+    /// <returns>
+    /// A <see cref="CieXyz"/> instance representing the color in CIE XYZ space.
+    /// </returns>
+    public CieXyz ToCieXyz()
+    {
+        var xyz = ColorTransforms.Cam16PreAdaptRgbToCieXyz * this;
+
+        return new(xyz);
+    }
+
+    /// <summary>
     /// Converts this pre-adapted CAM16 RGB color to linear RGB using the 
     /// <see cref="ColorTransforms.Cam16ScaledDiscountToLinearRgb"/> matrix.
     /// </summary>

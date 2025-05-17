@@ -67,7 +67,7 @@ public readonly struct LinearRgb
     /// Converts the LinearRgb instance to a CAM16 pre-adapted RGB color.
     /// </summary>
     /// <returns>A ColorArgb instance representing the color in ARGB format.</returns>
-    public Cam16PreAdaptRgb ToScaledDiscount()
+    public Cam16ScaledDiscountRgb ToScaledDiscount()
     {
         var sd = ColorTransforms.LinearRgbToCam16ScaledDiscount * this;
 

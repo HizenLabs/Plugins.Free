@@ -48,12 +48,6 @@ public class CieXyzTests
         Assert.AreEqual(expected.B, actualCam16.B, 0.0001);
     }
 
-    [TestMethod]
-    public void ToLabFxyz_ShouldBeCorrect()
-    {
-        Assert.Fail("Test not implemented.");
-    }
-
 
     [TestMethod]
     [DataRow(0d, 0d, 0d, 0d, 0d, 0d)]

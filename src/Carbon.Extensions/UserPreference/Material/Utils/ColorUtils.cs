@@ -248,6 +248,14 @@ internal static class ColorUtils
         );
     }
 
+    /// <summary>
+    /// Applies nonlinear response compression to a single component of a CAM16 RGB color.
+    /// Formula: (Fl * abs(component) / 100.0) ^ 0.42
+    /// </summary>
+    /// <param name="component">The component to compress.</param>
+    /// <param name="discount">The discounting illuminant factor.</param>
+    /// <param name="fl">The luminance-level adaptation factor.</param>
+    /// <returns>The compressed component value.</returns>
     internal static double ApplyCompression(double component, double discount, double fl)
     {
         return Math.Pow(fl * discount * component / Gamma.LuminanceScale, Cam16Constants.NonlinearResponseExponent);
@@ -282,6 +290,6 @@ internal static class ColorUtils
         return num / denom;
     }
 
-
     #endregion
+
 }

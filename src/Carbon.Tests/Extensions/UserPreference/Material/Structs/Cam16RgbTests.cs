@@ -1,4 +1,7 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using HizenLabs.Extensions.UserPreference.Material.Constants;
+using HizenLabs.Extensions.UserPreference.Material.Hct;
+using HizenLabs.Extensions.UserPreference.Material.Structs;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Carbon.Tests.Extensions.UserPreference.Material.Structs;
 
@@ -10,23 +13,18 @@ public class Cam16RgbTests
     [TestMethod]
     public void Constructor_ShouldSetCorrectValues()
     {
-        Assert.Fail("Test not implemented.");
-    }
+        // Arrange
+        double r = 10.0;
+        double g = 20.0;
+        double b = 30.0;
 
-    #endregion
+        // Act
+        var cam16 = new Cam16Rgb(r, g, b);
 
-    #region Chromatic Adaptation
-
-    [TestMethod]
-    public void ToCam16PreAdaptRgb_ShouldBeCorrect()
-    {
-        Assert.Fail("Test not implemented.");
-    }
-
-    [TestMethod]
-    public void ToCieXyz_ShouldBeCorrect()
-    {
-        Assert.Fail("Test not implemented.");
+        // Assert
+        Assert.AreEqual(r, cam16.R, 1e-10);
+        Assert.AreEqual(g, cam16.G, 1e-10);
+        Assert.AreEqual(b, cam16.B, 1e-10);
     }
 
     #endregion
