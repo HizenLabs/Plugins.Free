@@ -543,6 +543,8 @@
     <Compile Include="Material\Constants\Perceptual.cs" />
     <Compile Include="Material\Constants\WhitePoints.cs" />
     <Compile Include="Material\DynamicScheme\DynamicScheme.cs" />
+    <Compile Include="Material\Enums\Platform.cs" />
+    <Compile Include="Material\Enums\SpecVersion.cs" />
     <Compile Include="Material\Hct\Cam16.cs" />
     <Compile Include="Material\Hct\Hct.cs" />
     <Compile Include="Material\Hct\HctSolver.cs" />
