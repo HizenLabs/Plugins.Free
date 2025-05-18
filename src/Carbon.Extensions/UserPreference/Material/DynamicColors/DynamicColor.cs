@@ -75,6 +75,7 @@ public sealed class DynamicColor
     public static DynamicColor FromPalette(string name, Func<DynamicScheme, TonalPalette> palette, Func<DynamicScheme, double> tone) =>
         new(name, palette, tone, false);
 
+    /*
     public static DynamicColor FromPalette(string name, Func<DynamicScheme, TonalPalette> palette, Func<DynamicScheme, double> tone, bool isBackground) =>
         new(name, palette, tone, isBackground);
 
@@ -84,10 +85,12 @@ public sealed class DynamicColor
         var palette = TonalPalette.Create(color);
         return FromPalette(name, _ => palette, _ => hct.Tone);
     }
+    */
 
     public StandardRgb GetColor(DynamicScheme scheme)
     {
-        var color = GetHct(scheme).Color;
+        using var hct = GetHct(scheme);
+        var color = hct.Color;
         if (Opacity?.Invoke(scheme) is not double o)
             return color;
 

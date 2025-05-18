@@ -20,12 +20,14 @@ public sealed class TonalPalette : IDisposable, ITrackedPooled
 
     public double Chroma { get; private set; }
 
+    /*
     public static TonalPalette Create(StandardRgb sRgb)
     {
         var hct = Hct.Create(sRgb);
 
         return Create(hct);
     }
+    */
 
     public static TonalPalette FromHueAndChroma(double hue, double chroma)
     {

@@ -18,6 +18,7 @@ internal static class DislikeAnalyzer
     {
         if (IsDisliked(hct))
         {
+            hct?.Dispose();
             return Hct.Create(hct.Hue, hct.Chroma, 70.0);
         }
 

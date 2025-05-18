@@ -13,11 +13,9 @@ internal static class TrackedPool
 
     public static IReadOnlyDictionary<Type, TrackedPoolCollection> TrackedPools => _trackedPools;
 
-    public static int AcquireCount;
-
-    public static int ReleaseCount;
-
     public static int Transactions => AcquireCount + ReleaseCount;
+    public static int AcquireCount;
+    public static int ReleaseCount;
 
     public static int AllocatedCount => _trackedPools.Values.Sum(pool => pool.Count);
 
@@ -37,5 +35,16 @@ internal static class TrackedPool
         var trackedColledtion = (TrackedPoolCollection<T>)_trackedPools.GetOrAdd(typeof(T), _ => TrackedPoolCollection<T>.Instance);
 
         trackedColledtion.Free(ref obj);
+    }
+
+    public static void FullReset()
+    {
+        foreach (var pool in _trackedPools)
+        {
+            pool.Value.FullReset();
+        }
+
+        Interlocked.Exchange(ref AcquireCount, 0);
+        Interlocked.Exchange(ref ReleaseCount, 0);
     }
 }

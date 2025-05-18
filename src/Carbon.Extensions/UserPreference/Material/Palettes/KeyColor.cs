@@ -69,7 +69,8 @@ public sealed class KeyColor
     {
         if (!_chromaCache.TryGetValue(tone, out var chroma))
         {
-            chroma = Hct.Create(Hue, MaxChromaValue, tone).Chroma;
+            using var hct = Hct.Create(Hue, MaxChromaValue, tone);
+            chroma = hct.Chroma;
             _chromaCache[tone] = chroma;
         }
 

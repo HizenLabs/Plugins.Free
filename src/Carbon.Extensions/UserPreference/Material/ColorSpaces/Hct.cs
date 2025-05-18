@@ -3,6 +3,7 @@ using HizenLabs.Extensions.UserPreference.Material.Structs;
 using HizenLabs.Extensions.UserPreference.Material.Utils;
 using HizenLabs.Extensions.UserPreference.Pooling;
 using System;
+using System.Diagnostics;
 
 namespace HizenLabs.Extensions.UserPreference.Material.ColorSpaces;
 
@@ -34,6 +35,11 @@ public class Hct : ITrackedPooled, IDisposable
     /// The original sRGB color used to compute the HCT values.
     /// </summary>
     public StandardRgb Color { get; private set; }
+
+    [Obsolete("Use Create(StandardRgb) instead.", true)]
+    public Hct()
+    {
+    }
 
     /// <summary>
     /// Creates a pooled instance of <see cref="Hct"/> from an sRGB color.

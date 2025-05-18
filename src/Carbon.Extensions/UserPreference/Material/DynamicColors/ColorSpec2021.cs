@@ -364,7 +364,8 @@ public sealed class ColorSpec2021 : IColorSpec
             if (IsMonochrome(s)) return s.IsDark ? 60.0 : 49.0;
             if (!IsFidelity(s)) return s.IsDark ? 30.0 : 90.0;
             var proposed = s.TertiaryPalette.GetHct(s.SourceColorHct.Tone);
-            return DislikeAnalyzer.FixIfDisliked(proposed).Tone;
+            using var liked = DislikeAnalyzer.FixIfDisliked(proposed);
+            return liked.Tone;
         })
         .SetIsBackground(true)
         .SetBackground(HighestSurface)

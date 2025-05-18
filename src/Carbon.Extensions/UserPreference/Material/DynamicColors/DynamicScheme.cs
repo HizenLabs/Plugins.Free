@@ -55,21 +55,20 @@ public class DynamicScheme : IDisposable, ITrackedPooled
         TonalPalette neutralVariantPalette,
         TonalPalette errorPalette = null)
     {
-        return new()
-        {
-            SourceColorHct = sourceColorHct,
-            Variant = variant,
-            IsDark = isDark,
-            ContrastLevel = contrastLevel,
-            Platform = platform,
-            SpecVersion = specVersion,
-            PrimaryPalette = primaryPalette,
-            SecondaryPalette = secondaryPalette,
-            TertiaryPalette = tertiaryPalette,
-            NeutralPalette = neutralPalette,
-            NeutralVariantPalette = neutralVariantPalette,
-            ErrorPalette = errorPalette
-        };
+        var scheme = TrackedPool.Get<DynamicScheme>();
+        scheme.SourceColorHct = sourceColorHct;
+        scheme.Variant = variant;
+        scheme.IsDark = isDark;
+        scheme.ContrastLevel = contrastLevel;
+        scheme.Platform = platform;
+        scheme.SpecVersion = specVersion;
+        scheme.PrimaryPalette = primaryPalette;
+        scheme.SecondaryPalette = secondaryPalette;
+        scheme.TertiaryPalette = tertiaryPalette;
+        scheme.NeutralPalette = neutralPalette;
+        scheme.NeutralVariantPalette = neutralVariantPalette;
+        scheme.ErrorPalette = errorPalette;
+        return scheme;
     }
 
     public static double GetRotatedHue(
