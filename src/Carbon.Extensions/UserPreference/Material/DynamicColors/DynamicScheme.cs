@@ -55,6 +55,8 @@ internal class DynamicScheme : IDisposable, ITrackedPooled
         TonalPalette neutralVariantPalette,
         TonalPalette errorPalette = null)
     {
+        errorPalette ??= TonalPalette.FromHueAndChroma(25.0, 84.0);
+
         var scheme = TrackedPool.Get<DynamicScheme>();
         scheme.SourceColorHct = sourceColorHct;
         scheme.Variant = variant;

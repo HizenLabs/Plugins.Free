@@ -535,6 +535,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Material\API\MaterialColor.cs" />
+    <Compile Include="Material\API\MaterialContrast.cs" />
+    <Compile Include="Material\API\MaterialTheme.cs" />
     <Compile Include="Material\ColorSpaces\HctSolver.cs" />
     <Compile Include="Material\Constants\Cam16Constants.cs" />
     <Compile Include="Material\Constants\ColorTransforms.cs" />
@@ -559,7 +562,6 @@
     <Compile Include="Material\ColorSpaces\Cam16.cs" />
     <Compile Include="Material\ColorSpaces\Hct.cs" />
     <Compile Include="Material\ColorSpaces\ViewingConditions.cs" />
-    <Compile Include="Material\API\MaterialApi.cs" />
     <Compile Include="Material\Palettes\KeyColor.cs" />
     <Compile Include="Material\Palettes\TonalPalette.cs" />
     <Compile Include="Material\Palettes\TonalPaletteCache.cs" />

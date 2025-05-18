@@ -687,6 +687,7 @@
     <Compile Include="Extensions\ObjectSerializer\Extensions\BinaryWriterExtensionsTests.cs" />
     <Compile Include="Extensions\ObjectSerializer\Extensions\TypeExtensionsTests.cs" />
     <Compile Include="Extensions\ObjectSerializer\Internal\Delegates\GenericDelegateFactoryTests.cs" />
+    <Compile Include="Extensions\UserPreference\Material\API\MaterialThemeTests.cs" />
     <Compile Include="Extensions\UserPreference\Material\ColorSpaces\HtcTests.cs" />
     <Compile Include="Extensions\UserPreference\Material\Constants\ColorTransformsTests.cs" />
     <Compile Include="Extensions\UserPreference\Material\ColorSpaces\Cam16Tests.cs" />
