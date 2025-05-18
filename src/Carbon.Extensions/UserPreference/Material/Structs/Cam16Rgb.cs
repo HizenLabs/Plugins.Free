@@ -7,7 +7,7 @@ namespace HizenLabs.Extensions.UserPreference.Material.Structs;
 /// Represents a color in the CAM16 RGB color space, used for color appearance modeling.
 /// </summary>
 [StructLayout(LayoutKind.Sequential)]
-public readonly struct Cam16Rgb
+internal readonly struct Cam16Rgb
 {
     /// <summary>
     /// The R (red-like) component in the CAM16 RGB space.

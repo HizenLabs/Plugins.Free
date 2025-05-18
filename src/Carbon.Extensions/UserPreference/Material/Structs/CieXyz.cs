@@ -10,7 +10,7 @@ namespace HizenLabs.Extensions.UserPreference.Material.Structs;
 /// Represents a linear color in the XYZ color space, where X, Y, and Z are the red, green, and blue color components ranging from 0 to 1.
 /// </summary>
 [StructLayout(LayoutKind.Sequential)]
-public readonly struct CieXyz
+internal readonly struct CieXyz
 {
     /// <summary>
     /// The X (red) component of the color (0-1).

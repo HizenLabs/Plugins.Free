@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace HizenLabs.Extensions.UserPreference.Material.Utils;
 
-public static class MathUtils
+internal static class MathUtils
 {
     /// <summary>
     /// Linearly interpolates between two values.

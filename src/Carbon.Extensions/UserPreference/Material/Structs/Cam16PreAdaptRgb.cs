@@ -12,7 +12,7 @@ namespace HizenLabs.Extensions.UserPreference.Material.Structs;
 /// Chromatic adaptation has not yet been applied to these values.
 /// </summary>
 [StructLayout(LayoutKind.Sequential)]
-public readonly struct Cam16PreAdaptRgb
+internal readonly struct Cam16PreAdaptRgb
 {
     /// <summary>
     /// The red-like component of the pre-adapted CAM16 RGB color.

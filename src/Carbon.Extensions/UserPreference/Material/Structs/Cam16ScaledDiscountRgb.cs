@@ -8,7 +8,7 @@ namespace HizenLabs.Extensions.UserPreference.Material.Structs;
 /// Represents a color in the CAM16 scaled discount RGB color space.
 /// </summary>
 [StructLayout(LayoutKind.Sequential)]
-public readonly struct Cam16ScaledDiscountRgb
+internal readonly struct Cam16ScaledDiscountRgb
 {
     /// <summary>
     /// The red component of the color (0-1).

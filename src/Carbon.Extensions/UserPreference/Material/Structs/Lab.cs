@@ -3,7 +3,7 @@
 /// <summary>
 /// Represents a color in the CIE L*a*b* color space.
 /// </summary>
-public readonly struct Lab
+internal readonly struct Lab
 {
     /// <summary>
     /// The lightness component of the color (0-100).

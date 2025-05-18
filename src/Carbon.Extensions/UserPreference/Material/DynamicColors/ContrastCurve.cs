@@ -5,7 +5,7 @@ namespace HizenLabs.Extensions.UserPreference.Material.DynamicColors;
 /// <summary>
 /// Represents a curve defining tone adjustments at different contrast levels.
 /// </summary>
-public sealed class ContrastCurve
+internal sealed class ContrastCurve
 {
     public double Low { get; }
     public double Normal { get; }

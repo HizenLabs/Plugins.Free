@@ -8,7 +8,7 @@ using System;
 
 namespace HizenLabs.Extensions.UserPreference.Material.DynamicColors;
 
-public class DynamicScheme : IDisposable, ITrackedPooled
+internal class DynamicScheme : IDisposable, ITrackedPooled
 {
     public Guid TrackingId { get; set; }
 

@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace HizenLabs.Extensions.UserPreference.Material.Structs;
 
-public struct Vector3d
+internal struct Vector3d
 {
     public double X { get; set; }
 

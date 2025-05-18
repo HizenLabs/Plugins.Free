@@ -12,7 +12,7 @@ namespace HizenLabs.Extensions.UserPreference.Material.ColorSpaces;
 /// This model is perceptually uniform and derived from CAM16, suitable for
 /// dynamic theming based on user-perceived color differences.
 /// </summary>
-public class Hct : ITrackedPooled, IDisposable
+internal class Hct : ITrackedPooled, IDisposable
 {
     public Guid TrackingId { get; set; }
 

@@ -29,7 +29,7 @@ namespace HizenLabs.Extensions.UserPreference.Material.Temperature;
 /// <para>Analogous colors, complementary color, and cache to efficiently, lazily, generate data for
 /// calculations when needed.</para>
 /// </summary>
-public sealed class TemperatureCache : ITrackedPooled
+internal sealed class TemperatureCache : ITrackedPooled
 {
     public Guid TrackingId { get; set; }
 

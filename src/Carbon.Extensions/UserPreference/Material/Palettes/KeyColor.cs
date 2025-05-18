@@ -7,7 +7,7 @@ namespace HizenLabs.Extensions.UserPreference.Material.Palettes;
 /// <summary>
 /// Represents a key color that defines the hue and chroma of a tonal palette.
 /// </summary>
-public sealed class KeyColor
+internal sealed class KeyColor
 {
     public double Hue { get; }
     public double RequestedChroma { get; }

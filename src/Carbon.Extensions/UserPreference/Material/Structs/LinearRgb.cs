@@ -14,7 +14,7 @@ namespace HizenLabs.Extensions.UserPreference.Material.Structs;
 /// between sRGB and perceptual color spaces such as XYZ or L*a*b*.
 /// </remarks>
 [StructLayout(LayoutKind.Sequential)]
-public readonly struct LinearRgb
+internal readonly struct LinearRgb
 {
     /// <summary>
     /// The red component of the color, in the range [0.0, 100.0].

@@ -8,7 +8,7 @@ using System;
 
 namespace HizenLabs.Extensions.UserPreference.Material.DynamicColors;
 
-public sealed class ColorSpec2021 : IColorSpec
+internal sealed class ColorSpec2021 : IColorSpec
 {
     #region Main Palettes
 

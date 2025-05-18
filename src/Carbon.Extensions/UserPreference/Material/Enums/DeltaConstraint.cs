@@ -1,6 +1,6 @@
 ﻿namespace HizenLabs.Extensions.UserPreference.Material.Enums;
 
-public enum DeltaConstraint
+internal enum DeltaConstraint
 {
     Exact,
     Nearer,

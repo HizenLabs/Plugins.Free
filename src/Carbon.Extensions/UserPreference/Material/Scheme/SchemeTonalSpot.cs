@@ -4,7 +4,7 @@ using HizenLabs.Extensions.UserPreference.Material.Enums;
 
 namespace HizenLabs.Extensions.UserPreference.Material.Scheme;
 
-public class SchemeTonalSpot : DynamicScheme
+internal class SchemeTonalSpot : DynamicScheme
 {
     public static DynamicScheme Create(
         Hct sourceColorHct,

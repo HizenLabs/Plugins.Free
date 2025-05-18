@@ -1,6 +1,6 @@
 ﻿namespace HizenLabs.Extensions.UserPreference.Material.Enums;
 
-public enum Variant
+internal enum Variant
 {
     Monochrome,
     Neutral,

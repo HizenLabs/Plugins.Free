@@ -4,7 +4,7 @@ using System;
 
 namespace HizenLabs.Extensions.UserPreference.Material.DynamicColors;
 
-public static class ColorSpecs
+internal static class ColorSpecs
 {
 	private static readonly ColorSpec2021 _spec2021 = new();
 

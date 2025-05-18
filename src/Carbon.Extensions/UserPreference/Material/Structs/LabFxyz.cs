@@ -12,7 +12,7 @@ namespace HizenLabs.Extensions.UserPreference.Material.Structs;
 /// - <a href="https://en.wikipedia.org/wiki/CIELAB">Wikipedia: CIELAB</a><br />
 /// - <a href="http://www.brucelindbloom.com/index.html?Eqn_XYZ_to_Lab.html">Bruce Lindbloom's CIE XYZ to Lab conversion</a>
 /// </remarks>
-public readonly struct LabFxyz
+internal readonly struct LabFxyz
 {
     /// <summary>
     /// The nonlinear transformed X component (f(x)).

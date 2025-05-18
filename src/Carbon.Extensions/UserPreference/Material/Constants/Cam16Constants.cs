@@ -3,7 +3,7 @@
 /// <summary>
 /// Constants used in the nonlinear response compression and adaptation steps of the CAM16 color appearance model.
 /// </summary>
-public static class Cam16Constants
+internal static class Cam16Constants
 {
     /// <summary>
     /// Exponent used in the nonlinear compression of cone responses.

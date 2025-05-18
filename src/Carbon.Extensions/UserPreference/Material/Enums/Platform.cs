@@ -3,7 +3,7 @@
 /// <summary>
 /// The platform on which this scheme is intended to be used.
 /// </summary>
-public enum Platform
+internal enum Platform
 {
     Phone,
     Watch

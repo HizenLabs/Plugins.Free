@@ -11,7 +11,7 @@ namespace HizenLabs.Extensions.UserPreference.Material.ColorSpaces;
 /// Represents a set of viewing conditions used in the CAM16 color appearance model.
 /// Caches intermediate values to accelerate repeated CAM16 conversions.
 /// </summary>
-public sealed class ViewingConditions : ITrackedPooled, IDisposable
+internal sealed class ViewingConditions : ITrackedPooled, IDisposable
 {
     public Guid TrackingId { get; set; }
 

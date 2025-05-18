@@ -5,7 +5,7 @@ namespace HizenLabs.Extensions.UserPreference.Material.DynamicColors;
 /// <summary>
 /// Defines a required tone difference between two dynamic colors.
 /// </summary>
-public sealed class ToneDeltaPair
+internal sealed class ToneDeltaPair
 {
     public DynamicColor RoleA { get; }
     public DynamicColor RoleB { get; }

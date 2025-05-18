@@ -4,7 +4,7 @@ using HizenLabs.Extensions.UserPreference.Material.Palettes;
 
 namespace HizenLabs.Extensions.UserPreference.Material.DynamicColors;
 
-public interface IColorSpec
+internal interface IColorSpec
 {
     // Palette key colors
     DynamicColor PrimaryPaletteKeyColor { get; }

@@ -7,7 +7,7 @@ using HizenLabs.Extensions.UserPreference.Material.Utils;
 
 namespace HizenLabs.Extensions.UserPreference.Material.DynamicColors;
 
-public sealed class DynamicColor
+internal sealed class DynamicColor
 {
     public string Name { get; }
 
@@ -143,7 +143,7 @@ public sealed class DynamicColor
 
     public Builder ToBuilder() => new(this);
 
-    public sealed class Builder
+    internal sealed class Builder
     {
         public string Name;
         public Func<DynamicScheme, TonalPalette> Palette;

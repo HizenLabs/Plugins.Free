@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace HizenLabs.Extensions.UserPreference.Material.Utils;
 
-public static class StringUtils
+internal static class StringUtils
 {
     /// <summary>
     /// Converts a hex color argb value to its hex string representation.

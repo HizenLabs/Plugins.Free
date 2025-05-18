@@ -1,6 +1,6 @@
 ﻿namespace HizenLabs.Extensions.UserPreference.Material.Enums;
 
-public enum TonePolarity
+internal enum TonePolarity
 {
     Lighter,
     Darker,

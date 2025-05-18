@@ -5,7 +5,7 @@ namespace HizenLabs.Extensions.UserPreference.Material.Utils;
 /// <summary>
 /// Color science for contrast utilities.
 /// </summary>
-public static class Contrast
+internal static class Contrast
 {
     public const double RatioMin = 1.0;
     public const double RatioMax = 21.0;

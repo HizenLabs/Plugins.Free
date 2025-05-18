@@ -9,7 +9,7 @@ namespace HizenLabs.Extensions.UserPreference.Material.ColorSpaces;
 /// <summary>
 /// Represents a color in the CAM16 color appearance model, which describes perceived color under varying viewing conditions.
 /// </summary>
-public sealed class Cam16 : IDisposable, ITrackedPooled
+internal sealed class Cam16 : IDisposable, ITrackedPooled
 {
     public Guid TrackingId { get; set; }
 

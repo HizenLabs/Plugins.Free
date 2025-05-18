@@ -8,7 +8,7 @@ using System.Runtime.CompilerServices;
 
 namespace HizenLabs.Extensions.UserPreference.Material.Palettes;
 
-public sealed class TonalPalette : IDisposable, ITrackedPooled
+internal sealed class TonalPalette : IDisposable, ITrackedPooled
 {
     public Guid TrackingId { get; set; }
 

@@ -11,7 +11,7 @@ namespace HizenLabs.Extensions.UserPreference.Material.Structs;
 /// Provides both individual component access and color space conversion utilities.
 /// </summary>
 [StructLayout(LayoutKind.Explicit)]
-public readonly struct StandardRgb : IEquatable<StandardRgb>
+internal readonly struct StandardRgb : IEquatable<StandardRgb>
 {
     [FieldOffset(0)] public readonly uint Value;
     [FieldOffset(0)] public readonly byte B;

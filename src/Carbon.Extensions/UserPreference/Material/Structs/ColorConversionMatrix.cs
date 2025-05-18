@@ -7,7 +7,7 @@ namespace HizenLabs.Extensions.UserPreference.Material.Structs;
 /// Represents a 3x3 matrix.
 /// </summary>
 [StructLayout(LayoutKind.Sequential)]
-public readonly struct ColorConversionMatrix
+internal readonly struct ColorConversionMatrix
 {
     public readonly double
         m00, m01, m02,
