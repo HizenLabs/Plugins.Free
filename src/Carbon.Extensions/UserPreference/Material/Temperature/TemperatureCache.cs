@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-using Facepunch;
 using HizenLabs.Extensions.UserPreference.Material.ColorSpaces;
 using HizenLabs.Extensions.UserPreference.Pooling;
 using System;

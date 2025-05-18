@@ -2,7 +2,6 @@
 using HizenLabs.Extensions.UserPreference.Material.DynamicColors;
 using HizenLabs.Extensions.UserPreference.Material.Scheme;
 using HizenLabs.Extensions.UserPreference.Material.Structs;
-using HizenLabs.Extensions.UserPreference.Pooling;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 

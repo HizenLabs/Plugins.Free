@@ -1,9 +1,6 @@
-﻿using Facepunch;
-using HizenLabs.Extensions.UserPreference.Material.ColorSpaces;
-using HizenLabs.Extensions.UserPreference.Material.Structs;
+﻿using HizenLabs.Extensions.UserPreference.Material.ColorSpaces;
 using HizenLabs.Extensions.UserPreference.Pooling;
 using System;
-using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
 namespace HizenLabs.Extensions.UserPreference.Material.Palettes;

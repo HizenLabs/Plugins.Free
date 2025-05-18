@@ -1,5 +1,4 @@
-﻿using Facepunch;
-using HizenLabs.Extensions.UserPreference.Material.Enums;
+﻿using HizenLabs.Extensions.UserPreference.Material.Enums;
 using System;
 
 namespace HizenLabs.Extensions.UserPreference.Material.DynamicColors;

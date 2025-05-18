@@ -1,5 +1,4 @@
-﻿using Facepunch;
-using HizenLabs.Extensions.UserPreference.Material.Constants;
+﻿using HizenLabs.Extensions.UserPreference.Material.Constants;
 using HizenLabs.Extensions.UserPreference.Material.Structs;
 using HizenLabs.Extensions.UserPreference.Material.Utils;
 using HizenLabs.Extensions.UserPreference.Pooling;

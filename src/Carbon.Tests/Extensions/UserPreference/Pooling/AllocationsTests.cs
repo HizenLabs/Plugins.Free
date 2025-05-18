@@ -1,5 +1,4 @@
 ﻿using HizenLabs.Extensions.UserPreference.Material.ColorSpaces;
-using HizenLabs.Extensions.UserPreference.Material.Constants;
 using HizenLabs.Extensions.UserPreference.Material.DynamicColors;
 using HizenLabs.Extensions.UserPreference.Material.Scheme;
 using HizenLabs.Extensions.UserPreference.Material.Structs;
