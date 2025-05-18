@@ -16,6 +16,7 @@
 
 using Facepunch;
 using HizenLabs.Extensions.UserPreference.Material.ColorSpaces;
+using HizenLabs.Extensions.UserPreference.Pooling;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,8 +29,10 @@ namespace HizenLabs.Extensions.UserPreference.Material.Temperature;
 /// <para>Analogous colors, complementary color, and cache to efficiently, lazily, generate data for
 /// calculations when needed.</para>
 /// </summary>
-public sealed class TemperatureCache : Pool.IPooled
+public sealed class TemperatureCache : ITrackedPooled
 {
+    public Guid TrackingId { get; set; }
+
     public Hct Input { get; private set; }
 
     public Hct PrecomputedComplement;
@@ -45,7 +48,7 @@ public sealed class TemperatureCache : Pool.IPooled
     /// limits on chroma.</param>
     public static TemperatureCache Create(Hct input)
     {
-        var cache = Pool.Get<TemperatureCache>();
+        var cache = TrackedPool.Get<TemperatureCache>();
         cache.Input = input;
         return cache;
     }

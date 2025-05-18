@@ -2,6 +2,7 @@
 using HizenLabs.Extensions.UserPreference.Material.Constants;
 using HizenLabs.Extensions.UserPreference.Material.Structs;
 using HizenLabs.Extensions.UserPreference.Material.Utils;
+using HizenLabs.Extensions.UserPreference.Pooling;
 using System;
 
 namespace HizenLabs.Extensions.UserPreference.Material.ColorSpaces;
@@ -10,8 +11,10 @@ namespace HizenLabs.Extensions.UserPreference.Material.ColorSpaces;
 /// Represents a set of viewing conditions used in the CAM16 color appearance model.
 /// Caches intermediate values to accelerate repeated CAM16 conversions.
 /// </summary>
-public sealed class ViewingConditions : IDisposable, Pool.IPooled
+public sealed class ViewingConditions : ITrackedPooled, IDisposable
 {
+    public Guid TrackingId { get; set; }
+
     /// <summary>
     /// Default viewing conditions with a background lightness (L*) of 50.0.
     /// </summary>
@@ -104,7 +107,7 @@ public sealed class ViewingConditions : IDisposable, Pool.IPooled
         double flRoot,
         double z)
     {
-        var viewingConditions = Pool.Get<ViewingConditions>();
+        var viewingConditions = TrackedPool.Get<ViewingConditions>();
         viewingConditions._n = n;
         viewingConditions._aw = aw;
         viewingConditions._nbb = nbb;
@@ -221,7 +224,7 @@ public sealed class ViewingConditions : IDisposable, Pool.IPooled
             return;
 
         var obj = this;
-        Pool.Free(ref obj);
+        TrackedPool.Free(ref obj);
     }
 
     /// <summary>

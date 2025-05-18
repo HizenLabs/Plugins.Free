@@ -705,6 +705,7 @@
     <Compile Include="Extensions\UserPreference\Material\Utils\ColorUtilsTests.cs" />
     <Compile Include="Extensions\UserPreference\Material\Utils\MathUtilsTests.cs" />
     <Compile Include="Extensions\UserPreference\Material\Utils\StringUtilsTests.cs" />
+    <Compile Include="Extensions\UserPreference\Pooling\AllocationsTests.cs" />
     <Compile Include="Integration\RoundTripSerializationTests.cs" />
     <Compile Include="Integration\SerializationPerformanceTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

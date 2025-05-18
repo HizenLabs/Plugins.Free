@@ -1,6 +1,7 @@
 ﻿using Facepunch;
 using HizenLabs.Extensions.UserPreference.Material.Structs;
 using HizenLabs.Extensions.UserPreference.Material.Utils;
+using HizenLabs.Extensions.UserPreference.Pooling;
 using System;
 
 namespace HizenLabs.Extensions.UserPreference.Material.ColorSpaces;
@@ -8,8 +9,10 @@ namespace HizenLabs.Extensions.UserPreference.Material.ColorSpaces;
 /// <summary>
 /// Represents a color in the CAM16 color appearance model, which describes perceived color under varying viewing conditions.
 /// </summary>
-public sealed class Cam16 : IDisposable, Pool.IPooled
+public sealed class Cam16 : IDisposable, ITrackedPooled
 {
+    public Guid TrackingId { get; set; }
+
     private double _hue;
     private double _chroma;
     private double _j;
@@ -88,7 +91,7 @@ public sealed class Cam16 : IDisposable, Pool.IPooled
         double astar,
         double bstar)
     {
-        var cam16 = Pool.Get<Cam16>();
+        var cam16 = TrackedPool.Get<Cam16>();
         cam16._hue = hue;
         cam16._chroma = chroma;
         cam16._j = j;
@@ -198,7 +201,7 @@ public sealed class Cam16 : IDisposable, Pool.IPooled
     public void Dispose()
     {
         var obj = this;
-        Pool.Free(ref obj);
+        TrackedPool.Free(ref obj);
     }
 
     /// <summary>

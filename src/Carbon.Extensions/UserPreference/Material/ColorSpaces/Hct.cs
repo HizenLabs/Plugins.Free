@@ -1,6 +1,7 @@
 ﻿using Facepunch;
 using HizenLabs.Extensions.UserPreference.Material.Structs;
 using HizenLabs.Extensions.UserPreference.Material.Utils;
+using HizenLabs.Extensions.UserPreference.Pooling;
 using System;
 
 namespace HizenLabs.Extensions.UserPreference.Material.ColorSpaces;
@@ -10,8 +11,10 @@ namespace HizenLabs.Extensions.UserPreference.Material.ColorSpaces;
 /// This model is perceptually uniform and derived from CAM16, suitable for
 /// dynamic theming based on user-perceived color differences.
 /// </summary>
-public class Hct : IDisposable, Pool.IPooled
+public class Hct : ITrackedPooled, IDisposable
 {
+    public Guid TrackingId { get; set; }
+
     /// <summary>
     /// Hue angle of the color in degrees (0–360).
     /// </summary>
@@ -39,7 +42,7 @@ public class Hct : IDisposable, Pool.IPooled
     /// <returns>A pooled <see cref="Hct"/> instance representing the color.</returns>
     public static Hct Create(StandardRgb seed)
     {
-        var hct = Pool.Get<Hct>();
+        var hct = TrackedPool.Get<Hct>();
         hct.SetInternalState(seed);
         return hct;
     }
@@ -71,7 +74,7 @@ public class Hct : IDisposable, Pool.IPooled
     public void Dispose()
     {
         var obj = this;
-        Pool.Free(ref obj);
+        TrackedPool.Free(ref obj);
     }
 
     /// <summary>

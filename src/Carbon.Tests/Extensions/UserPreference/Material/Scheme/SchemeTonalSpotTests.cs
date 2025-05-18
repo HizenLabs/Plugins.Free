@@ -2,6 +2,7 @@
 using HizenLabs.Extensions.UserPreference.Material.DynamicColors;
 using HizenLabs.Extensions.UserPreference.Material.Scheme;
 using HizenLabs.Extensions.UserPreference.Material.Structs;
+using HizenLabs.Extensions.UserPreference.Pooling;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 
@@ -93,7 +94,7 @@ public class SchemeTonalSpotTests
     {
         // Arrange
         StandardRgb color = argb;
-        var hct = Hct.Create(color);
+        using var hct = Hct.Create(color);
 
         // Act
         var scheme = SchemeTonalSpot.Create(hct, isDark, contrastLevel);

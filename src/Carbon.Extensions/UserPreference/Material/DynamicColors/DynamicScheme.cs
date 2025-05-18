@@ -3,12 +3,15 @@ using HizenLabs.Extensions.UserPreference.Material.Enums;
 using HizenLabs.Extensions.UserPreference.Material.Palettes;
 using HizenLabs.Extensions.UserPreference.Material.Structs;
 using HizenLabs.Extensions.UserPreference.Material.Utils;
+using HizenLabs.Extensions.UserPreference.Pooling;
 using System;
 
 namespace HizenLabs.Extensions.UserPreference.Material.DynamicColors;
 
-public class DynamicScheme
+public class DynamicScheme : IDisposable, ITrackedPooled
 {
+    public Guid TrackingId { get; set; }
+
     public const Platform DefaultPlatform = Platform.Phone;
     public const SpecVersion DefaultSpecVersion = SpecVersion.SPEC_2021;
 
@@ -99,5 +102,41 @@ public class DynamicScheme
         }
         // No condition matched, return the source value.
         return sourceHue;
+    }
+
+    public void Dispose()
+    {
+        var obj = this;
+        TrackedPool.Free(ref obj);
+    }
+
+    public void EnterPool()
+    {
+        SourceColorHct?.Dispose();
+
+        PrimaryPalette?.Dispose();
+        SecondaryPalette?.Dispose();
+        TertiaryPalette?.Dispose();
+        NeutralPalette?.Dispose();
+        NeutralVariantPalette?.Dispose();
+        ErrorPalette?.Dispose();
+
+        SourceColor = default;
+        SourceColorHct = default;
+        Variant = default;
+        IsDark = false;
+        ContrastLevel = 0;
+        Platform = DefaultPlatform;
+        SpecVersion = DefaultSpecVersion;
+        PrimaryPalette = null;
+        SecondaryPalette = null;
+        TertiaryPalette = null;
+        NeutralPalette = null;
+        NeutralVariantPalette = null;
+        ErrorPalette = null;
+    }
+
+    public void LeavePool()
+    {
     }
 }

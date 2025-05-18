@@ -561,6 +561,7 @@
     <Compile Include="Material\ColorSpaces\ViewingConditions.cs" />
     <Compile Include="Material\Palettes\KeyColor.cs" />
     <Compile Include="Material\Palettes\TonalPalette.cs" />
+    <Compile Include="Material\Palettes\TonalPaletteCache.cs" />
     <Compile Include="Material\Structs\Cam16Rgb.cs" />
     <Compile Include="Material\Structs\Cam16ScaledDiscountRgb.cs" />
     <Compile Include="Material\Structs\Lab.cs" />
@@ -576,6 +577,9 @@
     <Compile Include="Material\Utils\Contrast.cs" />
     <Compile Include="Material\Utils\MathUtils.cs" />
     <Compile Include="Material\Utils\StringUtils.cs" />
+    <Compile Include="Pooling\ITrackedPooled.cs" />
+    <Compile Include="Pooling\TrackedPool.cs" />
+    <Compile Include="Pooling\TrackedPoolCollection.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Material\Scheme\SchemeTonalSpot.cs" />
   </ItemGroup>
