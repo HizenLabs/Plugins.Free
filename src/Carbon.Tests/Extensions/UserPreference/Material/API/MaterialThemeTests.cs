@@ -12,15 +12,15 @@ public class MaterialThemeTests
     /// <a href="https://material-foundation.github.io/material-theme-builder">Material Theme Builder</a>
     /// </summary>
     [TestMethod]
-    [DataRow("#63A002", false, MaterialContrast.Standard,
+    [DataRow("#63A002FF", false, MaterialContrast.Standard,
         "#4c662b", "#ffffff", "#cdeda3", "#354e16",
         "#586249", "#ffffff", "#dce7c8", "#404a33",
         "#386663", "#ffffff", "#bcece7", "#1f4e4b")]
-    [DataRow("#731A00", false, MaterialContrast.Standard,
+    [DataRow("#731A00FF", false, MaterialContrast.Standard,
         "#8f4b38", "#ffffff", "#ffdbd1", "#723523",
         "#77574e", "#ffffff", "#ffdbd1", "#5d4038",
         "#6c5d2f", "#ffffff", "#f6e1a6", "#534619")]
-    [DataRow("#006AA7", true, MaterialContrast.Medium,
+    [DataRow("#006AA700", true, MaterialContrast.Medium,
         "#c3dfff", "#002843", "#6695c2", "#000000",
         "#cfdef0", "#192735", "#8492a3", "#000000",
         "#ead4fd", "#2e1f3e", "#9c89ae", "#000000")]
@@ -45,7 +45,7 @@ public class MaterialThemeTests
         string expectedOnTertiaryContainer)
     {
         // Arrange
-        var theme = MaterialTheme.Create(seedHex, isDark, contrast);
+        var theme = MaterialTheme.CreateFromRgbaHex(seedHex, isDark, contrast);
 
         // Act
         var primary = theme.Primary.ToRgbHex().ToLower();

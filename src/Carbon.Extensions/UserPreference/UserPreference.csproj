@@ -53,7 +53,8 @@
     <Reference Include="0Harmony">
       <HintPath>..\..\managed\0Harmony.dll</HintPath>
     </Reference>
-    <Reference Include="Assembly-CSharp">
+    <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\managed\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp-firstpass">
@@ -535,6 +536,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Data\UserPreferenceData.cs" />
     <Compile Include="Material\API\MaterialColor.cs" />
     <Compile Include="Material\API\MaterialContrast.cs" />
     <Compile Include="Material\API\MaterialTheme.cs" />
@@ -585,11 +587,18 @@
     <Compile Include="Pooling\TrackedPoolCollection.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Material\Scheme\SchemeTonalSpot.cs" />
+    <Compile Include="UI\ModalOptions.cs" />
+    <Compile Include="UI\DisplayOptions.cs" />
+    <Compile Include="UI\UserPreferenceUI.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="Modifiers\UserPreference.json" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>powershell -ExecutionPolicy Bypass -File "$(SolutionDir)../scripts/deploy-extension.ps1" -Name "$(ProjectName)" -TargetFile "$(TargetPath)"</PostBuildEvent>
+  </PropertyGroup>
 </Project>

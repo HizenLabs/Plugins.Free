@@ -53,8 +53,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\managed\0Harmony.dll</HintPath>
     </Reference>
-    <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="Assembly-CSharp">
       <HintPath>..\managed\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp-firstpass, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
@@ -708,7 +707,7 @@
     <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.SaveManager.cs" />
     <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.Timers.cs" />
     <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.UserInterface.cs" />
-    <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.UserPreference.cs" />
+    <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.Settings.cs" />
     <Compile Include="Active\AutoBuildSnapshot_old\AutoBuildSnapshot.BuildingScanner.cs" />
     <Compile Include="Active\AutoBuildSnapshot_old\AutoBuildSnapshot.BuildSnapshot.cs" />
     <Compile Include="Active\AutoBuildSnapshot_old\AutoBuildSnapshot.ExecutionBase.cs" />
@@ -736,6 +735,10 @@
     <ProjectReference Include="..\Carbon.Extensions\ObjectSerializer\ObjectSerializer.csproj">
       <Project>{0f9b4405-b1ed-4025-b95b-ea8f9d9d5160}</Project>
       <Name>ObjectSerializer</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Carbon.Extensions\UserPreference\UserPreference.csproj">
+      <Project>{694ca1e3-ed7e-4be8-a849-6e9d74b5dfea}</Project>
+      <Name>UserPreference</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />

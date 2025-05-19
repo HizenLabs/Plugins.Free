@@ -1,4 +1,6 @@
 ﻿using Cysharp.Threading.Tasks;
+using HizenLabs.Extensions.UserPreference.Data;
+using HizenLabs.Extensions.UserPreference.UI;
 using System;
 
 namespace Carbon.Plugins;
@@ -90,7 +92,7 @@ public partial class AutoBuildSnapshot
     [ProtectedCommand(CommandPrefix + nameof(CommandMenuSettings))]
     private void CommandMenuSettings(BasePlayer player, string command, string[] args)
     {
-        UserInterface.ShowPreference(player);
+        UserPreferenceUI.Show(this, player, onConfirm: () => UserInterface.ShowMenu(player));
     }
 
     [ProtectedCommand(CommandPrefix + nameof(CommandMenuSwitchTab))]

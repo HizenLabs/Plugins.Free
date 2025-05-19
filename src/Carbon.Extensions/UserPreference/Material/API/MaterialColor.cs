@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using Newtonsoft.Json;
+using System.Runtime.CompilerServices;
 
 namespace HizenLabs.Extensions.UserPreference.Material.API;
 
@@ -16,41 +17,49 @@ public readonly struct MaterialColor
     /// <summary>
     /// Gets the alpha (opacity) channel component (0–255).
     /// </summary>
+    [JsonIgnore]
     public byte Alpha => (byte)((Value >> 24) & 0xFF);
 
     /// <summary>
     /// Gets the red channel component (0–255).
     /// </summary>
+    [JsonIgnore]
     public byte Red => (byte)((Value >> 16) & 0xFF);
 
     /// <summary>
     /// Gets the green channel component (0–255).
     /// </summary>
+    [JsonIgnore]
     public byte Green => (byte)((Value >> 8) & 0xFF);
 
     /// <summary>
     /// Gets the blue channel component (0–255).
     /// </summary>
+    [JsonIgnore]
     public byte Blue => (byte)(Value & 0xFF);
 
     /// <summary>
     /// Gets the normalized alpha (opacity) component in the range [0, 1].
     /// </summary>
+    [JsonIgnore]
     public float AlphaF => Normalize(Alpha);
 
     /// <summary>
     /// Gets the normalized red component in the range [0, 1].
     /// </summary>
+    [JsonIgnore]
     public float RedF => Normalize(Red);
 
     /// <summary>
     /// Gets the normalized green component in the range [0, 1].
     /// </summary>
+    [JsonIgnore]
     public float GreenF => Normalize(Green);
 
     /// <summary>
     /// Gets the normalized blue component in the range [0, 1].
     /// </summary>
+    [JsonIgnore]
     public float BlueF => Normalize(Blue);
 
     /// <summary>
@@ -65,6 +74,11 @@ public readonly struct MaterialColor
     public string ToRgbHex()
     {
         return $"#{Red:X2}{Green:X2}{Blue:X2}";
+    }
+
+    public string ToRgbaHex()
+    {
+        return $"#{Red:X2}{Green:X2}{Blue:X2}{Alpha:X2}";
     }
 
     /// <summary>
@@ -86,9 +100,13 @@ public readonly struct MaterialColor
         return channel / 255f;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator MaterialColor(uint value)
     {
         return new(value);
+    }
+
+    public static implicit operator string(MaterialColor color)
+    {
+        return color.ToString();
     }
 }

@@ -1,4 +1,6 @@
-﻿using Oxide.Core;
+﻿// Reference: HizenLabs.Extensions.UserPreference
+
+using Oxide.Core;
 using System.IO;
 
 namespace Carbon.Plugins;
@@ -28,7 +30,6 @@ public partial class AutoBuildSnapshot : CarbonPlugin
         Helpers.Init();
         ChangeManagement.Init();
         UserInterface.Init();
-        UserPreference.Init();
 
         UserInterface.ToggleMenu(BasePlayer.activePlayerList[0]);
     }
@@ -38,7 +39,6 @@ public partial class AutoBuildSnapshot : CarbonPlugin
     /// </summary>
     void Unload()
     {
-        UserPreference.Unload();
         UserInterface.Unload();
         ChangeManagement.Unload();
         Helpers.Unload();

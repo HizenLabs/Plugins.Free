@@ -3,6 +3,7 @@ using HizenLabs.Extensions.UserPreference.Material.DynamicColors;
 using HizenLabs.Extensions.UserPreference.Material.Scheme;
 using System.Globalization;
 using System;
+using Newtonsoft.Json;
 
 namespace HizenLabs.Extensions.UserPreference.Material.API;
 
@@ -16,29 +17,45 @@ public readonly struct MaterialTheme
     private readonly bool _isDarkMode;
     private readonly MaterialContrast _contrast;
 
+    public MaterialColor SeedColor => _seedColor;
+
+    public bool IsDarkMode => _isDarkMode;
+
+    public MaterialContrast Contrast => _contrast;
+
+    public static MaterialTheme Default { get; } = CreateFromRgbHex("#769CDF");
+
+    [JsonIgnore]
+    public MaterialColor Transparent { get; } = 0x00000000;
+
     /// <summary>
     /// Gets the light version of this theme. If already light, returns this.
     /// </summary>
+    [JsonIgnore]
     public readonly MaterialTheme Light => _isDarkMode ? Create(_seedColor, false, _contrast) : this;
 
     /// <summary>
     /// Gets the dark version of this theme. If already dark, returns this.
     /// </summary>
+    [JsonIgnore]
     public readonly MaterialTheme Dark => _isDarkMode ? this : Create(_seedColor, true, _contrast);
 
     /// <summary>
     /// Gets the standard contrast version of this theme.
     /// </summary>
+    [JsonIgnore]
     public readonly MaterialTheme StandardContrast => _contrast == MaterialContrast.Standard ? this : Create(_seedColor, _isDarkMode, MaterialContrast.Standard);
 
     /// <summary>
     /// Gets the medium contrast version of this theme.
     /// </summary>
+    [JsonIgnore]
     public readonly MaterialTheme MediumContrast => _contrast == MaterialContrast.Medium ? this : Create(_seedColor, _isDarkMode, MaterialContrast.Medium);
 
     /// <summary>
     /// Gets the high contrast version of this theme.
     /// </summary>
+    [JsonIgnore]
     public readonly MaterialTheme HighContrast => _contrast == MaterialContrast.High ? this : Create(_seedColor, _isDarkMode, MaterialContrast.High);
 
     public required MaterialColor Primary { get; init; }
@@ -87,9 +104,11 @@ public readonly struct MaterialTheme
     public required MaterialColor ErrorContainer { get; init; }
     public required MaterialColor OnErrorContainer { get; init; }
 
-    private MaterialTheme(uint seedColor)
+    private MaterialTheme(uint seedColor, bool isDarkMode, MaterialContrast contrast)
     {
         _seedColor = seedColor;
+        _isDarkMode = isDarkMode;
+        _contrast = contrast;
     }
 
     /// <summary>
@@ -109,6 +128,11 @@ public readonly struct MaterialTheme
         return Create(seedColor, isDarkMode, contrast);
     }
 
+    public static MaterialTheme CreateFromRgbaHex(string seedColorHex, bool isDarkMode = false, MaterialContrast contrast = MaterialContrast.Standard)
+    {
+        return CreateFromRgbHex(seedColorHex, isDarkMode, contrast);
+    }
+
     /// <summary>
     /// Creates a new <see cref="MaterialTheme"/> from a hexadecimal string (e.g., "#FF5733").
     /// </summary>
@@ -117,14 +141,20 @@ public readonly struct MaterialTheme
     /// <param name="contrast">The desired contrast level.</param>
     /// <returns>A fully constructed <see cref="MaterialTheme"/>.</returns>
     /// <exception cref="ArgumentException">Thrown when the format is invalid or empty.</exception>
-    public static MaterialTheme Create(string seedColorHex, bool isDarkMode = false, MaterialContrast contrast = MaterialContrast.Standard)
+    public static MaterialTheme CreateFromRgbHex(string seedColorHex, bool isDarkMode = false, MaterialContrast contrast = MaterialContrast.Standard)
     {
         if (string.IsNullOrEmpty(seedColorHex))
         {
             throw new ArgumentException("Seed color cannot be null or empty.", nameof(seedColorHex));
         }
 
-        if (!uint.TryParse(seedColorHex.Replace("#", ""), NumberStyles.HexNumber, null, out uint seedColor))
+        var argbHex = seedColorHex.TrimStart('#');
+        if (argbHex.Length < 6)
+        {
+            throw new ArgumentException("Seed color must be in format: RRGGBB, with or without #.", nameof(seedColorHex));
+        }
+
+        if (!uint.TryParse(argbHex[..6], NumberStyles.HexNumber, null, out uint seedColor))
         {
             throw new ArgumentException("Invalid seed color format. Use hexadecimal format (e.g., '#FF5733').", nameof(seedColorHex));
         }
@@ -201,7 +231,7 @@ public readonly struct MaterialTheme
         var errorContainer = spec.ErrorContainer.GetColor(scheme).Value;
         var onErrorContainer = spec.OnErrorContainer.GetColor(scheme).Value;
 
-        return new MaterialTheme(seedColor)
+        return new MaterialTheme(seedColor, isDarkMode, contrast)
         {
             Primary = primary,
             // PrimaryDim = primaryDim,
