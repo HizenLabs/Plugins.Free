@@ -78,6 +78,20 @@ public class MaterialThemeTests
         Assert.AreEqual(expectedOnTertiary, onTertiary);
         Assert.AreEqual(expectedTertiaryContainer, tertiaryContainer);
         Assert.AreEqual(expectedOnTertiaryContainer, onTertiaryContainer);
+    }
 
+    [TestMethod]
+    public void MaterialTheme_Default_ReturnsExpected()
+    {
+        // Arrange
+        var theme = MaterialTheme.Default;
+
+        // Act
+        var seedHexRgba = theme.SeedColor.ToRgbaHex();
+        var seedHexRgb = theme.SeedColor.ToRgbHex();
+
+        // Assert
+        Assert.AreEqual("#769CDFFF", seedHexRgba);
+        Assert.AreEqual("#769CDF", seedHexRgb);
     }
 }

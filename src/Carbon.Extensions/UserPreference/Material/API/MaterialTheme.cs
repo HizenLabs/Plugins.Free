@@ -4,6 +4,7 @@ using HizenLabs.Extensions.UserPreference.Material.Scheme;
 using System.Globalization;
 using System;
 using Newtonsoft.Json;
+using HizenLabs.Extensions.UserPreference.Pooling;
 
 namespace HizenLabs.Extensions.UserPreference.Material.API;
 
@@ -11,17 +12,19 @@ namespace HizenLabs.Extensions.UserPreference.Material.API;
 /// Represents a full Material Design color theme generated from a seed color,
 /// with support for light/dark mode and multiple contrast levels.
 /// </summary>
-public readonly struct MaterialTheme
+public class MaterialTheme : IDisposable, ITrackedPooled
 {
-    private readonly uint _seedColor;
-    private readonly bool _isDarkMode;
-    private readonly MaterialContrast _contrast;
+    [JsonIgnore]
+    public Guid TrackingId { get; set; }
 
-    public MaterialColor SeedColor => _seedColor;
+    [JsonProperty]
+    public MaterialColor SeedColor { get; private set; }
 
-    public bool IsDarkMode => _isDarkMode;
+    [JsonProperty]
+    public bool IsDarkMode { get; private set; }
 
-    public MaterialContrast Contrast => _contrast;
+    [JsonProperty]
+    public MaterialContrast Contrast { get; private set; }
 
     public static MaterialTheme Default { get; } = CreateFromRgbHex("#769CDF");
 
@@ -32,84 +35,121 @@ public readonly struct MaterialTheme
     /// Gets the light version of this theme. If already light, returns this.
     /// </summary>
     [JsonIgnore]
-    public readonly MaterialTheme Light => _isDarkMode ? Create(_seedColor, false, _contrast) : this;
+    public MaterialTheme Light => IsDarkMode ? Create(SeedColor, false, Contrast, this) : this;
 
     /// <summary>
     /// Gets the dark version of this theme. If already dark, returns this.
     /// </summary>
     [JsonIgnore]
-    public readonly MaterialTheme Dark => _isDarkMode ? this : Create(_seedColor, true, _contrast);
+    public MaterialTheme Dark => IsDarkMode ? this : Create(SeedColor, true, Contrast, this);
 
     /// <summary>
     /// Gets the standard contrast version of this theme.
     /// </summary>
     [JsonIgnore]
-    public readonly MaterialTheme StandardContrast => _contrast == MaterialContrast.Standard ? this : Create(_seedColor, _isDarkMode, MaterialContrast.Standard);
+    public MaterialTheme StandardContrast => Contrast == MaterialContrast.Standard ? this : Create(SeedColor, IsDarkMode, MaterialContrast.Standard, this);
 
     /// <summary>
     /// Gets the medium contrast version of this theme.
     /// </summary>
     [JsonIgnore]
-    public readonly MaterialTheme MediumContrast => _contrast == MaterialContrast.Medium ? this : Create(_seedColor, _isDarkMode, MaterialContrast.Medium);
+    public MaterialTheme MediumContrast => Contrast == MaterialContrast.Medium ? this : Create(SeedColor, IsDarkMode, MaterialContrast.Medium, this);
 
     /// <summary>
     /// Gets the high contrast version of this theme.
     /// </summary>
     [JsonIgnore]
-    public readonly MaterialTheme HighContrast => _contrast == MaterialContrast.High ? this : Create(_seedColor, _isDarkMode, MaterialContrast.High);
+    public MaterialTheme HighContrast => Contrast == MaterialContrast.High ? this : Create(SeedColor, IsDarkMode, MaterialContrast.High, this);
 
-    public required MaterialColor Primary { get; init; }
-    // public required MaterialColor PrimaryDim { get; init; }
-    public required MaterialColor OnPrimary { get; init; }
-    public required MaterialColor PrimaryContainer { get; init; }
-    public required MaterialColor OnPrimaryContainer { get; init; }
-    public required MaterialColor InversePrimary { get; init; }
+    [JsonProperty]
+    public MaterialColor Primary { get; private set; }
+    // [JsonProperty]
+    // public MaterialColor PrimaryDim { get; private set; }
+    [JsonProperty]
+    public MaterialColor OnPrimary { get; private set; }
+    [JsonProperty]
+    public MaterialColor PrimaryContainer { get; private set; }
+    [JsonProperty]
+    public MaterialColor OnPrimaryContainer { get; private set; }
+    [JsonProperty]
+    public MaterialColor InversePrimary { get; private set; }
 
-    public required MaterialColor Secondary { get; init; }
-    // public required MaterialColor SecondaryDim { get; init; }
-    public required MaterialColor OnSecondary { get; init; }
-    public required MaterialColor SecondaryContainer { get; init; }
-    public required MaterialColor OnSecondaryContainer { get; init; }
+    [JsonProperty]
+    public MaterialColor Secondary { get; private set; }
+    // [JsonProperty]
+    // public MaterialColor SecondaryDim { get; private set; }
+    [JsonProperty]
+    public MaterialColor OnSecondary { get; private set; }
+    [JsonProperty]
+    public MaterialColor SecondaryContainer { get; private set; }
+    [JsonProperty]
+    public MaterialColor OnSecondaryContainer { get; private set; }
 
-    public required MaterialColor Tertiary { get; init; }
-    // public required MaterialColor TertiaryDim { get; init; }
-    public required MaterialColor OnTertiary { get; init; }
-    public required MaterialColor TertiaryContainer { get; init; }
-    public required MaterialColor OnTertiaryContainer { get; init; }
+    [JsonProperty]
+    public MaterialColor Tertiary { get; private set; }
+    // [JsonProperty]
+    // public MaterialColor TertiaryDim { get; private set; }
+    [JsonProperty]
+    public MaterialColor OnTertiary { get; private set; }
+    [JsonProperty]
+    public MaterialColor TertiaryContainer { get; private set; }
+    [JsonProperty]
+    public MaterialColor OnTertiaryContainer { get; private set; }
 
-    public required MaterialColor Background { get; init; }
-    public required MaterialColor OnBackground { get; init; }
-    public required MaterialColor Surface { get; init; }
-    // public required MaterialColor SurfaceDim { get; init; }
-    public required MaterialColor SurfaceBright { get; init; }
-    public required MaterialColor SurfaceContainerLowest { get; init; }
-    public required MaterialColor SurfaceContainerLow { get; init; }
-    public required MaterialColor SurfaceContainer { get; init; }
-    public required MaterialColor SurfaceContainerHigh { get; init; }
-    public required MaterialColor SurfaceContainerHighest { get; init; }
-    public required MaterialColor OnSurface { get; init; }
-    public required MaterialColor SurfaceVariant { get; init; }
-    public required MaterialColor OnSurfaceVariant { get; init; }
-    public required MaterialColor InverseSurface { get; init; }
-    public required MaterialColor InverseOnSurface { get; init; }
-    public required MaterialColor Outline { get; init; }
-    public required MaterialColor OutlineVariant { get; init; }
-    public required MaterialColor Shadow { get; init; }
-    public required MaterialColor Scrim { get; init; }
-    public required MaterialColor SurfaceTint { get; init; }
+    [JsonProperty]
+    public MaterialColor Background { get; private set; }
+    [JsonProperty]
+    public MaterialColor OnBackground { get; private set; }
+    [JsonProperty]
+    public MaterialColor Surface { get; private set; }
+    // [JsonProperty]
+    // public MaterialColor SurfaceDim { get; private set; }
+    [JsonProperty]
+    public MaterialColor SurfaceBright { get; private set; }
+    [JsonProperty]
+    public MaterialColor SurfaceContainerLowest { get; private set; }
+    [JsonProperty]
+    public MaterialColor SurfaceContainerLow { get; private set; }
+    [JsonProperty]
+    public MaterialColor SurfaceContainer { get; private set; }
+    [JsonProperty]
+    public MaterialColor SurfaceContainerHigh { get; private set; }
+    [JsonProperty]
+    public MaterialColor SurfaceContainerHighest { get; private set; }
+    [JsonProperty]
+    public MaterialColor OnSurface { get; private set; }
+    [JsonProperty]
+    public MaterialColor SurfaceVariant { get; private set; }
+    [JsonProperty]
+    public MaterialColor OnSurfaceVariant { get; private set; }
+    [JsonProperty]
+    public MaterialColor InverseSurface { get; private set; }
+    [JsonProperty]
+    public MaterialColor InverseOnSurface { get; private set; }
+    [JsonProperty]
+    public MaterialColor Outline { get; private set; }
+    [JsonProperty]
+    public MaterialColor OutlineVariant { get; private set; }
+    [JsonProperty]
+    public MaterialColor Shadow { get; private set; }
+    [JsonProperty]
+    public MaterialColor Scrim { get; private set; }
+    [JsonProperty]
+    public MaterialColor SurfaceTint { get; private set; }
 
-    public required MaterialColor Error { get; init; }
-    // public required MaterialColor ErrorDim { get; init; }
-    public required MaterialColor OnError { get; init; }
-    public required MaterialColor ErrorContainer { get; init; }
-    public required MaterialColor OnErrorContainer { get; init; }
+    [JsonProperty]
+    public MaterialColor Error { get; private set; }
+    // [JsonProperty]
+    // public MaterialColor ErrorDim { get; private set; }
+    [JsonProperty]
+    public MaterialColor OnError { get; private set; }
+    [JsonProperty]
+    public MaterialColor ErrorContainer { get; private set; }
+    [JsonProperty]
+    public MaterialColor OnErrorContainer { get; private set; }
 
-    private MaterialTheme(uint seedColor, bool isDarkMode, MaterialContrast contrast)
-    {
-        _seedColor = seedColor;
-        _isDarkMode = isDarkMode;
-        _contrast = contrast;
-    }
+    [Obsolete("Use Create() instead.", true)]
+    public MaterialTheme() { }
 
     /// <summary>
     /// Creates a new <see cref="MaterialTheme"/> from an RGB triplet.
@@ -151,10 +191,10 @@ public readonly struct MaterialTheme
         var argbHex = seedColorHex.TrimStart('#');
         if (argbHex.Length < 6)
         {
-            throw new ArgumentException("Seed color must be in format: RRGGBB, with or without #.", nameof(seedColorHex));
+            throw new ArgumentException("Seed color must be in format: RRGGBB or RRGGBBAA, with or without #.", nameof(seedColorHex));
         }
 
-        if (!uint.TryParse(argbHex[..6], NumberStyles.HexNumber, null, out uint seedColor))
+        if (!uint.TryParse("FF" + argbHex[..6], NumberStyles.HexNumber, null, out uint seedColor))
         {
             throw new ArgumentException("Invalid seed color format. Use hexadecimal format (e.g., '#FF5733').", nameof(seedColorHex));
         }
@@ -170,8 +210,16 @@ public readonly struct MaterialTheme
     /// <param name="contrast">The desired contrast level.</param>
     /// <returns>A fully constructed <see cref="MaterialTheme"/>.</returns>
     /// <exception cref="ArgumentOutOfRangeException">Thrown if the contrast value is invalid.</exception>
-    public static MaterialTheme Create(uint seedColor, bool isDarkMode = false, MaterialContrast contrast = MaterialContrast.Standard)
+    public static MaterialTheme Create(uint seedColor, bool isDarkMode = false, MaterialContrast contrast = MaterialContrast.Standard, MaterialTheme existing = null)
     {
+        existing?.Dispose();
+
+        var theme = TrackedPool.Get<MaterialTheme>();
+
+        theme.SeedColor = seedColor;
+        theme.IsDarkMode = isDarkMode;
+        theme.Contrast = contrast;
+
         var contrastLevel = contrast switch
         {
             MaterialContrast.Standard => 0.0,
@@ -184,102 +232,113 @@ public readonly struct MaterialTheme
         using var scheme = SchemeTonalSpot.Create(hct, isDarkMode, contrastLevel);
         var spec = ColorSpecs.Get(scheme.SpecVersion);
 
-        var primary = spec.Primary.GetColor(scheme).Value;
-        // var primaryDim = spec.PrimaryDim.GetColor(scheme).Value;
-        var onPrimary = spec.OnPrimary.GetColor(scheme).Value;
-        var primaryContainer = spec.PrimaryContainer.GetColor(scheme).Value;
-        var onPrimaryContainer = spec.OnPrimaryContainer.GetColor(scheme).Value;
-        var inversePrimary = spec.InversePrimary.GetColor(scheme).Value;
+        theme.Primary = spec.Primary.GetColor(scheme).Value;
+        // theme.PrimaryDim = spec.PrimaryDim.GetColor(scheme).Value;
+        theme.OnPrimary = spec.OnPrimary.GetColor(scheme).Value;
+        theme.PrimaryContainer = spec.PrimaryContainer.GetColor(scheme).Value;
+        theme.OnPrimaryContainer = spec.OnPrimaryContainer.GetColor(scheme).Value;
+        theme.InversePrimary = spec.InversePrimary.GetColor(scheme).Value;
 
-        var secondary = spec.Secondary.GetColor(scheme).Value;
-        // var secondaryDim = spec.SecondaryDim.GetColor(scheme).Value;
-        var onSecondary = spec.OnSecondary.GetColor(scheme).Value;
-        var secondaryContainer = spec.SecondaryContainer.GetColor(scheme).Value;
-        var onSecondaryContainer = spec.OnSecondaryContainer.GetColor(scheme).Value;
+        theme.Secondary = spec.Secondary.GetColor(scheme).Value;
+        // theme.SecondaryDim = spec.SecondaryDim.GetColor(scheme).Value;
+        theme.OnSecondary = spec.OnSecondary.GetColor(scheme).Value;
+        theme.SecondaryContainer = spec.SecondaryContainer.GetColor(scheme).Value;
+        theme.OnSecondaryContainer = spec.OnSecondaryContainer.GetColor(scheme).Value;
 
-        var tertiary = spec.Tertiary.GetColor(scheme).Value;
-        // var tertiaryDim = spec.TertiaryDim.GetColor(scheme).Value;
-        var onTertiary = spec.OnTertiary.GetColor(scheme).Value;
-        var tertiaryContainer = spec.TertiaryContainer.GetColor(scheme).Value;
-        var onTertiaryContainer = spec.OnTertiaryContainer.GetColor(scheme).Value;
+        theme.Tertiary = spec.Tertiary.GetColor(scheme).Value;
+        // theme.TertiaryDim = spec.TertiaryDim.GetColor(scheme).Value;
+        theme.OnTertiary = spec.OnTertiary.GetColor(scheme).Value;
+        theme.TertiaryContainer = spec.TertiaryContainer.GetColor(scheme).Value;
+        theme.OnTertiaryContainer = spec.OnTertiaryContainer.GetColor(scheme).Value;
 
-        var background = spec.Background.GetColor(scheme).Value;
-        var onBackground = spec.OnBackground.GetColor(scheme).Value;
-        var surface = spec.Surface.GetColor(scheme).Value;
-        // var surfaceDim = spec.SurfaceDim.GetColor(scheme).Value;
-        var surfaceBright = spec.SurfaceBright.GetColor(scheme).Value;
-        var surfaceContainerLowest = spec.SurfaceContainerLowest.GetColor(scheme).Value;
-        var surfaceContainerLow = spec.SurfaceContainerLow.GetColor(scheme).Value;
-        var surfaceContainer = spec.SurfaceContainer.GetColor(scheme).Value;
-        var surfaceContainerHigh = spec.SurfaceContainerHigh.GetColor(scheme).Value;
-        var surfaceContainerHighest = spec.SurfaceContainerHighest.GetColor(scheme).Value;
-        var onSurface = spec.OnSurface.GetColor(scheme).Value;
-        var surfaceVariant = spec.SurfaceVariant.GetColor(scheme).Value;
-        var onSurfaceVariant = spec.OnSurfaceVariant.GetColor(scheme).Value;
-        var inverseSurface = spec.InverseSurface.GetColor(scheme).Value;
-        var inverseOnSurface = spec.InverseOnSurface.GetColor(scheme).Value;
+        theme.Background = spec.Background.GetColor(scheme).Value;
+        theme.OnBackground = spec.OnBackground.GetColor(scheme).Value;
+        theme.Surface = spec.Surface.GetColor(scheme).Value;
+        // theme.SurfaceDim = spec.SurfaceDim.GetColor(scheme).Value;
+        theme.SurfaceBright = spec.SurfaceBright.GetColor(scheme).Value;
+        theme.SurfaceContainerLowest = spec.SurfaceContainerLowest.GetColor(scheme).Value;
+        theme.SurfaceContainerLow = spec.SurfaceContainerLow.GetColor(scheme).Value;
+        theme.SurfaceContainer = spec.SurfaceContainer.GetColor(scheme).Value;
+        theme.SurfaceContainerHigh = spec.SurfaceContainerHigh.GetColor(scheme).Value;
+        theme.SurfaceContainerHighest = spec.SurfaceContainerHighest.GetColor(scheme).Value;
+        theme.OnSurface = spec.OnSurface.GetColor(scheme).Value;
+        theme.SurfaceVariant = spec.SurfaceVariant.GetColor(scheme).Value;
+        theme.OnSurfaceVariant = spec.OnSurfaceVariant.GetColor(scheme).Value;
+        theme.InverseSurface = spec.InverseSurface.GetColor(scheme).Value;
+        theme.InverseOnSurface = spec.InverseOnSurface.GetColor(scheme).Value;
 
-        var outline = spec.Outline.GetColor(scheme).Value;
-        var outlineVariant = spec.OutlineVariant.GetColor(scheme).Value;
-        var shadow = spec.Shadow.GetColor(scheme).Value;
-        var scrim = spec.Scrim.GetColor(scheme).Value;
-        var surfaceTint = spec.SurfaceTint.GetColor(scheme).Value;
+        theme.Outline = spec.Outline.GetColor(scheme).Value;
+        theme.OutlineVariant = spec.OutlineVariant.GetColor(scheme).Value;
+        theme.Shadow = spec.Shadow.GetColor(scheme).Value;
+        theme.Scrim = spec.Scrim.GetColor(scheme).Value;
+        theme.SurfaceTint = spec.SurfaceTint.GetColor(scheme).Value;
 
-        var error = spec.Error.GetColor(scheme).Value;
-        // var errorDim = spec.ErrorDim.GetColor(scheme).Value;
-        var onError = spec.OnError.GetColor(scheme).Value;
-        var errorContainer = spec.ErrorContainer.GetColor(scheme).Value;
-        var onErrorContainer = spec.OnErrorContainer.GetColor(scheme).Value;
+        theme.Error = spec.Error.GetColor(scheme).Value;
+        // theme.ErrorDim = spec.ErrorDim.GetColor(scheme).Value;
+        theme.OnError = spec.OnError.GetColor(scheme).Value;
+        theme.ErrorContainer = spec.ErrorContainer.GetColor(scheme).Value;
+        theme.OnErrorContainer = spec.OnErrorContainer.GetColor(scheme).Value;
 
-        return new MaterialTheme(seedColor, isDarkMode, contrast)
-        {
-            Primary = primary,
-            // PrimaryDim = primaryDim,
-            OnPrimary = onPrimary,
-            PrimaryContainer = primaryContainer,
-            OnPrimaryContainer = onPrimaryContainer,
-            InversePrimary = inversePrimary,
-
-            Secondary = secondary,
-            // SecondaryDim = secondaryDim,
-            OnSecondary = onSecondary,
-            SecondaryContainer = secondaryContainer,
-            OnSecondaryContainer = onSecondaryContainer,
-
-            Tertiary = tertiary,
-            // TertiaryDim = tertiaryDim,
-            OnTertiary = onTertiary,
-            TertiaryContainer = tertiaryContainer,
-            OnTertiaryContainer = onTertiaryContainer,
-
-            Background = background,
-            OnBackground = onBackground,
-            Surface = surface,
-            // SurfaceDim = surfaceDim,
-            SurfaceBright = surfaceBright,
-            SurfaceContainerLowest = surfaceContainerLowest,
-            SurfaceContainerLow = surfaceContainerLow,
-            SurfaceContainer = surfaceContainer,
-            SurfaceContainerHigh = surfaceContainerHigh,
-            SurfaceContainerHighest = surfaceContainerHighest,
-            OnSurface = onSurface,
-            SurfaceVariant = surfaceVariant,
-            OnSurfaceVariant = onSurfaceVariant,
-            InverseSurface = inverseSurface,
-            InverseOnSurface = inverseOnSurface,
-
-            Outline = outline,
-            OutlineVariant = outlineVariant,
-            Shadow = shadow,
-            Scrim = scrim,
-            SurfaceTint = surfaceTint,
-
-            Error = error,
-            // ErrorDim = errorDim,
-            OnError = onError,
-            ErrorContainer = errorContainer,
-            OnErrorContainer = onErrorContainer
-        };
-
+        return theme;
     }
+
+    public void Dispose()
+    {
+        if (ReferenceEquals(this, Default))
+        {
+            // Please do not dispose of the default theme
+            return;
+        }
+
+        var obj = this;
+        TrackedPool.Free(ref obj);
+    }
+
+    public void EnterPool()
+    {
+        SeedColor = default;
+        IsDarkMode = default;
+        Contrast = default;
+
+        Primary = 0;
+        // PrimaryDim = 0;
+        OnPrimary = 0;
+        PrimaryContainer = 0;
+        OnPrimaryContainer = 0;
+        InversePrimary = 0;
+        Secondary = 0;
+        // SecondaryDim = 0;
+        OnSecondary = 0;
+        SecondaryContainer = 0;
+        OnSecondaryContainer = 0;
+        Tertiary = 0;
+        // TertiaryDim = 0;
+        OnTertiary = 0;
+        TertiaryContainer = 0;
+        OnTertiaryContainer = 0;
+        Background = 0;
+        OnBackground = 0;
+        Surface = 0;
+        // SurfaceDim = 0;
+        SurfaceBright = 0;
+        SurfaceContainerLowest = 0;
+        SurfaceContainerLow = 0;
+        SurfaceContainer = 0;
+        SurfaceContainerHigh = 0;
+        SurfaceContainerHighest = 0;
+        OnSurface = 0;
+        SurfaceVariant = 0;
+        OnSurfaceVariant = 0;
+        InverseSurface = 0;
+        InverseOnSurface = 0;
+        Outline = 0;
+        OutlineVariant = 0;
+        Shadow = 0;
+        Scrim = 0;
+        SurfaceTint = 0;
+        Error = 0;
+        // ErrorDim = errorDim
+    }
+
+    public void LeavePool() { }
 }

@@ -117,7 +117,7 @@ public static class UserPreferenceUI
         };
 
         var userPreferenceData = await UserPreferenceData.LoadAsync(plugin, player);
-        if (userPreferenceData.Theme.SeedColor.ToRgbaHex().Equals(themeColor, StringComparison.OrdinalIgnoreCase)
+        if (!userPreferenceData.Theme.SeedColor.ToRgbaHex().Equals(themeColor, StringComparison.OrdinalIgnoreCase)
             || userPreferenceData.Theme.IsDarkMode != isDarkMode
             || userPreferenceData.Theme.Contrast != materialContrast)
         {

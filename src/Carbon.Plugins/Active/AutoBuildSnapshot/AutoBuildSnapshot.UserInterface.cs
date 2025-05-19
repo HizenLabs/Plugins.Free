@@ -180,7 +180,7 @@ public partial class AutoBuildSnapshot
                     container: parent,
                     position: LuiPosition.MiddleCenter,
                     offset: new(-450, -275, 450, 275),
-                    color: theme.Background
+                    color: theme.SurfaceContainer
                 );
 
 
@@ -191,14 +191,14 @@ public partial class AutoBuildSnapshot
                     container: container,
                     position: new(0, headerStartY, 1, 1),
                     offset: LuiOffset.None,
-                    color: theme.Primary
+                    color: theme.Background
                 );
 
             cui.v2.CreateText(
                     container: header,
                     position: new(.015f, 0, .5f, 1),
                     offset: new(1, 1, 0, 0),
-                    color: theme.OnPrimary,
+                    color: theme.OnBackground,
                     fontSize: headFontSize,
                     text: headerText,
                     alignment: TextAnchor.MiddleLeft
@@ -219,10 +219,11 @@ public partial class AutoBuildSnapshot
                 container: headerButtons,
                 position: new(closeButtonX, 0, 1, 1),
                 offset: LuiOffset.None,
-                color: theme.Primary,
-                textColor: theme.OnPrimary,
+                color: theme.Background,
+                textColor: theme.OnBackground,
                 textKey: LangKeys.menu_close,
-                commandName: nameof(CommandMenuClose)
+                commandName: nameof(CommandMenuClose),
+                fontSize: 14
             );
 
             var optionsButtonWidth = 0.2f;
@@ -231,10 +232,11 @@ public partial class AutoBuildSnapshot
                 container: headerButtons,
                 position: new(optionsButtonX, 0, closeButtonX, 1),
                 offset: LuiOffset.None,
-                color: theme.Primary,
-                textColor: theme.OnPrimary,
+                color: theme.Background,
+                textColor: theme.OnBackground,
                 textKey: LangKeys.menu_options,
-                commandName: nameof(CommandMenuSettings)
+                commandName: nameof(CommandMenuSettings),
+                fontSize: 14
             );
 
             var content = cui.v2
