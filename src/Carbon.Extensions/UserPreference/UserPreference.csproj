@@ -587,8 +587,6 @@
     <Compile Include="Pooling\TrackedPoolCollection.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Material\Scheme\SchemeTonalSpot.cs" />
-    <Compile Include="UI\ModalOptions.cs" />
-    <Compile Include="UI\DisplayOptions.cs" />
     <Compile Include="UI\UserPreferenceUI.cs" />
   </ItemGroup>
   <ItemGroup>
