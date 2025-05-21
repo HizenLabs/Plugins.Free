@@ -4,7 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Carbon.Tests.Extensions.UserPreference.Material.Structs;
 
 [TestClass]
-public class ColorConversionMatrixTests
+public class Matrix3x3Tests
 {
     #region Indexer
 
@@ -12,7 +12,7 @@ public class ColorConversionMatrixTests
     public void Indexer_ShouldReturnCorrectValue()
     {
         // Arrange
-        ColorConversionMatrix matrix = new
+        Matrix3x3 matrix = new
         (
             1, 2, 3,
             4, 5, 6,
@@ -52,7 +52,7 @@ public class ColorConversionMatrixTests
     public void Indexer_InvalidIndex_ShouldThrowException()
     {
         // Arrange
-        ColorConversionMatrix matrix = new
+        Matrix3x3 matrix = new
         (
             1, 2, 3,
             4, 5, 6,
@@ -70,14 +70,14 @@ public class ColorConversionMatrixTests
     public void Inversion_ShouldReturnCorrectMatrix()
     {
         // Arrange
-        ColorConversionMatrix matrix = new
+        Matrix3x3 matrix = new
         (
             2, 1, 3,
             0, 2, 4,
             1, 1, 2
         );
 
-        ColorConversionMatrix expected = new
+        Matrix3x3 expected = new
         (
             0, -0.5, 1,
             -2, -0.5, 4,
@@ -85,7 +85,7 @@ public class ColorConversionMatrixTests
         );
 
         // Act
-        ColorConversionMatrix actual = matrix.ToInverted();
+        Matrix3x3 actual = matrix.ToInverted();
 
         // Assert
         AssertMatricesAreEqual(expected, actual);
@@ -95,7 +95,7 @@ public class ColorConversionMatrixTests
 
     #region Test Helpers
 
-    internal static void AssertMatricesAreEqual(ColorConversionMatrix expected, ColorConversionMatrix actual, double delta = 1e-3)
+    internal static void AssertMatricesAreEqual(Matrix3x3 expected, Matrix3x3 actual, double delta = 1e-3)
     {
         for (int i = 0; i < 9; i++)
         {

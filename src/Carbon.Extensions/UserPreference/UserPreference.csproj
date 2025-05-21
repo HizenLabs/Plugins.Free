@@ -573,7 +573,7 @@
     <Compile Include="Material\Structs\LabFxyz.cs" />
     <Compile Include="Material\Structs\StandardRgb.cs" />
     <Compile Include="Material\Structs\CieXyz.cs" />
-    <Compile Include="Material\Structs\ColorConversionMatrix.cs" />
+    <Compile Include="Material\Structs\Matrix3x3.cs" />
     <Compile Include="Material\Structs\LinearRgb.cs" />
     <Compile Include="Material\Structs\Cam16PreAdaptRgb.cs" />
     <Compile Include="Material\Structs\Vector3d.cs" />

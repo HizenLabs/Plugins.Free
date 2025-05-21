@@ -7,7 +7,7 @@ namespace HizenLabs.Extensions.UserPreference.Material.Structs;
 /// Represents a 3x3 matrix.
 /// </summary>
 [StructLayout(LayoutKind.Sequential)]
-internal readonly struct ColorConversionMatrix
+internal readonly struct Matrix3x3
 {
     public readonly double
         m00, m01, m02,
@@ -50,7 +50,7 @@ internal readonly struct ColorConversionMatrix
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ColorConversionMatrix"/> struct using individual float values.
+    /// Initializes a new instance of the <see cref="Matrix3x3"/> struct using individual float values.
     /// </summary>
     /// <param name="m00">Value at row 0, column 0.</param>
     /// <param name="m01">Value at row 0, column 1.</param>
@@ -61,7 +61,7 @@ internal readonly struct ColorConversionMatrix
     /// <param name="m20">Value at row 2, column 0.</param>
     /// <param name="m21">Value at row 2, column 1.</param>
     /// <param name="m22">Value at row 2, column 2.</param>
-    public ColorConversionMatrix(
+    public Matrix3x3(
         double m00, double m01, double m02,
         double m10, double m11, double m12,
         double m20, double m21, double m22)
@@ -80,7 +80,7 @@ internal readonly struct ColorConversionMatrix
     /// <summary>
     /// Computes the inverse of this 3x3 matrix.
     /// </summary>
-    /// <returns>A new <see cref="ColorConversionMatrix"/> representing the inverse.</returns>
+    /// <returns>A new <see cref="Matrix3x3"/> representing the inverse.</returns>
     /// <exception cref="InvalidOperationException">Thrown if the matrix is not invertible (determinant is zero).</exception>
     /// <remarks>
     /// Given a matrix:
@@ -104,7 +104,7 @@ internal readonly struct ColorConversionMatrix
     /// inv(M) = (1 / det(M) ) * adj(M)
     /// </code>
     /// </remarks>
-    public ColorConversionMatrix ToInverted()
+    public Matrix3x3 ToInverted()
     {
         // Extract the matrix variables
         double a = m00, b = m01, c = m02,
@@ -123,7 +123,7 @@ internal readonly struct ColorConversionMatrix
         double invDet = 1.0 / det;
 
         // Compute the inverse using the adjugate matrix and determinant
-        return new ColorConversionMatrix
+        return new Matrix3x3
         (
             invDet * (e * i - f * h),
             invDet * (c * h - b * i),
@@ -144,7 +144,7 @@ internal readonly struct ColorConversionMatrix
     /// <param name="matrix">The 3x3 matrix.</param>
     /// <param name="colorXyz">The 3D vector.</param>
     /// <returns>The resulting 3D vector after multiplication.</returns>
-    public static Vector3d operator *(ColorConversionMatrix matrix, Vector3d colorXyz)
+    public static Vector3d operator *(Matrix3x3 matrix, Vector3d colorXyz)
     {
         return new
         (
@@ -154,13 +154,13 @@ internal readonly struct ColorConversionMatrix
         );
     }
 
-    /// <inheritdoc cref="operator *(ColorConversionMatrix, CieXyz)"/>
-    public static Vector3d operator *(Vector3d colorXyz, ColorConversionMatrix matrix)
+    /// <inheritdoc cref="operator *(Matrix3x3, CieXyz)"/>
+    public static Vector3d operator *(Vector3d colorXyz, Matrix3x3 matrix)
     {
         return matrix * colorXyz;
     }
 
-    public static Vector3i operator *(ColorConversionMatrix matrix, Vector3i colorXyz)
+    public static Vector3i operator *(Matrix3x3 matrix, Vector3i colorXyz)
     {
         return new
         (
@@ -170,7 +170,7 @@ internal readonly struct ColorConversionMatrix
         );
     }
 
-    public static Vector3i operator *(Vector3i colorXyz, ColorConversionMatrix matrix)
+    public static Vector3i operator *(Vector3i colorXyz, Matrix3x3 matrix)
     {
         return matrix * colorXyz;
     }

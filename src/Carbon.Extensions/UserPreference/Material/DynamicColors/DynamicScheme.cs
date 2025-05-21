@@ -75,24 +75,20 @@ internal class DynamicScheme : IDisposable, ITrackedPooled
 
     public static double GetRotatedHue(
         Hct sourceColorHct,
-        double[] hueBreakpoints,
-        double[] rotations)
+        Matrix3x3 hueBreakpoints,
+        Matrix3x3 rotations)
     {
         double rotation = GetPiecewiseValue(sourceColorHct, hueBreakpoints, rotations);
-        if (Math.Min(hueBreakpoints.Length - 1, rotations.Length) <= 0)
-        {
-            // No condition matched, return the source hue.
-            rotation = 0;
-        }
+
         return MathUtils.SanitizeDegrees(sourceColorHct.Hue + rotation);
     }
 
     public static double GetPiecewiseValue(
         Hct sourceColorHct,
-        double[] hueBreakpoints,
-        double[] hues)
+        Matrix3x3 hueBreakpoints,
+        Matrix3x3 hues)
     {
-        int size = Math.Min(hueBreakpoints.Length - 1, hues.Length);
+        int size = 8;
         double sourceHue = sourceColorHct.Hue;
         for (int i = 0; i < size; i++)
         {

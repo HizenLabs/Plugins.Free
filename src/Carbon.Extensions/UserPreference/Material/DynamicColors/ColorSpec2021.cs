@@ -761,14 +761,14 @@ internal sealed class ColorSpec2021 : IColorSpec
             Variant.Expressive =>
                 TonalPalette.FromHueAndChroma(
                     DynamicScheme.GetRotatedHue(sourceColorHct,
-                        new[] { 0.0, 21, 51, 121, 151, 191, 271, 321, 360 },
-                        new[] { 45.0, 95, 45, 20, 45, 90, 45, 45, 45 }),
+                        new(0.0, 21, 51, 121, 151, 191, 271, 321, 360),
+                        new(45.0, 95, 45, 20, 45, 90, 45, 45, 45)),
                     24.0),
             Variant.Vibrant =>
                 TonalPalette.FromHueAndChroma(
                     DynamicScheme.GetRotatedHue(sourceColorHct,
-                        new[] { 0.0, 41, 61, 101, 131, 181, 251, 301, 360 },
-                        new[] { 18.0, 15, 10, 12, 15, 18, 15, 12, 12 }),
+                        new(0.0, 41, 61, 101, 131, 181, 251, 301, 360),
+                        new(18.0, 15, 10, 12, 15, 18, 15, 12, 12)),
                     24.0),
             _ => throw new ArgumentOutOfRangeException(nameof(variant))
         };
@@ -792,14 +792,14 @@ internal sealed class ColorSpec2021 : IColorSpec
             Variant.Expressive =>
                 TonalPalette.FromHueAndChroma(
                     DynamicScheme.GetRotatedHue(sourceColorHct,
-                        new[] { 0.0, 21, 51, 121, 151, 191, 271, 321, 360 },
-                        new[] { 120.0, 120, 20, 45, 20, 15, 20, 120, 120 }),
+                        new(0.0, 21, 51, 121, 151, 191, 271, 321, 360),
+                        new(120.0, 120, 20, 45, 20, 15, 20, 120, 120)),
                     32.0),
             Variant.Vibrant =>
                 TonalPalette.FromHueAndChroma(
                     DynamicScheme.GetRotatedHue(sourceColorHct,
-                        new[] { 0.0, 41, 61, 101, 131, 181, 251, 301, 360 },
-                        new[] { 35.0, 30, 20, 25, 30, 35, 30, 25, 25 }),
+                        new(0.0, 41, 61, 101, 131, 181, 251, 301, 360),
+                        new(35.0, 30, 20, 25, 30, 35, 30, 25, 25)),
                     32.0),
             _ => throw new ArgumentOutOfRangeException(nameof(variant))
         };
