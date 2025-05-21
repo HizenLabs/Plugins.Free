@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("UserPreference")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("User Preference is an extension that enables plugin authors to allow their users to configure their visual preferences.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("HizenLabs")]
 [assembly: AssemblyProduct("UserPreference")]
-[assembly: AssemblyCopyright("Copyright ©  2025")]
+[assembly: AssemblyCopyright("Copyright © HizenLabs 2025")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
