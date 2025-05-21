@@ -15,6 +15,9 @@ namespace HizenLabs.Extensions.UserPreference.UI;
 /// </summary>
 public static class UserPreferenceUI
 {
+    private static readonly string[] _displayOptions = new string[2];
+    private static readonly string[] _contrastOptions = new string[3];
+
     /// <summary>
     /// Displays a modal window allowing users to configure their visual preferences.
     /// </summary>
@@ -64,11 +67,13 @@ public static class UserPreferenceUI
 
         if (showDisplay)
         {
-            var displayOptions = new[] { optionDisplayLight, optionDisplayDark };
+            _displayOptions[0] = optionDisplayLight;
+            _displayOptions[1] = optionDisplayDark;
+
             var displaySelected = userPreferenceData.Theme.IsDarkMode ? 1 : 0;
             fields["display"] = ModalModule.Modal.EnumField.MakeEnum(
                 displayName: labelDisplay,
-                options: displayOptions,
+                options: _displayOptions,
                 required: true,
                 @default: displaySelected,
                 isReadOnly: false);
@@ -76,7 +81,10 @@ public static class UserPreferenceUI
 
         if (showContrast)
         {
-            var contrastOptions = new[] { optionContrastStandard, optionContrastMedium, optionContrastHigh };
+            _contrastOptions[0] = optionContrastStandard;
+            _contrastOptions[1] = optionContrastMedium;
+            _contrastOptions[2] = optionContrastHigh;
+
             var contrastSelected = userPreferenceData.Theme.Contrast switch
             {
                 MaterialContrast.Medium => 1,
@@ -85,7 +93,7 @@ public static class UserPreferenceUI
             };
             fields["contrast"] = ModalModule.Modal.EnumField.MakeEnum(
                 displayName: labelContrast,
-                options: contrastOptions,
+                options: _contrastOptions,
                 required: true,
                 @default: contrastSelected,
                 isReadOnly: false);

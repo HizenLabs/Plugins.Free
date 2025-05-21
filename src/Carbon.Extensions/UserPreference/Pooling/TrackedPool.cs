@@ -1,13 +1,19 @@
-﻿using System;
+﻿#if DEBUG
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+#else
+using Facepunch;
+using System.Runtime.CompilerServices;
+#endif
 
 namespace HizenLabs.Extensions.UserPreference.Pooling;
 
 internal static class TrackedPool
 {
+#if DEBUG
     private static readonly ConcurrentDictionary<Type, TrackedPoolCollection> _trackedPools = new();
 
     public static IReadOnlyDictionary<Type, TrackedPoolCollection> TrackedPools => _trackedPools;
@@ -46,4 +52,19 @@ internal static class TrackedPool
         Interlocked.Exchange(ref AcquireCount, 0);
         Interlocked.Exchange(ref ReleaseCount, 0);
     }
+#else
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T Get<T>()
+        where T : class, new()
+    {
+        return Pool.Get<T>();
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static void Free<T>(ref T obj)
+        where T : class, Pool.IPooled, new()
+    {
+        Pool.Free(ref obj);
+    }
+#endif
 }

@@ -58,6 +58,12 @@ public class UserPreferenceData : IDisposable, ITrackedPooled
         defaultPreferences.Theme = theme;
     }
 
+    /// <summary>
+    /// Loads the user preference data for a specific player, or the default data if no data exists.
+    /// </summary>
+    /// <param name="plugin">The plugin to load the user preference data for.</param>
+    /// <param name="player">The player to load the user preference data for.</param>
+    /// <returns>The user preference data for the specified player.</returns>
     public static UserPreferenceData Load(CarbonPlugin plugin, BasePlayer player)
     {
         if (player.UserPreferenceData is not UserPreferenceData userPreferenceData)

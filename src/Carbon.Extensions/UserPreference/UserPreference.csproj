@@ -588,6 +588,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Material\Scheme\SchemeTonalSpot.cs" />
     <Compile Include="UI\UserPreferenceUI.cs" />
+    <Compile Include="UserPreferenceExtension.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

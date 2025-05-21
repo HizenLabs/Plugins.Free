@@ -12,6 +12,7 @@ namespace Carbon.Tests.Extensions.UserPreference.Pooling;
 [TestClass]
 public class AllocationsTests
 {
+#if DEBUG
     [TestInitialize]
     public void TestInitialize()
     {
@@ -98,4 +99,5 @@ public class AllocationsTests
             }
         }
     }
+#endif
 }
