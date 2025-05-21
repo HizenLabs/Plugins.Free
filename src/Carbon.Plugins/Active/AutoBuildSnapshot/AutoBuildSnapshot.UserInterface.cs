@@ -3,9 +3,10 @@ using Facepunch;
 using HizenLabs.Extensions.UserPreference.Data;
 using HizenLabs.Extensions.UserPreference.Material.API;
 using Oxide.Game.Rust.Cui;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
-
+using UnityEngine.UI;
 using static Carbon.Components.CUI.Handler;
 
 namespace Carbon.Plugins;
@@ -252,20 +253,20 @@ public partial class AutoBuildSnapshot
                 .CreateText(
                     container: content,
                     position: LuiPosition.Full,
-                    offset: new(0, 1, 0, 0),
+                    offset: new(0, 3, 0, 0),
                     fontSize: 8,
                     color: "0.5 0.5 0.5 0.4",
                     text: $"AutoBuildSnapshot v{_instance.Version} by hizenxyz",
                     alignment: TextAnchor.LowerCenter)
                 .SetTextFont(CUI.Handler.FontTypes.DroidSansMono);
 
-            var tabButtonsHeight = 0.08f;
+            var tabButtonsHeight = 0.1f;
             var tabButtonsStartY = 1 - tabButtonsHeight;
             var tabButtons = cui.v2
                 .CreatePanel(
                     container: content,
                     position: new(0, tabButtonsStartY, 1, 1),
-                    offset: new(5, 7, -5, -7),
+                    offset: new(12, 12, -12, -12),
                     color: theme.Transparent
                 );
 
@@ -294,15 +295,23 @@ public partial class AutoBuildSnapshot
                 commandArgs:"1"
             );
 
+            var tabContent = cui.v2
+                .CreatePanel(
+                    container: content,
+                    position: new(0, 0, 1, tabButtonsStartY),
+                    offset: LuiOffset.None,
+                    color: theme.Transparent
+                );
+
             switch (tabIndex)
             {
                 case 1:
-                    RenderLogsTab(cui, player, tabButtons, content, userPreference);
+                    RenderLogsTab(cui, player, tabButtons, tabContent, userPreference);
                     break;
 
                 case 0:
                 default:
-                    RenderHomeTab(cui, player, tabButtons, content, userPreference);
+                    RenderHomeTab(cui, player, tabButtons, tabContent, userPreference);
                     break;
             }
         }
@@ -311,7 +320,7 @@ public partial class AutoBuildSnapshot
             CUI cui,
             BasePlayer player,
             LUI.LuiContainer tabButtons,
-            LUI.LuiContainer content,
+            LUI.LuiContainer tabContent,
             UserPreferenceData userPreference)
         {
             var theme = userPreference.Theme;
@@ -336,7 +345,7 @@ public partial class AutoBuildSnapshot
             CUI cui,
             BasePlayer player,
             LUI.LuiContainer tabButtons,
-            LUI.LuiContainer container,
+            LUI.LuiContainer tabContent,
             UserPreferenceData userPreference)
         {
             var theme = userPreference.Theme;
@@ -351,6 +360,84 @@ public partial class AutoBuildSnapshot
                 textKey: LangKeys.menu_content_clear,
                 commandName: nameof(CommandMenuSettings)
             );
+
+            var logsPanel = cui.v2
+                .CreatePanel(tabContent,
+                    position: new(0, 0, 1, 1),
+                    offset: new(12, 12, -12, 0),
+                    color: theme.Surface
+                );
+
+            using var logs = Helpers.GetLogs();
+
+            const int lineHeight = 16;
+            const int lineWidth = 888;
+
+            var logsScrollView = cui.v2
+                .CreateScrollView(logsPanel,
+                    position: LuiPosition.Full,
+                    offset: new(-5, 10, -5, -5),
+                    vertical: true,
+                    horizontal: false,
+                    movementType: ScrollRect.MovementType.Elastic,
+                    elasticity: 0,
+                    inertia: true,
+                    decelerationRate: 0.1f,
+                    scrollSensitivity: 10,
+                    /*
+                    horizontalScrollOptions: new()
+                    {
+                        size = 6,
+                        autoHide = true,
+                        handleColor = theme.Primary
+                    },
+                    */
+                    verticalScrollOptions: new()
+                    {
+                        size = 6,
+                        autoHide = true,
+                        handleColor = theme.Primary
+                    });
+
+            const int maxVisible = 500;
+            var logsVisible = Math.Min(logs.Count, maxVisible);
+            var scrollY = -lineHeight * logsVisible + 420;
+            if (scrollY < 0)
+            {
+                logsScrollView.SetScrollContent(LuiPosition.Full, new(0, scrollY, lineWidth, 0));
+            }
+
+            if (logsVisible > 0)
+            {
+                int index = 0;
+                foreach (var log in logs)
+                {
+                    if (index > logsVisible) break;
+
+                    var yOffset = -lineHeight * ++index;
+                    cui.v2
+                        .CreateText(logsScrollView,
+                            position: LuiPosition.UpperLeft,
+                            offset: new(12, yOffset, lineWidth, yOffset + lineHeight),
+                            fontSize: 10,
+                            color: theme.OnSurface,
+                            text: log,
+                            alignment: TextAnchor.UpperLeft)
+                        .SetTextFont(FontTypes.DroidSansMono);
+                }
+            }
+            else
+            {
+                cui.v2
+                    .CreateText(logsScrollView,
+                        position: LuiPosition.UpperLeft,
+                        offset: new(12, -lineHeight, lineWidth, 0),
+                        fontSize: 10,
+                        color: theme.OnSurface,
+                        text: Localizer.Text(LangKeys.menu_logs_empty, player),
+                        alignment: TextAnchor.MiddleCenter)
+                    .SetTextFont(FontTypes.DroidSansMono);
+            }
         }
 
         private static string GetTabButtonColor(int index, int targetIndex, MaterialTheme theme)

@@ -1,6 +1,7 @@
 ﻿// Reference: HizenLabs.Extensions.UserPreference
 
 using Oxide.Core;
+using System;
 using System.IO;
 
 namespace Carbon.Plugins;
@@ -8,7 +9,7 @@ namespace Carbon.Plugins;
 /// <summary>
 /// Creates snapshots of user bases which can then be rolled back to at a later date.
 /// </summary>
-[Info("AutoBuildSnapshot", "hizenxyz", "1.0.0")]
+[Info("AutoBuildSnapshot", "hizenxyz", "1.0.1")]
 [Description("Creates snapshots of user bases which can then be rolled back to at a later date.")]
 public partial class AutoBuildSnapshot : CarbonPlugin
 {

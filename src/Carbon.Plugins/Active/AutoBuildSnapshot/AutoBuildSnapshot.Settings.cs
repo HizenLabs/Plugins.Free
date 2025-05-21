@@ -110,6 +110,7 @@ public partial class AutoBuildSnapshot
                 [nameof(LangKeys.menu_tab_logs)] = "Logs",
                 [nameof(LangKeys.menu_content_back)] = "Back",
                 [nameof(LangKeys.menu_content_clear)] = "Clear",
+                [nameof(LangKeys.menu_logs_empty)] = "The logs are empty.",
             }, plugin, "en");
         }
     }
@@ -280,6 +281,11 @@ public partial class AutoBuildSnapshot
         /// Clear
         /// </summary>
         menu_content_clear,
+
+        /// <summary>
+        /// The logs are empty.
+        /// </summary>
+        menu_logs_empty,
     }
 
     /// <summary>

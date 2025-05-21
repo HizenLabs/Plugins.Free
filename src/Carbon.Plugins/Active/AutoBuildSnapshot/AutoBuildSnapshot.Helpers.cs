@@ -8,12 +8,22 @@ namespace Carbon.Plugins;
 
 public partial class AutoBuildSnapshot
 {
+    public static class Shared
+    {
+        public static ArrayPool<string> StringArrayPool = new(512);
+    }
+
     /// <summary>
     /// Helper class for managing the plugin's configuration and language settings.
     /// </summary>
     private static class Helpers
     {
-        private static List<string> _logs;
+        private const int _logsLength = 500;
+
+        private static string[] _logs;
+        private static int _logIndex = 0;
+        private static int _logCount = 0;
+        private static object syncRoot = new();
 
         /// <summary>
         /// Initializes the helper with the plugin instance and obtains resources from the pool.
@@ -21,7 +31,7 @@ public partial class AutoBuildSnapshot
         /// <param name="plugin"></param>
         public static void Init()
         {
-            _logs = Pool.Get<List<string>>();
+            _logs = Shared.StringArrayPool.Rent(_logsLength);
         }
 
         /// <summary>
@@ -29,7 +39,7 @@ public partial class AutoBuildSnapshot
         /// </summary>
         public static void Unload()
         {
-            Pool.FreeUnmanaged(ref _logs);
+            Shared.StringArrayPool.Return(_logs);
         }
 
         #region Logging
@@ -66,7 +76,43 @@ public partial class AutoBuildSnapshot
             }
 
             _instance.Puts(format);
-            _logs.Add(format);
+
+            AddLog(format);
+        }
+
+        private static void AddLog(string message)
+        {
+            lock (syncRoot)
+            {
+                _logs[_logIndex] = message;
+                _logIndex = (_logIndex + 1) % _logsLength;
+                _logCount = Math.Min(_logCount + 1, _logsLength);
+            }
+        }
+
+        public static void ClearLogs()
+        {
+            lock (syncRoot)
+            {
+                _logCount = 0;
+                _logIndex = 0;
+            }
+        }
+
+        public static PooledList<string> GetLogs()
+        {
+            var logs = Pool.Get<PooledList<string>>();
+
+            lock (syncRoot)
+            {
+                for (int i = 0; i < _logCount; i++)
+                {
+                    int index = (_logIndex - 1 - i + _logsLength) % _logsLength;
+                    logs.Add(_logs[index]);
+                }
+            }
+
+            return logs;
         }
 
         #endregion
