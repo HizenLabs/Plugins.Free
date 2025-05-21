@@ -4,9 +4,13 @@ Plugins can use this extension by placing a button in their application that cal
 
 Example:
 
+```csharp
 UserPreferenceUI.Show(this, player, onConfirm: () => Puts("Player clicked confirm!");
+```
+
 Actual theme usage is very simple:
 
+```csharp
 var userPreference = UserPreferenceData.Load(this, player);
 var theme = userPreference.Theme;
 
@@ -26,6 +30,8 @@ cui.v2.CreateText(
     text: "Welcome!",
     alignment: TextAnchor.UpperCenter
 );
+```
+
 Themes (color palettes) are based on Material Design 3 (Material You) - https://material-foundation.github.io/material-theme-builder/
 
 The user simply selects a color, a display mode (light/dark), and a contrast level, and a palette will be automatically generated off their selections.
@@ -33,51 +39,50 @@ The user simply selects a color, a display mode (light/dark), and a contrast lev
 The available colors for use in theme are as follows:
 
 Primary Colors
+- Primary
+- OnPrimary
+- PrimaryContainer
+- OnPrimaryContainer
+- InversePrimary
 
-Primary
-OnPrimary
-PrimaryContainer
-OnPrimaryContainer
-InversePrimary
 Secondary Colors
+- Secondary
+- OnSecondary
+- SecondaryContainer
+- OnSecondaryContainer
 
-Secondary
-OnSecondary
-SecondaryContainer
-OnSecondaryContainer
 Tertiary Colors
+- Tertiary
+- OnTertiary
+- TertiaryContainer
+- OnTertiaryContainer
 
-Tertiary
-OnTertiary
-TertiaryContainer
-OnTertiaryContainer
 Error Colors
+- Error
+- OnError
+- ErrorContainer
+- OnErrorContainer
 
-Error
-OnError
-ErrorContainer
-OnErrorContainer
 Surface & Background
-
-Surface
-SurfaceBright
-SurfaceContainerLowest
-SurfaceContainerLow
-SurfaceContainer
-SurfaceContainerHigh
-SurfaceContainerHighest
-SurfaceVariant
-OnSurface
-OnSurfaceVariant
-Background
-OnBackground
-InverseSurface
-InverseOnSurface
+- Surface
+- SurfaceBright
+- SurfaceContainerLowest
+- SurfaceContainerLow
+- SurfaceContainer
+- SurfaceContainerHigh
+- SurfaceContainerHighest
+- SurfaceVariant
+- OnSurface
+- OnSurfaceVariant
+- Background
+- OnBackground
+- InverseSurface
+- InverseOnSurface
+- 
 Outline & Effects
-
-Outline
-OutlineVariant
-SurfaceTint
-Shadow
-Scrim
-Transparent (static 0 opacity black)
+- Outline
+- OutlineVariant
+- SurfaceTint
+- Shadow
+- Scrim
+- Transparent (static 0 opacity black)
