@@ -42,7 +42,7 @@ public class UserPreferenceData : IDisposable, ITrackedPooled
     /// Returns whether the user preference data has been initialized.
     /// </summary>
     [JsonIgnore]
-    private bool IsInitialized => _pluginName != null && _userId != null;
+    public bool IsInitialized => _pluginName != null && _userId != null;
 
     #region API
 

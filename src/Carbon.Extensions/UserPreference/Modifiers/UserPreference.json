@@ -9,16 +9,5 @@
         "DefaultValue": null
       }
     ]
-  },
-  {
-    "Assembly": "Carbon.Common",
-    "Name": "CarbonPlugin",
-    "Fields": [
-      {
-        "Name": "DefaultUserPreferenceData",
-        "Type": "System.Object",
-        "DefaultValue": null
-      }
-    ]
   }
 ]
