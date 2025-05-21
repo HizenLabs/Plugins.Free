@@ -47,6 +47,7 @@
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>x64</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="0Harmony, Version=2.3.1.1, Culture=neutral, processorArchitecture=MSIL">
@@ -727,15 +728,9 @@
     <Compile Include="Active\AutoBuildSnapshot_old\AutoBuildSnapshot.UI.Drawing.Snapshots.cs" />
     <Compile Include="Active\AutoBuildSnapshot_old\AutoBuildSnapshot.UI.Handlers.cs" />
     <Compile Include="Active\AutoBuildSnapshot_old\AutoBuildSnapshot.PersistantBase.cs" />
-    <Compile Include="Active\CopyPasteTests.cs" />
-    <Compile Include="Active\ObjectSerializerTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Carbon.Extensions\ObjectSerializer\ObjectSerializer.csproj">
-      <Project>{0f9b4405-b1ed-4025-b95b-ea8f9d9d5160}</Project>
-      <Name>ObjectSerializer</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Carbon.Extensions\UserPreference\UserPreference.csproj">
       <Project>{694ca1e3-ed7e-4be8-a849-6e9d74b5dfea}</Project>
       <Name>UserPreference</Name>

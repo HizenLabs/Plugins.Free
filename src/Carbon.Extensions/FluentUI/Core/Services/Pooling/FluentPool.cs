@@ -21,12 +21,13 @@ internal static class FluentPool
     private static Dictionary<Type, int> _pooledTypeCounts;
 
     internal static IReadOnlyDictionary<Type, int> PooledTypeCounts => _pooledTypeCounts;
-#endif
 
     public static int PooledTypeTotal => _pooledTypeCounts.Sum(x => x.Value);
+#endif
 
     public static void Initialize()
     {
+#if DEBUG
         if (_pooledTypeCounts != null)
         {
             using var debug = FluentDebug.BeginScope();
@@ -35,10 +36,12 @@ internal static class FluentPool
         }
 
         _pooledTypeCounts = Pool.Get<Dictionary<Type, int>>();
+#endif
     }
 
     public static void Shutdown()
     {
+#if DEBUG
         if (_pooledTypeCounts == null)
         {
             using var debug = FluentDebug.BeginScope();
@@ -61,6 +64,7 @@ internal static class FluentPool
         }
 
         Pool.FreeUnmanaged(ref _pooledTypeCounts);
+#endif
     }
 
     #region Pool.IPooled Wrappers

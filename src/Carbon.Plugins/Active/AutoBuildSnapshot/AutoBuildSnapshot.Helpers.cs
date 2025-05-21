@@ -23,7 +23,7 @@ public partial class AutoBuildSnapshot
         private static string[] _logs;
         private static int _logIndex = 0;
         private static int _logCount = 0;
-        private static object syncRoot = new();
+        private static readonly object syncRoot = new();
 
         /// <summary>
         /// Initializes the helper with the plugin instance and obtains resources from the pool.
