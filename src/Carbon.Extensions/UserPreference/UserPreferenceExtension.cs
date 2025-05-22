@@ -15,10 +15,13 @@ public class UserPreferenceExtension : ICarbonExtension
 
     public void OnLoaded(EventArgs args)
     {
+        ThemeCache.Init();
     }
 
     public void OnUnloaded(EventArgs args)
     {
+        ThemeCache.Unload();
+
         foreach (var player in BasePlayer.activePlayerList)
         {
             if (player.UserPreferenceData is UserPreferenceData userPreferenceData
