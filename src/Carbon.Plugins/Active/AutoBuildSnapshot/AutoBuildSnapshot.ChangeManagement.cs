@@ -322,7 +322,7 @@ public partial class AutoBuildSnapshot
         /// </summary>
         internal class RecordingLock : IDisposable, Pool.IPooled
         {
-            private static object _lock = new();
+            private static readonly object _lock = new();
 
             /// <summary>
             /// The state of the lock.
