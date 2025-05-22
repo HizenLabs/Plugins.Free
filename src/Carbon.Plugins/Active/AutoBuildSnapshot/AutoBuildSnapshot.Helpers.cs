@@ -10,7 +10,7 @@ public partial class AutoBuildSnapshot
 {
     private static class Shared
     {
-        public static ArrayPool<LogMessage> LangKeysArrayPool = new(512);
+        public static ArrayPool<LogMessage> LogMessageArrayPool = new(512);
 
         public static ArrayPool<object> ArgumentsPool = new(3);
     }
@@ -95,7 +95,7 @@ public partial class AutoBuildSnapshot
         /// <param name="plugin"></param>
         public static void Init()
         {
-            _logs = Shared.LangKeysArrayPool.Rent(_logsLength);
+            _logs = Shared.LogMessageArrayPool.Rent(_logsLength);
         }
 
         /// <summary>
@@ -103,7 +103,7 @@ public partial class AutoBuildSnapshot
         /// </summary>
         public static void Unload()
         {
-            Shared.LangKeysArrayPool.Return(_logs);
+            Shared.LogMessageArrayPool.Return(_logs);
         }
 
         #region Logging
