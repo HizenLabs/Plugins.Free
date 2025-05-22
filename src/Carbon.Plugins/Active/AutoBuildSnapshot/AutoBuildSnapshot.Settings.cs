@@ -48,9 +48,9 @@ public partial class AutoBuildSnapshot
         /// </summary>
         /// <param name="player">The player to send the message to.</param>
         /// <param name="langKey">The key for the localized message.</param>
-        /// <param name="args">The arguments to format the message with.</param>
-        public static void ChatMessage(BasePlayer player, LangKeys langKey, params object[] args)
+        public static void ChatMessage(BasePlayer player, LangKeys langKey, object arg1 = null, object arg2 = null, object arg3 = null)
         {
+            using var args = TempArguments.Create(arg1, arg2, arg3);
             var msg = Text(langKey, player, args);
 
             player.ChatMessage(msg);
@@ -63,11 +63,17 @@ public partial class AutoBuildSnapshot
         /// <param name="langKey">The key for the localized message.</param>
         /// <param name="args">The arguments to format the message with.</param>
         /// <returns>The formatted localized message.</returns>
-        public static string Text(LangKeys langKey, BasePlayer player = null, params object[] args)
+        public static string Text(LangKeys langKey, BasePlayer player = null, object arg1 = null, object arg2 = null, object arg3 = null)
         {
             var format = GetFormat(player, langKey);
 
-            return string.Format(format, args);
+            if (arg1 is TempArguments tempArgs)
+            {
+                return tempArgs.StringFormat(format);
+            }
+
+            using var args = TempArguments.Create(arg1, arg2, arg3);
+            return args.StringFormat(format);
         }
 
         /// <summary>
@@ -311,8 +317,8 @@ public partial class AutoBuildSnapshot
         /// <param name="langKey">The language key for the exception message.</param>
         /// <param name="player">The player to send the message to (optional).</param>
         /// <param name="args">The arguments to format the message with.</param>
-        public LocalizedException(LangKeys langKey, BasePlayer player = null, params object[] args)
-            : base(Localizer.Text(langKey, player, args))
+        public LocalizedException(LangKeys langKey, BasePlayer player = null, object arg1 = null, object arg2 = null, object arg3 = null)
+            : base(Localizer.Text(langKey, player, arg1, arg2, arg3))
         {
             LangKey = langKey;
         }

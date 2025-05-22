@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using UnityEngine;
 
 namespace Carbon.Plugins;
@@ -12,13 +13,13 @@ public partial class AutoBuildSnapshot
     {
         public static ArrayPool<LogMessage> LogMessageArrayPool = new(512);
 
-        public static ArrayPool<object> ArgumentsPool = new(3);
+        public static ArrayPool<object> ArgumentsPool = new(4);
     }
 
     private class LogMessage : Pool.IPooled
     {
         private LangKeys _langKey;
-        private object[] _args;
+        private TempArguments _args;
 
         public DateTime Timestamp => _timestamp;
         private DateTime _timestamp;
@@ -26,33 +27,16 @@ public partial class AutoBuildSnapshot
         public string GetMessage(BasePlayer player)
         {
             var message = Localizer.GetFormat(player, _langKey);
-            if (_args != null && _args.Length > 0)
-            {
-                message = string.Format(message, _args);
-            }
+            message = _args.StringFormat(message);
 
             return message;
         }
 
         public static LogMessage Create(LangKeys langKey, object arg1, object arg2, object arg3)
         {
-            if (arg1 == null && arg2 == null && arg3 == null)
-            {
-                return Create(langKey, null);
-            }
-
-            var args = Shared.ArgumentsPool.Rent(3);
-            args[0] = arg1;
-            args[1] = arg2;
-            args[2] = arg3;
-            return Create(langKey, args);
-        }
-
-        private static LogMessage Create(LangKeys langKey, object[] args)
-        {
             var instance = Pool.Get<LogMessage>();
             instance._langKey = langKey;
-            instance._args = args;
+            instance._args = TempArguments.Create(arg1, arg2, arg3);
             return instance;
         }
 
@@ -61,6 +45,79 @@ public partial class AutoBuildSnapshot
             _langKey = LangKeys.Default;
             _timestamp = default;
 
+            _args?.Dispose();
+        }
+
+        void Pool.IPooled.LeavePool()
+        {
+            _timestamp = DateTime.UtcNow;
+        }
+    }
+
+    private class TempArguments : IDisposable, Pool.IPooled
+    {
+        private object[] _args;
+
+        public static TempArguments Create(object arg1)
+        {
+            var instance = Pool.Get<TempArguments>();
+            if (arg1 == null)
+            {
+                return instance;
+            }
+
+            instance._args = Shared.ArgumentsPool.Rent(1);
+            instance._args[0] = arg1;
+            return instance;
+        }
+
+        public static TempArguments Create(object arg1, object arg2)
+        {
+            if (arg2 == null)
+            {
+                return Create(arg1);
+            }
+
+            var instance = Pool.Get<TempArguments>();
+            instance._args = Shared.ArgumentsPool.Rent(2);
+            instance._args[0] = arg1;
+            instance._args[1] = arg2;
+            return instance;
+        }
+
+        public static TempArguments Create(object arg1, object arg2, object arg3)
+        {
+            if (arg3 == null)
+            {
+                return Create(arg1, arg2);
+            }
+
+            var instance = Pool.Get<TempArguments>();
+            instance._args = Shared.ArgumentsPool.Rent(3);
+            instance._args[0] = arg1;
+            instance._args[1] = arg2;
+            instance._args[2] = arg3;
+            return instance;
+        }
+
+        public string StringFormat(string format)
+        {
+            if (_args == null)
+            {
+                return format;
+            }
+
+            return string.Format(format, _args);
+        }
+
+        public void Dispose()
+        {
+            var obj = this;
+            Pool.Free(ref obj);
+        }
+
+        public void EnterPool()
+        {
             if (_args != null)
             {
                 Shared.ArgumentsPool.Return(_args);
@@ -68,9 +125,13 @@ public partial class AutoBuildSnapshot
             }
         }
 
-        void Pool.IPooled.LeavePool()
+        public void LeavePool()
         {
-            _timestamp = DateTime.UtcNow;
+        }
+
+        public static implicit operator object[](TempArguments instance)
+        {
+            return instance._args;
         }
     }
 
@@ -202,11 +263,14 @@ public partial class AutoBuildSnapshot
 
                     if (!string.IsNullOrEmpty(format))
                     {
-                        message = string.Format(format,
-                            message,
-                            logMessage.Timestamp,
-                            logMessage.Timestamp.ToLocalTime(),
-                            player.displayName);
+                        var args = Shared.ArgumentsPool.Rent(4);
+                        args[0] = message;
+                        args[1] = logMessage.Timestamp;
+                        args[2] = logMessage.Timestamp.ToLocalTime();
+                        args[3] = player.displayName;
+
+                        message = string.Format(format, args);
+                        Shared.ArgumentsPool.Return(args);
                     }
 
                     logs.Add(message);
