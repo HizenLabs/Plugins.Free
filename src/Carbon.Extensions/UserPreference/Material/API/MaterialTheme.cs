@@ -183,6 +183,13 @@ public class MaterialTheme : IDisposable, ITrackedPooled
     /// <exception cref="ArgumentException">Thrown when the format is invalid or empty.</exception>
     public static MaterialTheme CreateFromRgbHex(string seedColorHex, bool isDarkMode = false, MaterialContrast contrast = MaterialContrast.Standard)
     {
+        var seedColor= GetSeedColorFromRgbaHex(seedColorHex);
+
+        return Create(seedColor, isDarkMode, contrast);
+    }
+
+    public static uint GetSeedColorFromRgbaHex(string seedColorHex)
+    {
         if (string.IsNullOrEmpty(seedColorHex))
         {
             throw new ArgumentException("Seed color cannot be null or empty.", nameof(seedColorHex));
@@ -199,7 +206,7 @@ public class MaterialTheme : IDisposable, ITrackedPooled
             throw new ArgumentException("Invalid seed color format. Use hexadecimal format (e.g., '#FF5733').", nameof(seedColorHex));
         }
 
-        return Create(seedColor, isDarkMode, contrast);
+        return seedColor;
     }
 
     /// <summary>

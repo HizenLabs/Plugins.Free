@@ -125,7 +125,7 @@ public static class UserPreferenceUI
             || userPreferenceData.Theme.IsDarkMode != isDarkMode
             || userPreferenceData.Theme.Contrast != materialContrast)
         {
-            var theme = await UniTask.RunOnThreadPool(() => MaterialTheme.CreateFromRgbaHex(themeColor, isDarkMode, materialContrast));
+            var theme = await UniTask.RunOnThreadPool(() => ThemeCache.GetFromRgbaHex(themeColor, isDarkMode, materialContrast));
             userPreferenceData.Theme = theme;
         }
 

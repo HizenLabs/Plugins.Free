@@ -1,0 +1,65 @@
+﻿using Facepunch;
+using HizenLabs.Extensions.UserPreference.Material.API;
+using System.Collections.Generic;
+
+namespace HizenLabs.Extensions.UserPreference.Data;
+
+internal static class ThemeCache
+{
+    private static Dictionary<uint, MaterialTheme> _lightThemeCache;
+    private static Dictionary<uint, MaterialTheme> _darkThemeCache;
+
+    public static MaterialTheme GetFromRgbaHex(string rgbaHex, bool isDark, MaterialContrast contrast)
+    {
+        var seedColor = MaterialTheme.GetSeedColorFromRgbaHex(rgbaHex);
+
+        return Get(seedColor, isDark, contrast);
+    }
+
+    public static MaterialTheme Get(uint value, bool isDark, MaterialContrast contrast)
+    {
+        var cache = isDark ? _darkThemeCache : _lightThemeCache;
+
+        if (!cache.TryGetValue(value, out var baseTheme))
+        {
+            if (!_lightThemeCache.TryGetValue(value, out var lightTheme))
+            {
+                lightTheme = MaterialTheme.Create(value, false, MaterialContrast.Standard);
+                _lightThemeCache[value] = lightTheme;
+            }
+
+            baseTheme = isDark ? lightTheme.Dark : lightTheme;
+            cache[value] = baseTheme;
+        }
+
+        return contrast switch
+        {
+            MaterialContrast.Standard => baseTheme,
+            MaterialContrast.Medium => baseTheme.MediumContrast,
+            MaterialContrast.High => baseTheme.HighContrast,
+            _ => baseTheme
+        };
+    }
+
+    public static void Init()
+    {
+        _lightThemeCache = Pool.Get<Dictionary<uint, MaterialTheme>>();
+        _darkThemeCache = Pool.Get<Dictionary<uint, MaterialTheme>>();
+    }
+
+    public static void Unload()
+    {
+        foreach (var theme in _lightThemeCache.Values)
+        {
+            theme?.Dispose();
+        }
+
+        foreach (var theme in _darkThemeCache.Values)
+        {
+            theme?.Dispose();
+        }
+
+        Pool.FreeUnmanaged(ref _lightThemeCache);
+        Pool.FreeUnmanaged(ref _darkThemeCache);
+    }
+}

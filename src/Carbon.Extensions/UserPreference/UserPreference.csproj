@@ -536,6 +536,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Data\ThemeCache.cs" />
     <Compile Include="Data\UserPreferenceData.cs" />
     <Compile Include="Material\API\MaterialColor.cs" />
     <Compile Include="Material\API\MaterialContrast.cs" />
