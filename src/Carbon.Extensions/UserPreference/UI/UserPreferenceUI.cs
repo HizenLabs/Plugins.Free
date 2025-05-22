@@ -112,10 +112,6 @@ public static class UserPreferenceUI
         var display = modal.Get<int>("display");
         var contrast = modal.Get<int>("contrast");
 
-        plugin.Puts($"Theme Color: {themeColor}");
-        plugin.Puts($"Display: {display}");
-        plugin.Puts($"Contrast: {contrast}");
-
         var isDarkMode = display == 1;
         var materialContrast = contrast switch
         {
