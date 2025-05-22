@@ -17,10 +17,7 @@ public partial class AutoBuildSnapshot
 
     private class LogMessage : Pool.IPooled
     {
-        public LangKeys LangKey => _langKey;
         private LangKeys _langKey;
-
-        public object[] Args => _args;
         private object[] _args;
 
         public DateTime Timestamp => _timestamp;
