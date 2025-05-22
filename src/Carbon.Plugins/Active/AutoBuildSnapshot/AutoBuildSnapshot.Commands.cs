@@ -104,6 +104,16 @@ public partial class AutoBuildSnapshot
         UserInterface.SwitchTab(player, tabIndex);
     }
 
+    [ProtectedCommand(CommandPrefix + nameof(CommandMenuClearLogs))]
+    private void CommandMenuClearLogs(BasePlayer player, string command, string[] args)
+    {
+        if (!Settings.Commands.HasAdminPermission(player)) return;
+
+        Helpers.ClearLogs();
+
+        UserInterface.ShowMenu(player);
+    }
+
     /// <summary>
     /// Checks if the player has the required permissions to execute a command.
     /// </summary>

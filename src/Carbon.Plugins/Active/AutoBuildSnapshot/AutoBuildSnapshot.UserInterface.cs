@@ -358,7 +358,7 @@ public partial class AutoBuildSnapshot
                 color: theme.Secondary,
                 textColor: theme.OnSecondary,
                 textKey: LangKeys.menu_content_clear,
-                commandName: nameof(CommandMenuSettings)
+                commandName: nameof(CommandMenuClearLogs)
             );
 
             var logsPanel = cui.v2
@@ -368,7 +368,7 @@ public partial class AutoBuildSnapshot
                     color: theme.Surface
                 );
 
-            using var logs = Helpers.GetLogs();
+            using var logs = Helpers.GetLogs(player);
 
             const int lineHeight = 16;
             const int lineWidth = 888;

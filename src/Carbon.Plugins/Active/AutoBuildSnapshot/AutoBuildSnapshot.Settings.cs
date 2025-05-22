@@ -93,6 +93,7 @@ public partial class AutoBuildSnapshot
                 [nameof(LangKeys.error_recording_not_found)] = "Could not find recording with id '{0}'.",
                 [nameof(LangKeys.error_backup_failed)] = "Backup command for base {0} failed, reason unknown.",
                 [nameof(LangKeys.error_backup_failed_exception)] = "Backup command for base {0} failed, reason: {1}",
+                [nameof(LangKeys.error_load_config_failed)] = "Failed to load config: {0}, creating from default.",
                 [nameof(LangKeys.message_backup_success)] = "Backup command for base {0} completed in: {1}",
                 [nameof(LangKeys.menu_title)] = "Auto Build Snapshot",
                 [nameof(LangKeys.menu_close)] = "Close",
@@ -186,6 +187,11 @@ public partial class AutoBuildSnapshot
         /// Backup command for base {0} failed, reason: {1}
         /// </summary>
         error_backup_failed_exception,
+
+        /// <summary>
+        /// Failed to load config: {0}, creating from default.
+        /// </summary>
+        error_load_config_failed,
 
         /// <summary>
         /// Backup command for base {0} completed in: {1}
@@ -407,7 +413,7 @@ public partial class AutoBuildSnapshot
             }
             catch (Exception ex)
             {
-                Helpers.Log($"Failed to load config: {ex.Message}, creating from default.");
+                Helpers.Log(LangKeys.error_load_config_failed, null, ex.Message);
 
                 return CreateDefault();
             }

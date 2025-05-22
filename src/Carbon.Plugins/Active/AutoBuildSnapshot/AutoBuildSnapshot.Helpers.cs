@@ -99,7 +99,7 @@ public partial class AutoBuildSnapshot
             }
         }
 
-        public static PooledList<string> GetLogs()
+        public static PooledList<string> GetLogs(BasePlayer player)
         {
             var logs = Pool.Get<PooledList<string>>();
 
