@@ -112,12 +112,18 @@ public partial class AutoBuildSnapshot
                 [nameof(LangKeys.menu_content_back)] = "Back",
                 [nameof(LangKeys.menu_content_clear)] = "Clear",
                 [nameof(LangKeys.menu_logs_empty)] = "The logs are empty.",
+                [nameof(LangKeys.Default)] = "Default",
             }, plugin, "en");
         }
     }
 
     private enum LangKeys
     {
+        /// <summary>
+        /// Default
+        /// </summary>
+        Default,
+
         /// <summary>
         /// You do not have permission to use this command.
         /// </summary>

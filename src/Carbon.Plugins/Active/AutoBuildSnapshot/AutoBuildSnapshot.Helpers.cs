@@ -8,9 +8,73 @@ namespace Carbon.Plugins;
 
 public partial class AutoBuildSnapshot
 {
-    public static class Shared
+    private static class Shared
     {
-        public static ArrayPool<string> StringArrayPool = new(512);
+        public static ArrayPool<LogMessage> LangKeysArrayPool = new(512);
+
+        public static ArrayPool<object> ArgumentsPool = new(3);
+    }
+
+    private class LogMessage : Pool.IPooled
+    {
+        public LangKeys LangKey => _langKey;
+        private LangKeys _langKey;
+
+        public object[] Args => _args;
+        private object[] _args;
+
+        public DateTime Timestamp => _timestamp;
+        private DateTime _timestamp;
+
+        public string GetMessage(BasePlayer player)
+        {
+            var message = Localizer.GetFormat(player, _langKey);
+            if (_args != null && _args.Length > 0)
+            {
+                message = string.Format(message, _args);
+            }
+
+            return message;
+        }
+
+        public static LogMessage Create(LangKeys langKey, object arg1, object arg2, object arg3)
+        {
+            if (arg1 == null && arg2 == null && arg3 == null)
+            {
+                return Create(langKey, null);
+            }
+
+            var args = Shared.ArgumentsPool.Rent(3);
+            args[0] = arg1;
+            args[1] = arg2;
+            args[2] = arg3;
+            return Create(langKey, args);
+        }
+
+        private static LogMessage Create(LangKeys langKey, object[] args)
+        {
+            var instance = Pool.Get<LogMessage>();
+            instance._langKey = langKey;
+            instance._args = args;
+            return instance;
+        }
+
+        void Pool.IPooled.EnterPool()
+        {
+            _langKey = LangKeys.Default;
+            _timestamp = default;
+
+            if (_args != null)
+            {
+                Shared.ArgumentsPool.Return(_args);
+                _args = null;
+            }
+        }
+
+        void Pool.IPooled.LeavePool()
+        {
+            _timestamp = DateTime.UtcNow;
+        }
     }
 
     /// <summary>
@@ -20,7 +84,7 @@ public partial class AutoBuildSnapshot
     {
         private const int _logsLength = 500;
 
-        private static string[] _logs;
+        private static LogMessage[] _logs;
         private static int _logIndex = 0;
         private static int _logCount = 0;
         private static readonly object syncRoot = new();
@@ -31,7 +95,7 @@ public partial class AutoBuildSnapshot
         /// <param name="plugin"></param>
         public static void Init()
         {
-            _logs = Shared.StringArrayPool.Rent(_logsLength);
+            _logs = Shared.LangKeysArrayPool.Rent(_logsLength);
         }
 
         /// <summary>
@@ -39,7 +103,7 @@ public partial class AutoBuildSnapshot
         /// </summary>
         public static void Unload()
         {
-            Shared.StringArrayPool.Return(_logs);
+            Shared.LangKeysArrayPool.Return(_logs);
         }
 
         #region Logging
@@ -49,10 +113,17 @@ public partial class AutoBuildSnapshot
         /// </summary>
         /// <param name="langKey">The language key for the message.</param>
         /// <param name="player">The player to send the message to (optional).</param>
-        /// <param name="args">The arguments to format the message with.</param>
-        public static void Log(LangKeys langKey, BasePlayer player = null, params object[] args)
+        public static void Log(
+            LangKeys langKey,
+            BasePlayer player = null,
+            object arg1 = null,
+            object arg2 = null,
+            object arg3 = null)
         {
-            Log(Localizer.GetFormat(player, langKey), player, args);
+            var logMessage = LogMessage.Create(langKey, arg1, arg2, arg3);
+
+            AddLog(logMessage);
+            SendLog(logMessage, player);
         }
 
         /// <summary>
@@ -60,31 +131,25 @@ public partial class AutoBuildSnapshot
         /// </summary>
         /// <param name="format">The message to log.</param>
         /// <param name="player">The player to send the message to (optional).</param>
-        public static void Log(string format, BasePlayer player = null, params object[] args)
+        private static void SendLog(LogMessage logMessage, BasePlayer player = null)
         {
             if (_instance == null) return;
-
-            if (args != null && args.Length > 0)
-            {
-                format = string.Format(format, args);
-            }
+            var message = logMessage.GetMessage(player);
 
             if (player != null)
             {
-                _instance.SendReply(player, format);
-                format = $"[Sent: {player.displayName}] {format}";
+                _instance.SendReply(player, message);
+                message = $"[Sent: {player.displayName}] {message}";
             }
 
-            _instance.Puts(format);
-
-            AddLog(format);
+            _instance.Puts(message);
         }
 
-        private static void AddLog(string message)
+        private static void AddLog(LogMessage logMessage)
         {
             lock (syncRoot)
             {
-                _logs[_logIndex] = message;
+                _logs[_logIndex] = logMessage;
                 _logIndex = (_logIndex + 1) % _logsLength;
                 _logCount = Math.Min(_logCount + 1, _logsLength);
             }
@@ -99,7 +164,34 @@ public partial class AutoBuildSnapshot
             }
         }
 
-        public static PooledList<string> GetLogs(BasePlayer player)
+        /// <summary>
+        /// Gets the logs for a player in a specified format.
+        /// </summary>
+        /// <param name="player">The player to get the logs for.</param>
+        /// <param name="format">The format string for the logs.</param>
+        /// <returns>A list of log messages formatted for the player.</returns>
+        /// <remarks>
+        /// Format options:
+        /// <list type="bullet">
+        /// <item>
+        /// <description>{0}</description>
+        /// <description>The log message.</description>
+        /// </item>
+        /// <item>
+        /// <description>{1}</description>
+        /// <description>The timestamp of the log message.</description>
+        /// </item>
+        /// <item>
+        /// <description>{2}</description>
+        /// <description>The timestamp of the log message, localized to the server's local time.</description>
+        /// </item>
+        /// <item>
+        /// <description>{3}</description>
+        /// <description>The player's display name.</description>
+        /// </item>
+        /// </list>
+        /// </remarks>
+        public static PooledList<string> GetLogs(BasePlayer player, string format = _defaultLogFormat)
         {
             var logs = Pool.Get<PooledList<string>>();
 
@@ -108,12 +200,27 @@ public partial class AutoBuildSnapshot
                 for (int i = 0; i < _logCount; i++)
                 {
                     int index = (_logIndex - 1 - i + _logsLength) % _logsLength;
-                    logs.Add(_logs[index]);
+                    var logMessage = _logs[index];
+                    var message = logMessage.GetMessage(player);
+
+                    if (!string.IsNullOrEmpty(format))
+                    {
+                        message = string.Format(format,
+                            message,
+                            logMessage.Timestamp,
+                            logMessage.Timestamp.ToLocalTime(),
+                            player.displayName);
+                    }
+
+                    logs.Add(message);
+
                 }
             }
 
             return logs;
         }
+
+        private const string _defaultLogFormat = "[{2:G}] {0}";
 
         #endregion
 
