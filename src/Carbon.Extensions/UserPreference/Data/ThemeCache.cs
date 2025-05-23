@@ -13,9 +13,6 @@ namespace HizenLabs.Extensions.UserPreference.Data;
 /// (400 * 19 + 20) * 208 * 2 = 3,169,920 = ~3.2MB
 /// </code>
 /// Assuming an estimated ~208 bytes per <see cref="MaterialTheme"/>
-/// <code>
-/// 
-/// </code>
 /// </summary>
 internal static class ThemeCache
 {
