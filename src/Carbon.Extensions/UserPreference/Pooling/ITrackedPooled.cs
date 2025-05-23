@@ -1,4 +1,7 @@
 ﻿using Facepunch;
+#if DEBUG
+using System;
+#endif
 
 namespace HizenLabs.Extensions.UserPreference.Pooling;
 

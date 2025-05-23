@@ -1,11 +1,18 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿#if DEBUG
+using HizenLabs.Extensions.UserPreference.Material.ColorSpaces;
+using HizenLabs.Extensions.UserPreference.Material.DynamicColors;
+using HizenLabs.Extensions.UserPreference.Material.Scheme;
+using HizenLabs.Extensions.UserPreference.Material.Structs;
+using HizenLabs.Extensions.UserPreference.Pooling;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Diagnostics;
+using System.Linq;
 
 namespace Carbon.Tests.Extensions.UserPreference.Pooling;
 
 [TestClass]
 public class AllocationsTests
 {
-#if DEBUG
     [TestInitialize]
     public void TestInitialize()
     {
@@ -92,5 +99,5 @@ public class AllocationsTests
             }
         }
     }
-#endif
 }
+#endif

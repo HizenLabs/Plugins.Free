@@ -17,8 +17,10 @@ public class UserPreferenceData : IDisposable, ITrackedPooled
 {
     private static readonly Dictionary<string, UserPreferenceData> _defaults = new();
 
+#if DEBUG
     [JsonIgnore]
     public Guid TrackingId { get; set; }
+#endif
 
     private string _pluginName;
     private string _userId;

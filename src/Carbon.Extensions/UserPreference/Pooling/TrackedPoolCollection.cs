@@ -1,6 +1,12 @@
-﻿namespace HizenLabs.Extensions.UserPreference.Pooling;
+﻿#if DEBUG
+using Facepunch;
+using Oxide.Core;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
-#if DEBUG
+namespace HizenLabs.Extensions.UserPreference.Pooling;
+
 internal abstract class TrackedPoolCollection
 {
     public IReadOnlyDictionary<Guid, string> AllocationStacks => _allocationStacks;
