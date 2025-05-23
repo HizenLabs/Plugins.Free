@@ -1,5 +1,4 @@
 ﻿using Cysharp.Threading.Tasks;
-using HizenLabs.Extensions.UserPreference.Data;
 using HizenLabs.Extensions.UserPreference.UI;
 using System;
 

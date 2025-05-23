@@ -1,5 +1,4 @@
 ﻿using Facepunch;
-using System;
 
 namespace HizenLabs.Extensions.UserPreference.Pooling;
 

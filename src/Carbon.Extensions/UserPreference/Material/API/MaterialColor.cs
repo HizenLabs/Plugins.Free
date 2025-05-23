@@ -1,5 +1,4 @@
 ﻿using Newtonsoft.Json;
-using System.Runtime.CompilerServices;
 
 namespace HizenLabs.Extensions.UserPreference.Material.API;
 

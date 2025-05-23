@@ -1,10 +1,4 @@
-﻿using Facepunch;
-using Oxide.Core;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace HizenLabs.Extensions.UserPreference.Pooling;
+﻿namespace HizenLabs.Extensions.UserPreference.Pooling;
 
 #if DEBUG
 internal abstract class TrackedPoolCollection

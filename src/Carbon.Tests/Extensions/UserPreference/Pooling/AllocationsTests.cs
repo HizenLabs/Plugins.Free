@@ -1,11 +1,4 @@
-﻿using HizenLabs.Extensions.UserPreference.Material.ColorSpaces;
-using HizenLabs.Extensions.UserPreference.Material.DynamicColors;
-using HizenLabs.Extensions.UserPreference.Material.Scheme;
-using HizenLabs.Extensions.UserPreference.Material.Structs;
-using HizenLabs.Extensions.UserPreference.Pooling;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Diagnostics;
-using System.Linq;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Carbon.Tests.Extensions.UserPreference.Pooling;
 

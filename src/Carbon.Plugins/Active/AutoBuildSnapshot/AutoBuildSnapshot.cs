@@ -1,7 +1,6 @@
 ﻿// Reference: HizenLabs.Extensions.UserPreference
 
 using Oxide.Core;
-using System;
 using System.IO;
 
 namespace Carbon.Plugins;

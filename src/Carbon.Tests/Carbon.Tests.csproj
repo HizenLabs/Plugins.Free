@@ -256,18 +256,6 @@
     <Reference Include="MidiJack">
       <HintPath>..\managed\MidiJack.dll</HintPath>
     </Reference>
-    <Reference Include="Mono.Cecil.Mdb">
-      <HintPath>..\managed\Mono.Cecil.Mdb.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil.Pdb">
-      <HintPath>..\managed\Mono.Cecil.Pdb.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Cecil.Rocks">
-      <HintPath>..\managed\Mono.Cecil.Rocks.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Security">
-      <HintPath>..\managed\Mono.Security.dll</HintPath>
-    </Reference>
     <Reference Include="MP3Sharp">
       <HintPath>..\managed\MP3Sharp.dll</HintPath>
     </Reference>
