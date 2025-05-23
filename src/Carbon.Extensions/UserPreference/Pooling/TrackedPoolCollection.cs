@@ -6,6 +6,7 @@ using System.Linq;
 
 namespace HizenLabs.Extensions.UserPreference.Pooling;
 
+#if DEBUG
 internal abstract class TrackedPoolCollection
 {
     public IReadOnlyDictionary<Guid, string> AllocationStacks => _allocationStacks;
@@ -89,3 +90,4 @@ internal class TrackedPoolCollection<T> : TrackedPoolCollection
         Pool.Free(ref obj);
     }
 }
+#endif

@@ -4,6 +4,15 @@ using System.Collections.Generic;
 
 namespace HizenLabs.Extensions.UserPreference.Data;
 
+/// <summary>
+/// As long as there are only 20 colors with 19 shade variants + 20 grascale colors (white -> black),
+/// then our cache footprint <i>should</i> only be around ~3MB.
+/// This is calcualted from
+/// <code>
+/// 20 * 20 * 19 * 224
+/// </code>
+/// Assuming an estimated ~224 bytes per <see cref="MaterialTheme"/>
+/// </summary>
 internal static class ThemeCache
 {
     private static Dictionary<uint, MaterialTheme> _lightThemeCache;

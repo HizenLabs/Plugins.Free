@@ -14,8 +14,10 @@ namespace HizenLabs.Extensions.UserPreference.Material.API;
 /// </summary>
 public class MaterialTheme : IDisposable, ITrackedPooled
 {
+#if DEBUG
     [JsonIgnore]
     public Guid TrackingId { get; set; }
+#endif
 
     [JsonProperty]
     public MaterialColor SeedColor { get; private set; }
