@@ -31,7 +31,8 @@ public class MaterialTheme : IDisposable, ITrackedPooled
     public static MaterialTheme Default { get; } = CreateFromRgbHex("#769CDF");
 
     [JsonIgnore]
-    public MaterialColor Transparent { get; } = 0x00000000;
+    public MaterialColor Transparent => _transparent;
+    private static readonly MaterialColor _transparent = 0x00000000;
 
     /// <summary>
     /// Gets the light version of this theme. If already light, returns this.

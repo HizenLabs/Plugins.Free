@@ -1,19 +1,19 @@
 ﻿namespace HizenLabs.Extensions.UserPreference.Material.API;
 
-public enum MaterialContrast
+public enum MaterialContrast : byte
 {
     /// <summary>
     /// The default contrast level (0.0).
     /// </summary>
-    Standard,
+    Standard = 0,
 
     /// <summary>
     /// The medium contrast level (0.5).
     /// </summary>
-    Medium,
+    Medium = 1,
 
     /// <summary>
     /// The high contrast level (1.0).
     /// </summary>
-    High
+    High = 2
 }
