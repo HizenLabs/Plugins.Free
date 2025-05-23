@@ -129,7 +129,6 @@ public static class UserPreferenceUI
             userPreferenceData.Theme = theme;
         }
 
-
         await userPreferenceData.SaveAsync();
         onConfirm?.Invoke();
     }

@@ -22,13 +22,8 @@ internal static class ThemeCache
 
         if (!cache.TryGetValue(value, out var baseTheme))
         {
-            if (!_lightThemeCache.TryGetValue(value, out var lightTheme))
-            {
-                lightTheme = MaterialTheme.Create(value, false, MaterialContrast.Standard);
-                _lightThemeCache[value] = lightTheme;
-            }
+            baseTheme = MaterialTheme.Create(value, isDark, MaterialContrast.Standard);
 
-            baseTheme = isDark ? lightTheme.Dark : lightTheme;
             cache[value] = baseTheme;
         }
 

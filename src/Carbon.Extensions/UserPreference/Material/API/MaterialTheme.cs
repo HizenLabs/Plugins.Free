@@ -219,7 +219,8 @@ public class MaterialTheme : IDisposable, ITrackedPooled
     /// <exception cref="ArgumentOutOfRangeException">Thrown if the contrast value is invalid.</exception>
     public static MaterialTheme Create(uint seedColor, bool isDarkMode = false, MaterialContrast contrast = MaterialContrast.Standard, MaterialTheme existing = null)
     {
-        existing?.Dispose();
+        // we used to want to dispose, but now that we are caching, we want the system to handle that.
+        // existing?.Dispose();
 
         var theme = TrackedPool.Get<MaterialTheme>();
 
