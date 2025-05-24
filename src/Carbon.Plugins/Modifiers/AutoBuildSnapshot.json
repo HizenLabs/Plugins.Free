@@ -1,0 +1,13 @@
+﻿[
+  {
+    "Assembly": "Assembly-CSharp",
+    "Name": "BasePlayer",
+    "Fields": [
+      {
+        "Name": "AutoBuildSnapshot_OnConfirm",
+        "Type": "System.Action",
+        "DefaultValue": null
+      }
+    ]
+  }
+]

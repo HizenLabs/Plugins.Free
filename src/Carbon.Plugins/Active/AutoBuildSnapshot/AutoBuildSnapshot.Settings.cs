@@ -112,6 +112,9 @@ public partial class AutoBuildSnapshot
                 [nameof(LangKeys.menu_content_back)] = "Back",
                 [nameof(LangKeys.menu_content_clear)] = "Clear",
                 [nameof(LangKeys.menu_logs_empty)] = "The logs are empty.",
+                [nameof(LangKeys.menu_confirm)] = "Confirm",
+                [nameof(LangKeys.menu_cancel)] = "Cancel",
+                [nameof(LangKeys.menu_confirm_clear_logs)] = "This will clear all menu logs, are you sure?",
                 [nameof(LangKeys.Default)] = "Default",
             }, plugin, "en");
         }
@@ -298,6 +301,21 @@ public partial class AutoBuildSnapshot
         /// The logs are empty.
         /// </summary>
         menu_logs_empty,
+
+        /// <summary>
+        /// Confirm
+        /// </summary>
+        menu_confirm,
+
+        /// <summary>
+        /// Cancel
+        /// </summary>
+        menu_cancel,
+
+        /// <summary>
+        /// This will clear all menu logs, are you sure?
+        /// </summary>
+        menu_confirm_clear_logs,
     }
 
     /// <summary>

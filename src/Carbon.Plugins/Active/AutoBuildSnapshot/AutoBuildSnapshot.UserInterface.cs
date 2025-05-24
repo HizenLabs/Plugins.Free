@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using static Carbon.Components.CUI.Handler;
+using static GameTip;
 
 namespace Carbon.Plugins;
 
@@ -19,7 +20,8 @@ public partial class AutoBuildSnapshot
     private static class UserInterface
     {
         private const string BlurAsset = "assets/content/ui/uibackgroundblur.mat";
-        private const string MainMenuId = "abs.mainmenu";
+        public const string MainMenuId = "abs.mainmenu";
+        public const string ConfirmMenuId = "abs.confirmation";
 
         private static Dictionary<ulong, bool> _playerMenuState;
         private static Dictionary<ulong, int> _playerTabIndex;
@@ -41,6 +43,8 @@ public partial class AutoBuildSnapshot
             foreach (var player in BasePlayer.activePlayerList)
             {
                 HideMenu(player);
+
+                CuiHelper.DestroyUi(player, ConfirmMenuId);
             }
 
             if (_playerMenuState != null)
@@ -495,6 +499,72 @@ public partial class AutoBuildSnapshot
                     text: buttonText,
                     alignment: TextAnchor.MiddleCenter)
                 .SetTextFont(fontType);
+        }
+
+        public static void ShowConfirmation(BasePlayer player, Action<BasePlayer> onConfirm, LangKeys langKey)
+        {
+            var userPreference = UserPreferenceData.Load(_instance, player);
+            var theme = userPreference.Theme;
+            using var cui = _instance.CreateCUI();
+
+            var parent = cui.v2
+                .CreateParent(
+                    parent: CUI.ClientPanels.Overall,
+                    position: LuiPosition.Full,
+                    name: ConfirmMenuId)
+                .AddCursor()
+                .SetDestroy(ConfirmMenuId);
+
+            var layer = cui.v2
+                .CreatePanel(
+                    container: parent,
+                    position: LuiPosition.Full,
+                    offset: LuiOffset.None,
+                    color: "0 0 0 .7"
+                );
+
+            var container = cui.v2
+                .CreatePanel(
+                    container: parent,
+                    position: LuiPosition.MiddleCenter,
+                    offset: new(-130, -50, 130, 50),
+                    color: theme.SurfaceContainer
+                );
+
+            cui.v2
+                .CreateText(
+                    container: container,
+                    position: LuiPosition.MiddleCenter,
+                    offset: new(-100, 10, 100, 30),
+                    fontSize: 12,
+                    color: theme.OnSurface,
+                    text: Localizer.Text(langKey),
+                    alignment: TextAnchor.MiddleCenter)
+                .SetTextFont(FontTypes.RobotoCondensedRegular);
+
+            CreateButton(cui, player, userPreference,
+                container: container,
+                position: LuiPosition.LowerCenter,
+                offset: new(-90, 20, -7, 45),
+                color: theme.Primary,
+                textColor: theme.OnPrimary,
+                textKey: LangKeys.menu_confirm,
+                commandName: nameof(CommandHandleOnConfirm)
+            );
+
+            CreateButton(cui, player, userPreference,
+                container: container,
+                position: LuiPosition.LowerCenter,
+                offset: new(7, 20, 90, 45),
+                color: theme.Error,
+                textColor: theme.OnError,
+                textKey: LangKeys.menu_cancel,
+                commandName: nameof(CommandHandleOnCancel)
+            );
+
+            player.AutoBuildSnapshot_OnConfirm = () => onConfirm(player);
+
+            cui.v2.SendUi(player);
         }
     }
 }

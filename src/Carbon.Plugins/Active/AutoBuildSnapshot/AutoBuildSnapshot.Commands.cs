@@ -1,5 +1,8 @@
-﻿using Cysharp.Threading.Tasks;
+﻿using Carbon.Base;
+using Carbon.Modules;
+using Cysharp.Threading.Tasks;
 using HizenLabs.Extensions.UserPreference.UI;
+using Oxide.Game.Rust.Cui;
 using System;
 
 namespace Carbon.Plugins;
@@ -108,9 +111,37 @@ public partial class AutoBuildSnapshot
     {
         if (!Settings.Commands.HasAdminPermission(player)) return;
 
+        UserInterface.ShowConfirmation(player, CommandMenuClearLogs_OnConfirm, LangKeys.menu_confirm_clear_logs);
+    }
+
+    private void CommandMenuClearLogs_OnConfirm(BasePlayer player)
+    {
         Helpers.ClearLogs();
 
         UserInterface.ShowMenu(player);
+    }
+
+    [ProtectedCommand(CommandPrefix + nameof(CommandHandleOnConfirm))]
+    private void CommandHandleOnConfirm(BasePlayer player, string command, string[] args)
+    {
+        var onConfirm = player.AutoBuildSnapshot_OnConfirm;
+
+        ConfirmClose(player);
+
+        onConfirm?.Invoke();
+    }
+
+    [ProtectedCommand(CommandPrefix + nameof(CommandHandleOnCancel))]
+    private void CommandHandleOnCancel(BasePlayer player, string command, string[] args)
+    {
+        ConfirmClose(player);
+    }
+
+    private void ConfirmClose(BasePlayer player)
+    {
+        CuiHelper.DestroyUi(player, UserInterface.ConfirmMenuId);
+
+        player.AutoBuildSnapshot_OnConfirm = null;
     }
 
     /// <summary>
