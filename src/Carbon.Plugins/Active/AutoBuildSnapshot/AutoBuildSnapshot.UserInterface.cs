@@ -329,19 +329,46 @@ public partial class AutoBuildSnapshot
         {
             var theme = userPreference.Theme;
 
-            var contentButtonWidth = 0.12f;
-            bool backButtonEnabled = false;
-            if (backButtonEnabled)
-            {
-                CreateButton(cui, player, userPreference,
-                    container: tabButtons,
-                    position: new(1 - contentButtonWidth, 0, 1, 1),
-                    offset: LuiOffset.None,
-                    color: theme.Tertiary,
-                    textColor: theme.OnTertiary,
-                    textKey: LangKeys.menu_content_back,
-                    commandName: nameof(CommandMenuSettings)
+            var snapshotSelectionContainer = cui.v2
+                .CreatePanel(tabContent,
+                    position: new(0, 0, .26f, 1),
+                    offset: new(12, 12, -12, 0),
+                    color: theme.Surface
                 );
+
+            var snapshotDetailContainer = cui.v2
+                .CreatePanel(tabContent,
+                    position: new(.26f, 0, 1, 1),
+                    offset: new(0, 12, -12, 0),
+                    color: theme.Surface
+                );
+
+            foreach (var recording in ChangeManagement.Recordings)
+            {
+                // todo: display records in selectable list
+                // have TC icon for 'active' recordings and grayed out for 'inactive'
+                // make ChangeManagement.Recordings load 'inactive' recordings from disk
+                // these inactive recs won't do anything but they will be a holder for bases that
+                // no longer exist so we can restore backups even if they're dead (basically
+                // meaning we'd be recreating the TC and everything as well)
+            }
+
+            if (player.AutoBuildSnapshot_SelectedRecord is ChangeManagement.BaseRecording selected)
+            {
+                // todo: impl snapshot selection
+            }
+            else
+            {
+                cui.v2
+                    .CreateText(
+                        container: snapshotDetailContainer,
+                        position: LuiPosition.MiddleCenter,
+                        offset: new(-100, -20, 100, 20),
+                        fontSize: 12,
+                        color: theme.OnSurface,
+                        text: Localizer.Text(LangKeys.menu_no_record_selected, player),
+                        alignment: TextAnchor.MiddleCenter)
+                    .SetTextFont(FontTypes.RobotoCondensedRegular);
             }
         }
 

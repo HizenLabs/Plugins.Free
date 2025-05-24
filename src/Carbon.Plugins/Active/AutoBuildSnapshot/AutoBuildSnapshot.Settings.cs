@@ -115,6 +115,7 @@ public partial class AutoBuildSnapshot
                 [nameof(LangKeys.menu_confirm)] = "Confirm",
                 [nameof(LangKeys.menu_cancel)] = "Cancel",
                 [nameof(LangKeys.menu_confirm_clear_logs)] = "This will clear all menu logs, are you sure?",
+                [nameof(LangKeys.menu_no_record_selected)] = "There is no record selected.",
                 [nameof(LangKeys.Default)] = "Default",
             }, plugin, "en");
         }
@@ -316,6 +317,11 @@ public partial class AutoBuildSnapshot
         /// This will clear all menu logs, are you sure?
         /// </summary>
         menu_confirm_clear_logs,
+
+        /// <summary>
+        /// There is no record selected.
+        /// </summary>
+        menu_no_record_selected,
     }
 
     /// <summary>
