@@ -23,16 +23,11 @@ public partial class AutoBuildSnapshot
         public const string MainMenuId = "abs.mainmenu";
         public const string ConfirmMenuId = "abs.confirmation";
 
-        private static Dictionary<ulong, bool> _playerMenuState;
-        private static Dictionary<ulong, int> _playerTabIndex;
-
         /// <summary>
         /// Initializes the user interface for the plugin.
         /// </summary>
         public static void Init()
         {
-            _playerMenuState = Pool.Get<Dictionary<ulong, bool>>();
-            _playerTabIndex = Pool.Get<Dictionary<ulong, int>>();
         }
 
         /// <summary>
@@ -46,16 +41,6 @@ public partial class AutoBuildSnapshot
 
                 CuiHelper.DestroyUi(player, ConfirmMenuId);
             }
-
-            if (_playerMenuState != null)
-            {
-                Pool.FreeUnmanaged(ref _playerMenuState);
-            }
-
-            if (_playerTabIndex != null)
-            {
-                Pool.FreeUnmanaged(ref _playerTabIndex);
-            }
         }
 
         /// <summary>
@@ -64,15 +49,7 @@ public partial class AutoBuildSnapshot
         /// <param name="player">The player that disconnected.</param>
         public static void HandleDisconnect(BasePlayer player)
         {
-            if (_playerMenuState != null && _playerMenuState.ContainsKey(player.userID))
-            {
-                _playerMenuState.Remove(player.userID);
-            }
-
-            if (_playerTabIndex != null && _playerTabIndex.ContainsKey(player.userID))
-            {
-                _playerTabIndex.Remove(player.userID);
-            }
+            HideMenu(player);
         }
 
         /// <summary>
@@ -81,14 +58,9 @@ public partial class AutoBuildSnapshot
         /// <param name="player">The player to toggle the menu for.</param>
         public static void ToggleMenu(BasePlayer player)
         {
-            if (_playerMenuState == null || !player) return;
+            if (!player) return;
 
-            if (!_playerMenuState.TryGetValue(player.userID, out var isMenuActive))
-            {
-                isMenuActive = false;
-            }
-
-            if (isMenuActive)
+            if (player.AutoBuildSnapshot_MenuState)
             {
                 HideMenu(player);
             }
@@ -100,17 +72,9 @@ public partial class AutoBuildSnapshot
 
         public static void SwitchTab(BasePlayer player, int targetIndex = 0)
         {
-            if (_playerTabIndex == null || !player) return;
+            if (!player) return;
 
-            if (!_playerTabIndex.TryGetValue(player.userID, out var currentIndex))
-            {
-                currentIndex = 0;
-            }
-
-            if (currentIndex != targetIndex)
-            {
-                _playerTabIndex[player.userID] = targetIndex;
-            }
+            player.AutoBuildSnapshot_TabIndex = targetIndex;
 
             ShowMenu(player);
         }
@@ -123,10 +87,18 @@ public partial class AutoBuildSnapshot
         {
             CuiHelper.DestroyUi(player, MainMenuId);
 
-            if (_playerMenuState != null)
+            // We use pooled list for RecordOptions, so just dispose it so it goes back into the pool
+            if (player.AutoBuildSnapshot_RecordOptions is List<ChangeManagement.RecordingId> recordingIds)
             {
-                _playerMenuState[player.userID] = false;
+                Pool.FreeUnmanaged(ref recordingIds);
+                player.AutoBuildSnapshot_RecordOptions = null;
             }
+
+            // Reset the menu
+            player.AutoBuildSnapshot_MenuState = false;
+            player.AutoBuildSnapshot_OnConfirm = null;
+            player.AutoBuildSnapshot_SelectedRecordIndex = 0;
+            player.AutoBuildSnapshot_TabIndex = 0;
         }
 
         /// <summary>
@@ -140,7 +112,7 @@ public partial class AutoBuildSnapshot
 
             cui.v2.SendUi(player);
 
-            _playerMenuState[player.userID] = true;
+            player.AutoBuildSnapshot_MenuState = true;
         }
 
         /// <summary>
@@ -158,11 +130,7 @@ public partial class AutoBuildSnapshot
 
             var headerText = Localizer.Text(LangKeys.menu_title, player, _instance.Version);
 
-            if (!_playerTabIndex.TryGetValue(player.userID, out var tabIndex))
-            {
-                tabIndex = 0;
-                _playerTabIndex[player.userID] = tabIndex;
-            }
+            var tabIndex = player.AutoBuildSnapshot_TabIndex;
 
             var parent = cui.v2
                 .CreateParent(
@@ -343,17 +311,20 @@ public partial class AutoBuildSnapshot
                     color: theme.Surface
                 );
 
-            foreach (var recording in ChangeManagement.Recordings)
+            if (player.AutoBuildSnapshot_RecordOptions is not List<ChangeManagement.RecordingId> recordingIds)
             {
-                // todo: display records in selectable list
-                // have TC icon for 'active' recordings and grayed out for 'inactive'
-                // make ChangeManagement.Recordings load 'inactive' recordings from disk
-                // these inactive recs won't do anything but they will be a holder for bases that
-                // no longer exist so we can restore backups even if they're dead (basically
-                // meaning we'd be recreating the TC and everything as well)
+                // TODO: get recording ids from ChangeManagement
+                recordingIds = Pool.Get<List<ChangeManagement.RecordingId>>();
+
+                player.AutoBuildSnapshot_RecordOptions = recordingIds;
             }
 
-            if (player.AutoBuildSnapshot_SelectedRecord is ChangeManagement.BaseRecording selected)
+            if (player.AutoBuildSnapshot_SelectedRecordIndex >= recordingIds.Count)
+            {
+                player.AutoBuildSnapshot_SelectedRecordIndex = 0;
+            }
+
+            if (recordingIds.Count >= 0)
             {
                 // todo: impl snapshot selection
             }

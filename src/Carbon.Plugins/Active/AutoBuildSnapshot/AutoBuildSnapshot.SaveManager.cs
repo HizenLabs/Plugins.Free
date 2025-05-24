@@ -375,42 +375,16 @@ public partial class AutoBuildSnapshot
     /// <summary>
     /// Represents metadata information for saves.
     /// </summary>
-    private readonly struct MetaInfo
+    private readonly record struct MetaInfo(
+        [JsonProperty] Guid Id,
+        [JsonProperty] ChangeManagement.RecordingId RecordId,
+        [JsonProperty] DateTime TimeStamp,
+        [JsonProperty] Vector3 OriginPosition,
+        [JsonProperty] Quaternion OriginRotation,
+        [JsonProperty] int OriginalEntityCount,
+        [JsonProperty] int ZoneCount
+    )
     {
-        /// <summary>
-        /// The ID of the save.
-        /// </summary>
-        public Guid Id { get; init; }
-
-        /// <summary>
-        /// The time stamp of the save.
-        /// </summary>
-        public DateTime TimeStamp { get; init; }
-
-        /// <summary>
-        /// The position of the origin point of the save.
-        /// </summary>
-        public Vector3 OriginPosition { get; init; }
-
-        /// <summary>
-        /// The rotation of the origin point of the save.
-        /// </summary>
-        public Quaternion OriginRotation { get; init; }
-
-        /// <summary>
-        /// The number of entities originally prepared for the save.
-        /// </summary>
-        /// <remarks>
-        /// This count is not necessarily the same as the number of entities that made it in the save.
-        /// Some entities will be dropped if they are invalid or their parent is not included in the save.
-        /// </remarks>
-        public int OriginalEntityCount { get; init; }
-
-        /// <summary>
-        /// The number of zones (priv radius spheres surrounding foundations) in the save.
-        /// </summary>
-        public int ZoneCount { get; init; }
-
         /// <summary>
         /// The name of the metadata file associated with the save.
         /// </summary>
@@ -459,14 +433,15 @@ public partial class AutoBuildSnapshot
         public static MetaInfo Create(ChangeManagement.BaseRecording recording, List<BaseEntity> entities, List<Vector3> zones)
         {
             return new MetaInfo
-            {
-                Id = Guid.NewGuid(),
-                TimeStamp = DateTime.UtcNow,
-                OriginPosition = recording.BaseTC.ServerPosition,
-                OriginRotation = recording.BaseTC.ServerRotation,
-                OriginalEntityCount = entities.Count,
-                ZoneCount = zones.Count
-            };
+            (
+                Id: Guid.NewGuid(),
+                RecordId: recording.Id,
+                TimeStamp: DateTime.UtcNow,
+                OriginPosition: recording.BaseTC.ServerPosition,
+                OriginRotation: recording.BaseTC.ServerRotation,
+                OriginalEntityCount: entities.Count,
+                ZoneCount: zones.Count
+            );
         }
     }
 }

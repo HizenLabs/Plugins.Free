@@ -9,8 +9,23 @@
         "DefaultValue": null
       },
       {
-        "Name": "AutoBuildSnapshot_SelectedRecord",
+        "Name": "AutoBuildSnapshot_TabIndex",
+        "Type": "System.Int32",
+        "DefaultValue": 0
+      },
+      {
+        "Name": "AutoBuildSnapshot_MenuState",
+        "Type": "System.Boolean",
+        "DefaultValue": false
+      },
+      {
+        "Name": "AutoBuildSnapshot_RecordOptions",
         "Type": "System.Object",
+        "DefaultValue": null
+      },
+      {
+        "Name": "AutoBuildSnapshot_SelectedRecordIndex",
+        "Type": "System.Int32",
         "DefaultValue": null
       }
     ]

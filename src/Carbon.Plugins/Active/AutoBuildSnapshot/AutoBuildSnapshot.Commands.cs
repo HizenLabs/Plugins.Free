@@ -33,7 +33,7 @@ public partial class AutoBuildSnapshot
     private void CommandBackup(BasePlayer player, string command, string[] args)
     {
         if (!CheckPermission(player, Settings.Commands.Rollback)) return;
-        if (!TryGetArgument(player, args, out ulong recordingId)) return;
+        if (!TryGetArgument(player, args, out ChangeManagement.RecordingId recordingId)) return;
 
         if (!ChangeManagement.Recordings.TryGetValue(recordingId, out var recording))
         {
@@ -73,7 +73,7 @@ public partial class AutoBuildSnapshot
     private void CommandRollback(BasePlayer player, string command, string[] args)
     {
         if (!CheckPermission(player, Settings.Commands.Rollback)) return;
-        if (!TryGetArgument(player, args, out Guid backupId)) return;
+
 
         throw new NotImplementedException();
     }

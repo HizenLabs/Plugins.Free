@@ -3,6 +3,8 @@ using Facepunch;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using UnityEngine;
 
 namespace Carbon.Plugins;
 
@@ -14,15 +16,18 @@ public partial class AutoBuildSnapshot
     private static class ChangeManagement
     {
         /// <summary>
-        /// The dictionary of recordings, where the key is the tool cupboard net id and the value is the recording instance.
+        /// The dictionary of recordings, where the key is the tool cupboard position and the value is the recording instance.
         /// </summary>
-        public static IReadOnlyDictionary<ulong, BaseRecording> Recordings => _recordings;
-        private static Dictionary<ulong, BaseRecording> _recordings;
+        public static IReadOnlyDictionary<RecordingId, BaseRecording> Recordings => _recordings;
+        private static Dictionary<RecordingId, BaseRecording> _recordings;
+
+        public static IReadOnlyDictionary<RecordingId, List<MetaInfo>> SnapshotsMeta => _snapshotsMeta;
+        private static Dictionary<RecordingId, List<MetaInfo>> _snapshotsMeta;
 
         /// <summary>
-        /// The dictionary of locks, where the key is the tool cupboard net id and the value is the recording lock instance.
+        /// The dictionary of locks, where the key is the tool cupboard position and the value is the recording lock instance.
         /// </summary>
-        private static Dictionary<ulong, RecordingLock> _locks;
+        private static Dictionary<RecordingId, RecordingLock> _locks;
 
         /// <summary>
         /// Initializes the change management system.
@@ -30,8 +35,9 @@ public partial class AutoBuildSnapshot
         /// <param name="plugin">The plugin instance.</param>
         public static void Init()
         {
-            _recordings = Pool.Get<Dictionary<ulong, BaseRecording>>();
-            _locks = Pool.Get<Dictionary<ulong, RecordingLock>>();
+            _recordings = Pool.Get<Dictionary<RecordingId, BaseRecording>>();
+            _snapshotsMeta = Pool.Get<Dictionary<RecordingId, List<MetaInfo>>>();
+            _locks = Pool.Get<Dictionary<RecordingId, RecordingLock>>();
 
             var buildings = BaseNetworkable.serverEntities.OfType<BuildingPrivlidge>();
             Helpers.Log(LangKeys.message_init_recordings, null, buildings.Count());
@@ -53,6 +59,14 @@ public partial class AutoBuildSnapshot
 
             Pool.Free(ref _locks, true);
             Pool.Free(ref _recordings, true);
+
+            foreach (var kvp in _snapshotsMeta)
+            {
+                var list = kvp.Value;
+                Pool.FreeUnmanaged(ref list);
+            }
+
+            Pool.FreeUnmanaged(ref _snapshotsMeta);
         }
 
         /// <summary>
@@ -138,7 +152,7 @@ public partial class AutoBuildSnapshot
                 return false;
             }
 
-            var recordingId = GetEntityId(priv);
+            var recordingId = RecordingId.For(priv);
 
             return _recordings.TryGetValue(recordingId, out recording);
         }
@@ -161,7 +175,13 @@ public partial class AutoBuildSnapshot
             /// <summary>
             /// The id of the base recording (tc net id).
             /// </summary>
-            public ulong Id => GetEntityId(BaseTC);
+            public RecordingId Id => RecordingId.For(BaseTC);
+
+            /// <summary>
+            /// A record might still exist even after the TC is destroyed.
+            /// So, we need to have a flag to determine if it is active.
+            /// </summary>
+            public bool IsActive => BaseTC && !BaseTC.IsDestroyed && BaseTC.isSpawned;
 
             /// <summary>
             /// The base tool cupboard this recording is tracking.
@@ -314,6 +334,55 @@ public partial class AutoBuildSnapshot
             {
                 _changeRecords = Pool.Get<List<ChangeRecord>>();
                 _saveAttempts = Pool.Get<List<SaveAttempt>>();
+            }
+        }
+
+        internal readonly struct RecordingId : IEquatable<RecordingId>
+        {
+            public Vector3 Position { get; }
+
+            public Quaternion Rotation { get; }
+
+            private RecordingId(Vector3 position, Quaternion rotation)
+            {
+                Position = position;
+                Rotation = rotation;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static RecordingId For(BuildingPrivlidge tc)
+            {
+                return new RecordingId(tc.ServerPosition, tc.ServerRotation);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public bool Equals(RecordingId other)
+            {
+                return Position == other.Position && Rotation == other.Rotation;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public override bool Equals(object obj)
+            {
+                return obj is RecordingId other && Equals(other);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public override int GetHashCode()
+            {
+                return (Position, Rotation).GetHashCode();
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool operator ==(RecordingId left, RecordingId right)
+            {
+                return left.Equals(right);
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static bool operator !=(RecordingId left, RecordingId right)
+            {
+                return !(left == right);
             }
         }
 
@@ -482,7 +551,7 @@ public partial class AutoBuildSnapshot
             /// <summary>
             /// The id of the base that was saved.
             /// </summary>
-            public ulong RecordingId { get; private set; }
+            public RecordingId RecordingId { get; private set; }
 
             /// <summary>
             /// The player that initiated the save attempt (if any).

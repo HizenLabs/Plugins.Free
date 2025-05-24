@@ -67,11 +67,13 @@ public partial class AutoBuildSnapshot
                 _isProcessing = true;
 
                 // Copy the recordings to a new dictionary in case the original collection is modified while iterating
-                using var recordings = Pool.Get<PooledDictionary<ulong, ChangeManagement.BaseRecording>>();
+                using var recordings = Pool.Get<PooledDictionary<ChangeManagement.RecordingId, ChangeManagement.BaseRecording>>();
                 recordings.AddRange(ChangeManagement.Recordings);
 
                 foreach (var recording in recordings)
                 {
+                    if (!recording.Value.IsActive) continue;
+
                     await HandlePendingChangesAsync(recording.Key, recording.Value);
 
                     await UniTask.Yield();
@@ -89,7 +91,7 @@ public partial class AutoBuildSnapshot
         /// <param name="expectedId">The expected ID of the recording.</param>
         /// <param name="recording">The recording to handle.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
-        public static async UniTask HandlePendingChangesAsync(ulong expectedId, ChangeManagement.BaseRecording recording)
+        public static async UniTask HandlePendingChangesAsync(ChangeManagement.RecordingId expectedId, ChangeManagement.BaseRecording recording)
         {
             // Ensure that the recording hasn't changed since we started processing
             if (!recording.IsValid || recording.Id != expectedId)
