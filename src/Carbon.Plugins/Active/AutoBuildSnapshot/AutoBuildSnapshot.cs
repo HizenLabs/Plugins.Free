@@ -1,8 +1,5 @@
 ﻿// Reference: HizenLabs.Extensions.UserPreference
 
-using Oxide.Core;
-using System.IO;
-
 namespace Carbon.Plugins;
 
 /// <summary>
@@ -12,11 +9,7 @@ namespace Carbon.Plugins;
 [Description("Creates snapshots of user bases which can then be rolled back to at a later date.")]
 public partial class AutoBuildSnapshot : CarbonPlugin
 {
-    private const string gzipExtension = ".gz";
-
     private static AutoBuildSnapshot _instance;
-
-    private static string BackupDirectory => Path.Combine(Interface.Oxide.DataDirectory, "abs_backups");
 
     /// <summary>
     /// Called when a plugin initializes (setting up on plugin load).
@@ -28,6 +21,7 @@ public partial class AutoBuildSnapshot : CarbonPlugin
         _instance = this;
 
         Helpers.Init();
+        SaveManager.Init();
         ChangeManagement.Init();
         UserInterface.Init();
 
@@ -41,6 +35,7 @@ public partial class AutoBuildSnapshot : CarbonPlugin
     {
         UserInterface.Unload();
         ChangeManagement.Unload();
+        SaveManager.Unload();
         Helpers.Unload();
 
         _instance = null;

@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using static Carbon.Components.CUI.Handler;
-using static GameTip;
 
 namespace Carbon.Plugins;
 
@@ -324,7 +323,7 @@ public partial class AutoBuildSnapshot
                 player.AutoBuildSnapshot_SelectedRecordIndex = 0;
             }
 
-            if (recordingIds.Count >= 0)
+            if (recordingIds.Count > 0)
             {
                 // todo: impl snapshot selection
             }
@@ -337,7 +336,7 @@ public partial class AutoBuildSnapshot
                         offset: new(-100, -20, 100, 20),
                         fontSize: 12,
                         color: theme.OnSurface,
-                        text: Localizer.Text(LangKeys.menu_no_record_selected, player),
+                        text: Localizer.Text(LangKeys.menu_no_records_found, player),
                         alignment: TextAnchor.MiddleCenter)
                     .SetTextFont(FontTypes.RobotoCondensedRegular);
             }

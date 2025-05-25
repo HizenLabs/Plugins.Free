@@ -1,6 +1,7 @@
 ﻿using Cysharp.Threading.Tasks;
 using Facepunch;
 using Newtonsoft.Json;
+using Oxide.Core;
 using ProtoBuf;
 using System;
 using System.Collections.Generic;
@@ -12,6 +13,11 @@ namespace Carbon.Plugins;
 
 public partial class AutoBuildSnapshot
 {
+    private static string BackupDirectory => Path.Combine(Interface.Oxide.DataDirectory, "abs_backups");
+    private const string gzipExtension = ".gz";
+    private const string metaExtension = "meta.json";
+    private const string dataExtension = "data.bin";
+
     /// <summary>
     /// Helper class for managing saving and loading of the base records.
     /// </summary>
@@ -21,6 +27,98 @@ public partial class AutoBuildSnapshot
         /// The number of entities to process before yielding to avoid blocking the main thread.
         /// </summary>
         const int processEntitiesBeforeYield = 500;
+
+        private static Dictionary<ChangeManagement.RecordingId, List<MetaInfo>> _recordingSaves;
+
+        public static void Init()
+        {
+            _recordingSaves = Pool.Get<Dictionary<ChangeManagement.RecordingId, List<MetaInfo>>>();
+
+            LoadSavesAsync().Forget();
+        }
+
+        private static async UniTaskVoid LoadSavesAsync()
+        {
+            await UniTask.SwitchToThreadPool();
+
+            var retentionHours = Settings.General.SnapshotRetentionPeriodHours;
+            var retentionDateUtc = DateTime.UtcNow.AddHours(-retentionHours);
+            foreach (var dir in Directory.GetDirectories(BackupDirectory))
+            {
+                foreach(var file in Directory.GetFiles(dir, $"*.*"))
+                {
+                    try
+                    {
+                        if (File.GetCreationTimeUtc(file) < retentionDateUtc)
+                        {
+                            Helpers.Log(LangKeys.save_retention_deletion, null, Path.GetFileName(file), retentionHours);
+
+                            File.Delete(file);
+                        }
+                    }
+                    catch
+                    {
+                        Helpers.Log(LangKeys.save_retention_deletion_error, null, Path.GetFileName(file));
+                    }
+                }
+
+                foreach (var metaFile in Directory.GetFiles(dir, $"*.{metaExtension}"))
+                {
+                    try
+                    {
+                        MetaInfo meta = default;
+                        await UniTask.RunOnThreadPool(() =>
+                        {
+                            var json = File.ReadAllText(metaFile);
+                            meta = JsonConvert.DeserializeObject<MetaInfo>(json);
+                        });
+
+                        if (!_recordingSaves.TryGetValue(meta.RecordId, out var saves))
+                        {
+                            saves = Pool.Get<List<MetaInfo>>();
+                            _recordingSaves[meta.RecordId] = saves;
+                        }
+
+                        saves.Add(meta);
+                    }
+                    catch
+                    {
+                        continue;
+                    }
+                }
+            }
+
+            await UniTask.SwitchToMainThread();
+        }
+
+        public static void Unload()
+        {
+            Pool.FreeUnmanaged(ref _recordingSaves);
+        }
+
+        public static void GetRecordingsByDistanceTo(Vector3 location, List<ChangeManagement.RecordingId> results)
+        {
+            results.Clear();
+
+            results.AddRange(_recordingSaves.Keys);
+
+            results.Sort((a, b) =>
+            {
+                float aDistSq = (a.Position - location).sqrMagnitude;
+                float bDistSq = (b.Position - location).sqrMagnitude;
+                return aDistSq.CompareTo(bDistSq);
+            });
+        }
+
+        public static void GetSaves(ChangeManagement.RecordingId recordingId, List<MetaInfo> results)
+        {
+            results.Clear();
+
+            if (_recordingSaves.TryGetValue(recordingId, out var saves))
+            {
+                results.AddRange(saves);
+            }
+        }
 
         /// <summary>
         /// Saves the current state of the base recording.
@@ -393,7 +491,7 @@ public partial class AutoBuildSnapshot
             var directory = GetTimestampDirectory();
             var fileNamePrefix = GetFileNamePrefix();
 
-            return Path.Combine(directory, $"{fileNamePrefix}.meta.json");
+            return Path.Combine(directory, $"{fileNamePrefix}.{metaExtension}");
         }
 
         /// <summary>
@@ -404,7 +502,7 @@ public partial class AutoBuildSnapshot
             var directory = GetTimestampDirectory();
             var fileNamePrefix = GetFileNamePrefix();
 
-            return Path.Combine(directory, $"{fileNamePrefix}.data.bin");
+            return Path.Combine(directory, $"{fileNamePrefix}.{dataExtension}");
         }
 
         /// <summary>

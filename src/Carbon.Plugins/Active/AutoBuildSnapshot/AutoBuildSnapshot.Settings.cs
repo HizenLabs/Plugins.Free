@@ -82,7 +82,7 @@ public partial class AutoBuildSnapshot
                 [nameof(LangKeys.error_save_baserecording_invalid)] = "BaseRecording is not valid.",
                 [nameof(LangKeys.error_save_no_entities_found)] = "No entities found for saving.",
                 [nameof(LangKeys.message_init_recordings)] = "Initialize found {0} building(s) to track",
-                [nameof(LangKeys.message_save_begin)] = "Begin saving base {0} at position {1}...",
+                [nameof(LangKeys.message_save_begin)] = "Begin saving base at position {1}...",
                 [nameof(LangKeys.error_save_file_exists)] = "The save file at '{0}' already exists.",
                 [nameof(LangKeys.error_recording_locked)] = "The base is currently locked for processing. Please try again later.",
                 [nameof(LangKeys.error_must_face_target)] = "Must be facing building and be within {0} meters.",
@@ -115,7 +115,9 @@ public partial class AutoBuildSnapshot
                 [nameof(LangKeys.menu_confirm)] = "Confirm",
                 [nameof(LangKeys.menu_cancel)] = "Cancel",
                 [nameof(LangKeys.menu_confirm_clear_logs)] = "This will clear all menu logs, are you sure?",
-                [nameof(LangKeys.menu_no_record_selected)] = "There is no record selected.",
+                [nameof(LangKeys.menu_no_records_found)] = "Could not find any snapshots.",
+                [nameof(LangKeys.save_retention_deletion)] = "Snapshot {0} is older than {1} hour(s) and will be deleted.",
+                [nameof(LangKeys.save_retention_deletion_error)] = "Failed to delete file: {0}",
                 [nameof(LangKeys.Default)] = "Default",
             }, plugin, "en");
         }
@@ -319,9 +321,19 @@ public partial class AutoBuildSnapshot
         menu_confirm_clear_logs,
 
         /// <summary>
-        /// There is no record selected.
+        /// Could not find any snapshots.
         /// </summary>
-        menu_no_record_selected,
+        menu_no_records_found,
+
+        /// <summary>
+        /// File {0} is older than {1} hour(s) and will be deleted.
+        /// </summary>
+        save_retention_deletion,
+
+        /// <summary>
+        /// Failed to delete file: {0}
+        /// </summary>
+        save_retention_deletion_error,
     }
 
     /// <summary>
