@@ -13,6 +13,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		..\scripts\deploy-extension.ps1 = ..\scripts\deploy-extension.ps1
 		..\scripts\deploy-plugins.ps1 = ..\scripts\deploy-plugins.ps1
 		..\scripts\update-managed.ps1 = ..\scripts\update-managed.ps1
+		..\scripts\update-version.ps1 = ..\scripts\update-version.ps1
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Plugins", "Plugins", "{EB0FAC21-70B8-49A2-A41D-7055E2C6F5CB}"

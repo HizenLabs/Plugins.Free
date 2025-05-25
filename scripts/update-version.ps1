@@ -1,37 +1,6 @@
 param (
-    [string]$SrcDir = "./src",
-    [string]$CacheDir = "./temp"
+    [string]$SrcDir = "./src"
 )
-
-$CacheFile = Join-Path $CacheDir 'version-cache.json'
-
-function Ensure-Cache {
-    if (-not (Test-Path $CacheDir)) {
-        New-Item -ItemType Directory -Path $CacheDir | Out-Null
-    }
-
-    if (Test-Path $CacheFile) {
-        try {
-            $raw = Get-Content $CacheFile -Raw | ConvertFrom-Json
-            $dict = @{}
-            foreach ($entry in $raw.PSObject.Properties) {
-                $dict[$entry.Name] = $entry.Value
-            }
-            return $dict
-        }
-        catch {
-            Write-Warning "Failed to load cache. Starting fresh."
-            return @{}
-        }
-    }
-
-    return @{}
-}
-
-
-function Save-Cache($cache) {
-    $cache | ConvertTo-Json -Depth 10 | Set-Content $CacheFile
-}
 
 function Get-Version {
     $now = Get-Date
@@ -54,39 +23,21 @@ function Update-FileVersion {
         $new = $content -replace $pattern, "[Info(`"`$1`", `"`$2`", `"$version`")]"
         Set-Content $path $new
         Write-Host "Updated: $path" -ForegroundColor Green
-        return $true
     }
-
-    return $false
 }
 
-# Load existing cache and determine current version string
-$cache = Ensure-Cache
+# Get new version string
 $version = Get-Version
 
-# Iterate files
+# Process all .cs files under src/
 Get-ChildItem -Path $SrcDir -Filter *.cs -Recurse | ForEach-Object {
     $path = $_.FullName
-    $key = Resolve-Path $_.FullName | ForEach-Object { $_.Path }
-    $lastWrite = (Get-Item $path).LastWriteTimeUtc.ToString("o")
 
-    # Skip if file hasn't changed
-    if ($cache[$key] -eq $lastWrite) {
-        return
-    }
-
-    # Only proceed if file contains [Info(...)]
+    # Only update files that contain the [Info(...)] attribute
     $raw = Get-Content $path -Raw
-    if ($raw -notmatch '\[Info\("([^"]+)",\s*"([^"]+)",\s*"([^"]+)"\)\]') {
-        return
-    }
-
-    # Update and cache
-    if (Update-FileVersion -path $path -version $version) {
-        $cache[$key] = $lastWrite
+    if ($raw -match '\[Info\("([^"]+)",\s*"([^"]+)",\s*"([^"]+)"\)\]') {
+        Update-FileVersion -path $path -version $version
     }
 }
 
-# Save updated cache
-Save-Cache $cache
 Write-Host "`nVersion update completed." -ForegroundColor Cyan
