@@ -118,6 +118,7 @@ public partial class AutoBuildSnapshot
                 [nameof(LangKeys.menu_no_records_found)] = "Could not find any snapshots.",
                 [nameof(LangKeys.save_retention_deletion)] = "Snapshot {0} is older than {1} hour(s) and will be deleted.",
                 [nameof(LangKeys.save_retention_deletion_error)] = "Failed to delete file: {0}",
+                [nameof(LangKeys.save_loading)] = "Found snapshots for record at position {0}",
                 [nameof(LangKeys.Default)] = "Default",
             }, plugin, "en");
         }
@@ -334,6 +335,11 @@ public partial class AutoBuildSnapshot
         /// Failed to delete file: {0}
         /// </summary>
         save_retention_deletion_error,
+
+        /// <summary>
+        /// Found snapshots for record at position {0}
+        /// </summary>
+        save_loading,
     }
 
     /// <summary>

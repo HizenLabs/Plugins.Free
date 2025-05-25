@@ -1,5 +1,6 @@
 ﻿using Cysharp.Threading.Tasks;
 using Facepunch;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -337,52 +338,16 @@ public partial class AutoBuildSnapshot
             }
         }
 
-        internal readonly struct RecordingId : IEquatable<RecordingId>
+        internal readonly record struct RecordingId
+        (
+            [JsonProperty]Vector3 Position,
+            [JsonProperty]Quaternion Rotation
+        )
         {
-            public Vector3 Position { get; }
-
-            public Quaternion Rotation { get; }
-
-            private RecordingId(Vector3 position, Quaternion rotation)
-            {
-                Position = position;
-                Rotation = rotation;
-            }
-
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static RecordingId For(BuildingPrivlidge tc)
             {
                 return new RecordingId(tc.ServerPosition, tc.ServerRotation);
-            }
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public bool Equals(RecordingId other)
-            {
-                return Position == other.Position && Rotation == other.Rotation;
-            }
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public override bool Equals(object obj)
-            {
-                return obj is RecordingId other && Equals(other);
-            }
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public override int GetHashCode()
-            {
-                return (Position, Rotation).GetHashCode();
-            }
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static bool operator ==(RecordingId left, RecordingId right)
-            {
-                return left.Equals(right);
-            }
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static bool operator !=(RecordingId left, RecordingId right)
-            {
-                return !(left == right);
             }
         }
 

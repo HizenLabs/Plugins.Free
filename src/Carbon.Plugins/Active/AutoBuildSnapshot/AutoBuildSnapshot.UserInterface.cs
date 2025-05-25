@@ -314,6 +314,7 @@ public partial class AutoBuildSnapshot
             {
                 // TODO: get recording ids from ChangeManagement
                 recordingIds = Pool.Get<List<ChangeManagement.RecordingId>>();
+                SaveManager.GetRecordingsByDistanceTo(player.ServerPosition, recordingIds);
 
                 player.AutoBuildSnapshot_RecordOptions = recordingIds;
             }
@@ -325,12 +326,25 @@ public partial class AutoBuildSnapshot
 
             if (recordingIds.Count > 0)
             {
-                // todo: impl snapshot selection
+                for(int i = 0; i < recordingIds.Count; i++)
+                {
+                    int panelHeight = 45;
+                    int panelWidth = 205;
+                    int offsetY = -panelHeight * i;
+                    var color = i == player.AutoBuildSnapshot_SelectedRecordIndex ? theme.PrimaryContainer : theme.SecondaryContainer;
+
+                    cui.v2.
+                        CreatePanel(
+                        container: snapshotSelectionContainer,
+                        position: LuiPosition.UpperLeft,
+                        offset: new(5, -panelHeight + offsetY, panelWidth, -5 + offsetY),
+                        color: color);
+                }
             }
             else
             {
-                cui.v2
-                    .CreateText(
+                cui.v2.
+                    CreateText(
                         container: snapshotDetailContainer,
                         position: LuiPosition.MiddleCenter,
                         offset: new(-100, -20, 100, 20),

@@ -75,6 +75,8 @@ public partial class AutoBuildSnapshot
 
                         if (!_recordingSaves.TryGetValue(meta.RecordId, out var saves))
                         {
+                            Helpers.Log(LangKeys.save_loading, null, meta.RecordId.Position);
+
                             saves = Pool.Get<List<MetaInfo>>();
                             _recordingSaves[meta.RecordId] = saves;
                         }
