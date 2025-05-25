@@ -1,13 +1,15 @@
-﻿using Cysharp.Threading.Tasks;
-using HizenLabs.Extensions.UserPreference.UI;
+﻿using HizenLabs.Extensions.UserPreference.UI;
 using Oxide.Game.Rust.Cui;
 using System;
+using System.Collections.Generic;
 
 namespace Carbon.Plugins;
 
 public partial class AutoBuildSnapshot
 {
     private const string CommandPrefix = nameof(AutoBuildSnapshot) + ".";
+
+    #region Covalence Commands
 
     /// <summary>
     /// Handles the command to toggle the menu for the AutoBuildSnapshot plugin.
@@ -33,33 +35,9 @@ public partial class AutoBuildSnapshot
         if (!CheckPermission(player, Settings.Commands.Rollback)) return;
         if (!TryGetArgument(player, args, out ChangeManagement.RecordingId recordingId)) return;
 
-        if (!ChangeManagement.Recordings.TryGetValue(recordingId, out var recording))
-        {
-            Localizer.ChatMessage(player, LangKeys.error_recording_not_found, recordingId);
-            return;
-        }
+        // Open backup menu for nearest base
 
-        recording.AttemptSaveAsync(player).ContinueWith(CommandBackup_Complete).Forget();
-    }
-
-    /// <summary>
-    /// Handles the completion of a backup attempt.
-    /// </summary>
-    /// <param name="saveAttempt">The result of the save attempt.</param>
-    private void CommandBackup_Complete(ChangeManagement.SaveAttempt saveAttempt)
-    {
-        if (saveAttempt.Success)
-        {
-            Localizer.ChatMessage(saveAttempt.Player, LangKeys.message_backup_success, saveAttempt.RecordingId, saveAttempt.Duration);
-        }
-        else if (saveAttempt.Exception != null)
-        {
-            Localizer.ChatMessage(saveAttempt.Player, LangKeys.error_backup_failed_exception, saveAttempt.RecordingId, saveAttempt.Exception.Message);
-        }
-        else
-        {
-            Localizer.ChatMessage(saveAttempt.Player, LangKeys.error_backup_failed, saveAttempt.RecordingId);
-        }
+        throw new NotImplementedException();
     }
 
     /// <summary>
@@ -72,8 +50,21 @@ public partial class AutoBuildSnapshot
     {
         if (!CheckPermission(player, Settings.Commands.Rollback)) return;
 
+        // Open rollback menu for nearest base
 
         throw new NotImplementedException();
+    }
+
+    #endregion
+
+    #region Menu Commands
+
+    #region Global
+
+    [ProtectedCommand(CommandPrefix + nameof(CommandMenuSettings))]
+    private void CommandMenuSettings(BasePlayer player, string command, string[] args)
+    {
+        UserPreferenceUI.Show(this, player, onConfirm: () => UserInterface.ShowMenu(player));
     }
 
     /// <summary>
@@ -89,12 +80,6 @@ public partial class AutoBuildSnapshot
         UserInterface.HideMenu(player);
     }
 
-    [ProtectedCommand(CommandPrefix + nameof(CommandMenuSettings))]
-    private void CommandMenuSettings(BasePlayer player, string command, string[] args)
-    {
-        UserPreferenceUI.Show(this, player, onConfirm: () => UserInterface.ShowMenu(player));
-    }
-
     [ProtectedCommand(CommandPrefix + nameof(CommandMenuSwitchTab))]
     private void CommandMenuSwitchTab(BasePlayer player, string command, string[] args)
     {
@@ -104,12 +89,129 @@ public partial class AutoBuildSnapshot
         UserInterface.SwitchTab(player, tabIndex);
     }
 
+    [ProtectedCommand(CommandPrefix + nameof(CommandMenuConfirmConfirm))]
+    private void CommandMenuConfirmConfirm(BasePlayer player, string command, string[] args)
+    {
+        var onConfirm = player.AutoBuildSnapshot_OnConfirm;
+
+        ConfirmClose(player);
+
+        onConfirm?.Invoke();
+    }
+
+    [ProtectedCommand(CommandPrefix + nameof(CommandMenuConfirmCancel))]
+    private void CommandMenuConfirmCancel(BasePlayer player, string command, string[] args)
+    {
+        ConfirmClose(player);
+    }
+
+    private static void ConfirmClose(BasePlayer player)
+    {
+        CuiHelper.DestroyUi(player, UserInterface.ConfirmMenuId);
+
+        player.AutoBuildSnapshot_OnConfirm = null;
+    }
+
+    #endregion
+
+    #region Home
+
+    [ProtectedCommand(CommandPrefix + nameof(CommandMenuSelectRecord))]
+    private void CommandMenuSelectRecord(BasePlayer player, string command, string[] args)
+    {
+        if (!CheckPermission(player, Settings.Commands.ToggleMenu)) return;
+        if (!TryGetArgument(player, args, out int selectionId)) return;
+
+        player.AutoBuildSnapshot_SelectedRecordIndex = selectionId;
+
+        UserInterface.ShowMenu(player);
+    }
+
+    [ProtectedCommand(CommandPrefix + nameof(CommandMenuTeleport))]
+    private void CommandMenuTeleport(BasePlayer player, string command, string[] args)
+    {
+        if (!Settings.Commands.HasAdminPermission(player)) return;
+        if (!TryGetSelectedRecordingId(player, out var recordingId)) return;
+
+        var meta = SaveManager.GetLastSave(recordingId);
+
+        UserInterface.ShowConfirmation(player, CommandMenuTeleport_OnConfirm, LangKeys.menu_content_teleport_confirm, meta.OriginPosition);
+    }
+
+    private void CommandMenuTeleport_OnConfirm(BasePlayer player)
+    {
+        _instance.Puts("Teleport not yet implemented.");
+    }
+
+    [ProtectedCommand(CommandPrefix + nameof(CommandMenuBackup))]
+    private void CommandMenuBackup(BasePlayer player, string command, string[] args)
+    {
+        if (!Settings.Commands.Backup.HasPermission(player)) return;
+        if (!TryGetSelectedRecordingId(player, out var recordingId)) return;
+
+        var meta = SaveManager.GetLastSave(recordingId);
+
+        UserInterface.ShowConfirmation(player, CommandMenuBackup_OnConfirm, LangKeys.menu_content_backup_confirm, meta.OriginPosition);
+    }
+
+    private void CommandMenuBackup_OnConfirm(BasePlayer player)
+    {
+        _instance.Puts("Manual backup not yet implemented.");
+    }
+
+    [ProtectedCommand(CommandPrefix + nameof(CommandMenuRollback))]
+    private void CommandMenuRollback(BasePlayer player, string command, string[] args)
+    {
+        if (!Settings.Commands.Rollback.HasPermission(player)) return;
+        if (!TryGetSelectedRecordingId(player, out var recordingId)) return;
+
+        var meta = SaveManager.GetLastSave(recordingId);
+
+        UserInterface.ShowConfirmation(player, CommandMenuRollback_OnConfirm, LangKeys.menu_content_rollback_confirm, meta.TimeStamp);
+    }
+
+    private void CommandMenuRollback_OnConfirm(BasePlayer player)
+    {
+        _instance.Puts("Rollback not yet implemented.");
+    }
+
+    private bool TryGetSelectedRecordingId(BasePlayer player, out ChangeManagement.RecordingId recordingId)
+    {
+        recordingId = default;
+
+        var selectedIndex = player.AutoBuildSnapshot_SelectedRecordIndex;
+        if (selectedIndex < 0)
+        {
+            Localizer.ChatMessage(player, LangKeys.error_no_record_selected);
+            return false;
+        }
+
+        if (player.AutoBuildSnapshot_RecordOptions is not List<ChangeManagement.RecordingId> recordingIds)
+        {
+            Localizer.ChatMessage(player, LangKeys.error_no_record_selected);
+            return false;
+        }
+
+        if (selectedIndex >= recordingIds.Count)
+        {
+            Localizer.ChatMessage(player, LangKeys.error_no_record_selected);
+            return false;
+        }
+
+        recordingId = recordingIds[selectedIndex];
+        return true;
+    }
+
+    #endregion
+
+    #region Logs
+
     [ProtectedCommand(CommandPrefix + nameof(CommandMenuClearLogs))]
     private void CommandMenuClearLogs(BasePlayer player, string command, string[] args)
     {
         if (!Settings.Commands.HasAdminPermission(player)) return;
 
-        UserInterface.ShowConfirmation(player, CommandMenuClearLogs_OnConfirm, LangKeys.menu_confirm_clear_logs);
+        UserInterface.ShowConfirmation(player, CommandMenuClearLogs_OnConfirm, LangKeys.menu_content_clear_confirm);
     }
 
     private void CommandMenuClearLogs_OnConfirm(BasePlayer player)
@@ -119,28 +221,11 @@ public partial class AutoBuildSnapshot
         UserInterface.ShowMenu(player);
     }
 
-    [ProtectedCommand(CommandPrefix + nameof(CommandHandleOnConfirm))]
-    private void CommandHandleOnConfirm(BasePlayer player, string command, string[] args)
-    {
-        var onConfirm = player.AutoBuildSnapshot_OnConfirm;
+    #endregion
 
-        ConfirmClose(player);
+    #endregion
 
-        onConfirm?.Invoke();
-    }
-
-    [ProtectedCommand(CommandPrefix + nameof(CommandHandleOnCancel))]
-    private void CommandHandleOnCancel(BasePlayer player, string command, string[] args)
-    {
-        ConfirmClose(player);
-    }
-
-    private void ConfirmClose(BasePlayer player)
-    {
-        CuiHelper.DestroyUi(player, UserInterface.ConfirmMenuId);
-
-        player.AutoBuildSnapshot_OnConfirm = null;
-    }
+    #region Helpers
 
     /// <summary>
     /// Checks if the player has the required permissions to execute a command.
@@ -202,4 +287,6 @@ public partial class AutoBuildSnapshot
 
         return true;
     }
+
+    #endregion
 }

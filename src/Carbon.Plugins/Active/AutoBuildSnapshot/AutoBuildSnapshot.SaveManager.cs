@@ -73,15 +73,7 @@ public partial class AutoBuildSnapshot
                             meta = JsonConvert.DeserializeObject<MetaInfo>(json);
                         });
 
-                        if (!_recordingSaves.TryGetValue(meta.RecordId, out var saves))
-                        {
-                            Helpers.Log(LangKeys.save_loading, null, meta.RecordId.Position);
-
-                            saves = Pool.Get<List<MetaInfo>>();
-                            _recordingSaves[meta.RecordId] = saves;
-                        }
-
-                        saves.Add(meta);
+                        IndexMetaInfo(meta);
                     }
                     catch
                     {
@@ -96,6 +88,22 @@ public partial class AutoBuildSnapshot
         public static void Unload()
         {
             Pool.FreeUnmanaged(ref _recordingSaves);
+        }
+
+        private static void IndexMetaInfo(MetaInfo meta)
+        {
+            if (!_recordingSaves.TryGetValue(meta.RecordId, out var saves))
+            {
+                Helpers.Log(LangKeys.save_loading, null, meta.RecordId.Position);
+
+                saves = Pool.Get<List<MetaInfo>>();
+                _recordingSaves[meta.RecordId] = saves;
+            }
+
+            if (!saves.Contains(meta))
+            {
+                saves.Add(meta);
+            }
         }
 
         public static void GetRecordingsByDistanceTo(Vector3 location, List<ChangeManagement.RecordingId> results)
@@ -120,6 +128,25 @@ public partial class AutoBuildSnapshot
             {
                 results.AddRange(saves);
             }
+        }
+
+        public static MetaInfo GetLastSave(ChangeManagement.RecordingId recordingId)
+        {
+            if (!_recordingSaves.TryGetValue(recordingId, out var saves))
+            {
+                return default;
+            }
+
+            MetaInfo lastSave = default;
+            foreach (var save in saves)
+            {
+                if (lastSave.TimeStamp < save.TimeStamp)
+                {
+                    lastSave = save;
+                }
+            }
+
+            return lastSave;
         }
 
         /// <summary>
@@ -223,6 +250,8 @@ public partial class AutoBuildSnapshot
                 var serialized = JsonConvert.SerializeObject(meta, Formatting.Indented);
                 File.WriteAllText(metaFilePath, serialized);
             });
+
+            IndexMetaInfo(meta);
 
             return meta;
         }
@@ -482,7 +511,8 @@ public partial class AutoBuildSnapshot
         [JsonProperty] Vector3 OriginPosition,
         [JsonProperty] Quaternion OriginRotation,
         [JsonProperty] int OriginalEntityCount,
-        [JsonProperty] int ZoneCount
+        [JsonProperty] int ZoneCount,
+        [JsonProperty] int AuthorizedCount
     )
     {
         /// <summary>
@@ -540,7 +570,8 @@ public partial class AutoBuildSnapshot
                 OriginPosition: recording.BaseTC.ServerPosition,
                 OriginRotation: recording.BaseTC.ServerRotation,
                 OriginalEntityCount: entities.Count,
-                ZoneCount: zones.Count
+                ZoneCount: zones.Count,
+                AuthorizedCount: recording.BaseTC.authorizedPlayers.Count
             );
         }
     }

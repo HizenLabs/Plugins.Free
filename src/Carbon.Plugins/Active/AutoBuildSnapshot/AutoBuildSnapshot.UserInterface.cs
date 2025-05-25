@@ -1,4 +1,6 @@
-﻿using Carbon.Components;
+﻿using Carbon.Base;
+using Carbon.Components;
+using Carbon.Modules;
 using Facepunch;
 using HizenLabs.Extensions.UserPreference.Data;
 using HizenLabs.Extensions.UserPreference.Material.API;
@@ -22,11 +24,20 @@ public partial class AutoBuildSnapshot
         public const string MainMenuId = "abs.mainmenu";
         public const string ConfirmMenuId = "abs.confirmation";
 
+        private const string IconGearId = "gear";
+        private const string IconCloseId = "close";
+        private const string IconTrashCanId = "trashcan";
+
+        private const string IconToolCupboardId = "cupboard.tool";
+        private const string IconToolCupboardUrl = "https://cdn.carbonmod.gg/items/cupboard.tool.png";
+
         /// <summary>
         /// Initializes the user interface for the plugin.
         /// </summary>
         public static void Init()
         {
+            var imageDb = BaseModule.GetModule<ImageDatabaseModule>();
+            imageDb.Queue(IconToolCupboardId, IconToolCupboardUrl);
         }
 
         /// <summary>
@@ -37,8 +48,6 @@ public partial class AutoBuildSnapshot
             foreach (var player in BasePlayer.activePlayerList)
             {
                 HideMenu(player);
-
-                CuiHelper.DestroyUi(player, ConfirmMenuId);
             }
         }
 
@@ -85,6 +94,7 @@ public partial class AutoBuildSnapshot
         public static void HideMenu(BasePlayer player)
         {
             CuiHelper.DestroyUi(player, MainMenuId);
+            CuiHelper.DestroyUi(player, ConfirmMenuId);
 
             // We use pooled list for RecordOptions, so just dispose it so it goes back into the pool
             if (player.AutoBuildSnapshot_RecordOptions is List<ChangeManagement.RecordingId> recordingIds)
@@ -152,7 +162,7 @@ public partial class AutoBuildSnapshot
                     container: parent,
                     position: LuiPosition.MiddleCenter,
                     offset: new(-450, -275, 450, 275),
-                    color: theme.SurfaceContainer
+                    color: theme.Background
                 );
 
 
@@ -163,14 +173,14 @@ public partial class AutoBuildSnapshot
                     container: container,
                     position: new(0, headerStartY, 1, 1),
                     offset: LuiOffset.None,
-                    color: theme.Background
+                    color: theme.PrimaryContainer
                 );
 
             cui.v2.CreateText(
                     container: header,
                     position: new(.015f, 0, .5f, 1),
                     offset: new(1, 1, 0, 0),
-                    color: theme.OnBackground,
+                    color: theme.OnPrimaryContainer,
                     fontSize: headFontSize,
                     text: headerText,
                     alignment: TextAnchor.MiddleLeft
@@ -191,8 +201,8 @@ public partial class AutoBuildSnapshot
                 container: headerButtons,
                 position: new(closeButtonX, 0, 1, 1),
                 offset: LuiOffset.None,
-                color: theme.Background,
-                textColor: theme.OnBackground,
+                color: theme.PrimaryContainer,
+                textColor: theme.OnPrimaryContainer,
                 textKey: LangKeys.menu_close,
                 commandName: nameof(CommandMenuClose),
                 fontSize: 14
@@ -204,8 +214,8 @@ public partial class AutoBuildSnapshot
                 container: headerButtons,
                 position: new(optionsButtonX, 0, closeButtonX, 1),
                 offset: LuiOffset.None,
-                color: theme.Background,
-                textColor: theme.OnBackground,
+                color: theme.PrimaryContainer,
+                textColor: theme.OnPrimaryContainer,
                 textKey: LangKeys.menu_options,
                 commandName: nameof(CommandMenuSettings),
                 fontSize: 14
@@ -263,7 +273,7 @@ public partial class AutoBuildSnapshot
                 textColor: GetTabButtonTextColor(tabIndex, 1, theme),
                 textKey: LangKeys.menu_tab_logs,
                 commandName: nameof(CommandMenuSwitchTab),
-                commandArgs:"1"
+                commandArgs: "1"
             );
 
             var tabContent = cui.v2
@@ -300,24 +310,25 @@ public partial class AutoBuildSnapshot
                 .CreatePanel(tabContent,
                     position: new(0, 0, .26f, 1),
                     offset: new(12, 12, -12, 0),
-                    color: theme.Surface
+                    color: theme.SurfaceContainer
                 );
 
             var snapshotDetailContainer = cui.v2
                 .CreatePanel(tabContent,
                     position: new(.26f, 0, 1, 1),
                     offset: new(0, 12, -12, 0),
-                    color: theme.Surface
+                    color: theme.SurfaceContainer
                 );
 
-            if (player.AutoBuildSnapshot_RecordOptions is not List<ChangeManagement.RecordingId> recordingIds)
+            if (player.AutoBuildSnapshot_RecordOptions is List<ChangeManagement.RecordingId> recordingIds)
             {
-                // TODO: get recording ids from ChangeManagement
-                recordingIds = Pool.Get<List<ChangeManagement.RecordingId>>();
-                SaveManager.GetRecordingsByDistanceTo(player.ServerPosition, recordingIds);
-
-                player.AutoBuildSnapshot_RecordOptions = recordingIds;
+                Pool.FreeUnmanaged(ref recordingIds);
             }
+
+            recordingIds = Pool.Get<List<ChangeManagement.RecordingId>>();
+            SaveManager.GetRecordingsByDistanceTo(player.ServerPosition, recordingIds);
+
+            player.AutoBuildSnapshot_RecordOptions = recordingIds;
 
             if (player.AutoBuildSnapshot_SelectedRecordIndex >= recordingIds.Count)
             {
@@ -326,25 +337,62 @@ public partial class AutoBuildSnapshot
 
             if (recordingIds.Count > 0)
             {
-                for(int i = 0; i < recordingIds.Count; i++)
-                {
-                    int panelHeight = 45;
-                    int panelWidth = 205;
-                    int offsetY = -panelHeight * i;
-                    var color = i == player.AutoBuildSnapshot_SelectedRecordIndex ? theme.PrimaryContainer : theme.SecondaryContainer;
+                RenderSelectionOptions(cui, snapshotSelectionContainer, player, recordingIds, userPreference);
 
-                    cui.v2.
-                        CreatePanel(
-                        container: snapshotSelectionContainer,
-                        position: LuiPosition.UpperLeft,
-                        offset: new(5, -panelHeight + offsetY, panelWidth, -5 + offsetY),
-                        color: color);
+                var buttonIndex = 0;
+                var buttonWidth = 0.12f;
+                if (Settings.Commands.Rollback.HasPermission(player))
+                {
+                    var offsetX = 0.005f * buttonIndex;
+                    var buttonXMax = 1 - buttonIndex * buttonWidth - offsetX;
+                    var buttonXMin = 1 - ++buttonIndex * buttonWidth - offsetX;
+                    CreateButton(cui, player, userPreference,
+                        container: tabButtons,
+                        position: new(buttonXMin, 0, buttonXMax, 1),
+                        offset: LuiOffset.None,
+                        color: theme.TertiaryContainer,
+                        textColor: theme.OnTertiaryContainer,
+                        textKey: LangKeys.menu_content_rollback,
+                        commandName: nameof(CommandMenuRollback)
+                    );
+                }
+
+                if (Settings.Commands.Backup.HasPermission(player))
+                {
+                    var offsetX = 0.005f * buttonIndex;
+                    var buttonXMax = 1 - buttonIndex * buttonWidth - offsetX;
+                    var buttonXMin = 1 - ++buttonIndex * buttonWidth - offsetX;
+                    CreateButton(cui, player, userPreference,
+                        container: tabButtons,
+                        position: new(buttonXMin, 0, buttonXMax, 1),
+                        offset: LuiOffset.None,
+                        color: theme.SecondaryContainer,
+                        textColor: theme.OnSecondaryContainer,
+                        textKey: LangKeys.menu_content_backup,
+                        commandName: nameof(CommandMenuBackup)
+                    );
+                }
+
+                if (Settings.Commands.HasAdminPermission(player))
+                {
+                    var offsetX = 0.005f * buttonIndex;
+                    var buttonXMax = 1 - buttonIndex * buttonWidth - offsetX;
+                    var buttonXMin = 1 - ++buttonIndex * buttonWidth - offsetX;
+                    CreateButton(cui, player, userPreference,
+                        container: tabButtons,
+                        position: new(buttonXMin, 0, buttonXMax, 1),
+                        offset: LuiOffset.None,
+                        color: theme.PrimaryContainer,
+                        textColor: theme.OnPrimaryContainer,
+                        textKey: LangKeys.menu_content_teleport,
+                        commandName: nameof(CommandMenuTeleport)
+                    );
                 }
             }
             else
             {
-                cui.v2.
-                    CreateText(
+                cui.v2
+                    .CreateText(
                         container: snapshotDetailContainer,
                         position: LuiPosition.MiddleCenter,
                         offset: new(-100, -20, 100, 20),
@@ -356,6 +404,104 @@ public partial class AutoBuildSnapshot
             }
         }
 
+        private static void RenderSelectionOptions(
+            CUI cui,
+            LUI.LuiContainer snapshotSelectionContainer,
+            BasePlayer player,
+            List<ChangeManagement.RecordingId> recordingIds,
+            UserPreferenceData userPreference)
+        {
+            var theme = userPreference.Theme;
+
+            for (int i = 0; i < recordingIds.Count; i++)
+            {
+                var recordId = recordingIds[i];
+                var lastSave = SaveManager.GetLastSave(recordId);
+                var isActive = ChangeManagement.Recordings.TryGetValue(recordId, out var recording) && recording.IsActive;
+
+                isActive = isActive && i < 2;
+
+                var isSelected = i == player.AutoBuildSnapshot_SelectedRecordIndex;
+
+                int panelHeight = 45;
+                int panelWidth = 205;
+                int offsetY = -panelHeight * i;
+                var color = isSelected ? theme.PrimaryContainer : theme.OutlineVariant;
+
+                var selectRecordButton = CreateButton(cui, player, userPreference,
+                    container: snapshotSelectionContainer,
+                    position: LuiPosition.UpperLeft,
+                    offset: new(5, -panelHeight + offsetY, panelWidth, -5 + offsetY),
+                    color: color,
+                    textColor: theme.OnPrimary,
+                    textKey: LangKeys.StringEmpty,
+                    commandName: nameof(CommandMenuSelectRecord),
+                    commandArgs: i.ToString()
+                );
+
+                cui.v2
+                    .CreateImageFromDb(
+                        container: selectRecordButton,
+                        position: LuiPosition.LowerLeft,
+                        offset: new(2, 2, panelHeight - 7, panelHeight - 7),
+                        dbName: IconToolCupboardId)
+                    .SetMaterial("assets/content/ui/namefontmaterial.mat");
+
+                if (!isSelected)
+                {
+                    var iconMaskColor = theme.SecondaryContainer.WithOpacity(.7f);
+
+                    var iconMask = cui.v2
+                        .CreateImageFromDb(
+                            container: selectRecordButton,
+                            position: LuiPosition.LowerLeft,
+                            offset: new(2, 2, panelHeight - 7, panelHeight - 7),
+                            dbName: IconToolCupboardId,
+                            color: iconMaskColor)
+                        .SetMaterial("assets/content/ui/namefontmaterial.mat");
+                }
+
+                if (!isActive)
+                {
+                    cui.v2
+                        .CreateImageFromDb(
+                            container: selectRecordButton,
+                            position: LuiPosition.LowerLeft,
+                            offset: new(2, 2, 16, 16),
+                            dbName: IconTrashCanId,
+                            color: theme.Background.WithOpacity(.95f));
+                }
+
+                float posX = recordingIds[i].Position.x;
+                float posY = recordingIds[i].Position.y;
+                float posZ = recordingIds[i].Position.z;
+
+                cui.v2
+                    .CreateText(
+                        container: selectRecordButton,
+                        position: LuiPosition.LowerLeft,
+                        offset: new(panelHeight, 0, panelWidth, panelHeight - 8),
+                        fontSize: 8,
+                        color: theme.OnSecondaryContainer,
+                        text: $"X: {posX}\nY: {posY}\nZ: {posZ}",
+                        alignment: TextAnchor.UpperLeft
+                    )
+                    .SetTextFont(FontTypes.DroidSansMono);
+
+                cui.v2
+                    .CreateText(
+                        container: selectRecordButton,
+                        position: LuiPosition.LowerLeft,
+                        offset: new(panelHeight * 2 + 20, 0, panelWidth, panelHeight - 8),
+                        fontSize: 8,
+                        color: theme.OnSecondaryContainer,
+                        text: $"Entities: {lastSave.OriginalEntityCount}\nZones: {lastSave.ZoneCount}\nAuthorized: {lastSave.AuthorizedCount}",
+                        alignment: TextAnchor.UpperLeft
+                    )
+                    .SetTextFont(FontTypes.DroidSansMono);
+            }
+        }
+        
         private static void RenderLogsTab(
             CUI cui,
             BasePlayer player,
@@ -370,8 +516,8 @@ public partial class AutoBuildSnapshot
                 container: tabButtons,
                 position: new(1 - clearButtonWidth, 0, 1, 1),
                 offset: LuiOffset.None,
-                color: theme.Secondary,
-                textColor: theme.OnSecondary,
+                color: theme.PrimaryContainer,
+                textColor: theme.OnPrimaryContainer,
                 textKey: LangKeys.menu_content_clear,
                 commandName: nameof(CommandMenuClearLogs)
             );
@@ -457,15 +603,15 @@ public partial class AutoBuildSnapshot
 
         private static string GetTabButtonColor(int index, int targetIndex, MaterialTheme theme)
         {
-            return index == targetIndex ? theme.Primary : theme.OutlineVariant;
+            return index == targetIndex ? theme.PrimaryContainer : theme.OutlineVariant;
         }
 
         private static string GetTabButtonTextColor(int index, int targetIndex, MaterialTheme theme)
         {
-            return index == targetIndex ? theme.OnPrimary : theme.OnSurface;
+            return index == targetIndex ? theme.OnPrimaryContainer : theme.OnSurface;
         }
 
-        private static void CreateButton(
+        private static LUI.LuiContainer CreateButton(
             CUI cui,
             BasePlayer player,
             UserPreferenceData userPreference,
@@ -492,7 +638,7 @@ public partial class AutoBuildSnapshot
                 commandName += " " + commandArgs;
             }
 
-            var userPrefButton = cui.v2
+            var button = cui.v2
                 .CreateButton(
                     container: container,
                     position: position,
@@ -502,7 +648,7 @@ public partial class AutoBuildSnapshot
                 );
 
             cui.v2.CreateText(
-                    container: userPrefButton,
+                    container: button,
                     position: new(0, 0, 1, 1),
                     offset: new(0, 0, 0, 0),
                     color: textColor,
@@ -510,9 +656,15 @@ public partial class AutoBuildSnapshot
                     text: buttonText,
                     alignment: TextAnchor.MiddleCenter)
                 .SetTextFont(fontType);
+
+            return button;
         }
 
-        public static void ShowConfirmation(BasePlayer player, Action<BasePlayer> onConfirm, LangKeys langKey)
+        public static void ShowConfirmation(
+            BasePlayer player,
+            Action<BasePlayer> onConfirm,
+            LangKeys langKey,
+            object arg1 = null)
         {
             var userPreference = UserPreferenceData.Load(_instance, player);
             var theme = userPreference.Theme;
@@ -538,18 +690,18 @@ public partial class AutoBuildSnapshot
                 .CreatePanel(
                     container: parent,
                     position: LuiPosition.MiddleCenter,
-                    offset: new(-130, -50, 130, 50),
-                    color: theme.SurfaceContainer
+                    offset: new(-150, -60, 150, 60),
+                    color: theme.SurfaceContainerHigh
                 );
 
             cui.v2
                 .CreateText(
                     container: container,
                     position: LuiPosition.MiddleCenter,
-                    offset: new(-100, 10, 100, 30),
+                    offset: new(-150, 10, 150, 40),
                     fontSize: 12,
                     color: theme.OnSurface,
-                    text: Localizer.Text(langKey),
+                    text: Localizer.Text(langKey, player, arg1),
                     alignment: TextAnchor.MiddleCenter)
                 .SetTextFont(FontTypes.RobotoCondensedRegular);
 
@@ -560,7 +712,7 @@ public partial class AutoBuildSnapshot
                 color: theme.Primary,
                 textColor: theme.OnPrimary,
                 textKey: LangKeys.menu_confirm,
-                commandName: nameof(CommandHandleOnConfirm)
+                commandName: nameof(CommandMenuConfirmConfirm)
             );
 
             CreateButton(cui, player, userPreference,
@@ -570,7 +722,7 @@ public partial class AutoBuildSnapshot
                 color: theme.Error,
                 textColor: theme.OnError,
                 textKey: LangKeys.menu_cancel,
-                commandName: nameof(CommandHandleOnCancel)
+                commandName: nameof(CommandMenuConfirmCancel)
             );
 
             player.AutoBuildSnapshot_OnConfirm = () => onConfirm(player);

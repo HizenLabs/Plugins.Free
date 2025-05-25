@@ -94,6 +94,7 @@ public partial class AutoBuildSnapshot
                 [nameof(LangKeys.error_backup_failed)] = "Backup command for base {0} failed, reason unknown.",
                 [nameof(LangKeys.error_backup_failed_exception)] = "Backup command for base {0} failed, reason: {1}",
                 [nameof(LangKeys.error_load_config_failed)] = "Failed to load config: {0}, creating from default.",
+                [nameof(LangKeys.error_no_record_selected)] = "No record selected.",
                 [nameof(LangKeys.message_backup_success)] = "Backup command for base {0} completed in: {1}",
                 [nameof(LangKeys.menu_title)] = "Auto Build Snapshot",
                 [nameof(LangKeys.menu_close)] = "Close",
@@ -111,15 +112,22 @@ public partial class AutoBuildSnapshot
                 [nameof(LangKeys.menu_tab_logs)] = "Logs",
                 [nameof(LangKeys.menu_content_back)] = "Back",
                 [nameof(LangKeys.menu_content_clear)] = "Clear",
+                [nameof(LangKeys.menu_content_clear_confirm)] = "You are attempting to clear all of the menu logs.",
                 [nameof(LangKeys.menu_logs_empty)] = "The logs are empty.",
                 [nameof(LangKeys.menu_confirm)] = "Confirm",
                 [nameof(LangKeys.menu_cancel)] = "Cancel",
-                [nameof(LangKeys.menu_confirm_clear_logs)] = "This will clear all menu logs, are you sure?",
                 [nameof(LangKeys.menu_no_records_found)] = "Could not find any snapshots.",
                 [nameof(LangKeys.save_retention_deletion)] = "Snapshot {0} is older than {1} hour(s) and will be deleted.",
                 [nameof(LangKeys.save_retention_deletion_error)] = "Failed to delete file: {0}",
                 [nameof(LangKeys.save_loading)] = "Found snapshots for record at position {0}",
+                [nameof(LangKeys.menu_content_teleport)] = "Teleport",
+                [nameof(LangKeys.menu_content_teleport_confirm)] = "You will be teleported to the base at position:\n{0}",
+                [nameof(LangKeys.menu_content_rollback)] = "Rollback",
+                [nameof(LangKeys.menu_content_rollback_confirm)] = "This will revert the state of the base to the snapshot at:\n{0}",
+                [nameof(LangKeys.menu_content_backup)] = "Backup",
+                [nameof(LangKeys.menu_content_backup_confirm)] = "A manual backup will be created for the base at:\n{0}",
                 [nameof(LangKeys.Default)] = "Default",
+                [nameof(LangKeys.StringEmpty)] = string.Empty,
             }, plugin, "en");
         }
     }
@@ -130,6 +138,11 @@ public partial class AutoBuildSnapshot
         /// Default
         /// </summary>
         Default,
+
+        /// <summary>
+        /// (string.Empty)
+        /// </summary>
+        StringEmpty,
 
         /// <summary>
         /// You do not have permission to use this command.
@@ -205,6 +218,11 @@ public partial class AutoBuildSnapshot
         /// Failed to load config: {0}, creating from default.
         /// </summary>
         error_load_config_failed,
+
+        /// <summary>
+        /// No record selected.
+        /// </summary>
+        error_no_record_selected,
 
         /// <summary>
         /// Backup command for base {0} completed in: {1}
@@ -302,6 +320,11 @@ public partial class AutoBuildSnapshot
         menu_content_clear,
 
         /// <summary>
+        /// This will clear all menu logs, are you sure?
+        /// </summary>
+        menu_content_clear_confirm,
+
+        /// <summary>
         /// The logs are empty.
         /// </summary>
         menu_logs_empty,
@@ -317,9 +340,34 @@ public partial class AutoBuildSnapshot
         menu_cancel,
 
         /// <summary>
-        /// This will clear all menu logs, are you sure?
+        /// Teleport
         /// </summary>
-        menu_confirm_clear_logs,
+        menu_content_teleport,
+
+        /// <summary>
+        /// You will be teleported to the base at position {0}, are you sure?
+        /// </summary>
+        menu_content_teleport_confirm,
+
+        /// <summary>
+        /// Rollback
+        /// </summary>
+        menu_content_rollback,
+
+        /// <summary>
+        /// This will revert the state of the base to the {0} snapshot, are you sure?
+        /// </summary>
+        menu_content_rollback_confirm,
+
+        /// <summary>
+        /// Backup
+        /// </summary>
+        menu_content_backup,
+
+        /// <summary>
+        /// This will create a new backup of the base, are you sure?
+        /// </summary>
+        menu_content_backup_confirm,
 
         /// <summary>
         /// Could not find any snapshots.

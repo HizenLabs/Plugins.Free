@@ -565,6 +565,19 @@ public partial class AutoBuildSnapshot
         }
     }
 
+    private static class MathfEx
+    {
+        public static Vector3 Round(Vector3 vector, int digits = 2, MidpointRounding mode = default)
+        {
+            return new
+            (
+                (float)Math.Round(vector.x, digits, mode),
+                (float)Math.Round(vector.y, digits, mode),
+                (float)Math.Round(vector.z, digits, mode)
+            );
+        }
+    }
+
     /// <summary>
     /// Helper class for managing pooled dictionaries.
     /// </summary>

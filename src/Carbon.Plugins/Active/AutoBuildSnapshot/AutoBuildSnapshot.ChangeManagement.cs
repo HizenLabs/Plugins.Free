@@ -340,14 +340,14 @@ public partial class AutoBuildSnapshot
 
         internal readonly record struct RecordingId
         (
-            [JsonProperty]Vector3 Position,
-            [JsonProperty]Quaternion Rotation
+            [JsonProperty]Vector3 Position
         )
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static RecordingId For(BuildingPrivlidge tc)
             {
-                return new RecordingId(tc.ServerPosition, tc.ServerRotation);
+                var pos = MathfEx.Round(tc.ServerPosition);
+                return new RecordingId(pos);
             }
         }
 
