@@ -29,6 +29,28 @@ function Update-FileVersion {
     }
 }
 
+function Update-AssemblyInfo {
+    param (
+        [string]$directory,
+        [string]$version
+    )
+
+    $assemblyInfoPath = Get-ChildItem -Path $directory -Recurse -Filter "AssemblyInfo.cs" | Select-Object -First 1
+    if (-not $assemblyInfoPath) {
+        Write-Host "AssemblyInfo.cs not found in $directory" -ForegroundColor Yellow
+        return
+    }
+
+    $versionFourPart = "$version.0"
+    $content = Get-Content $assemblyInfoPath.FullName -Raw
+
+    $content = $content -replace 'AssemblyVersion\(".*?"\)', "AssemblyVersion(`"$versionFourPart`")"
+    $content = $content -replace 'AssemblyFileVersion\(".*?"\)', "AssemblyFileVersion(`"$versionFourPart`")"
+
+    Set-Content $assemblyInfoPath.FullName $content
+    Write-Host "Updated AssemblyInfo: $($assemblyInfoPath.FullName)" -ForegroundColor Green
+}
+
 # Get new version string
 $version = Get-Version
 
@@ -42,5 +64,7 @@ Get-ChildItem -Path $SrcDir -Filter *.cs -Recurse | ForEach-Object {
         Update-FileVersion -path $path -version $version
     }
 }
+
+Update-AssemblyInfo -directory $SrcDir -version $version
 
 Write-Host "`n[update-version] Update complete." -ForegroundColor Cyan
