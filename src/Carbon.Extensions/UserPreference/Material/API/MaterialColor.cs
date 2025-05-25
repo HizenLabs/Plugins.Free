@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using UnityEngine;
 
 namespace HizenLabs.Extensions.UserPreference.Material.API;
 
@@ -79,6 +80,12 @@ public struct MaterialColor
     public readonly string ToRgbaHex()
     {
         return $"#{Red:X2}{Green:X2}{Blue:X2}{Alpha:X2}";
+    }
+
+    public readonly MaterialColor WithOpacity(float alpha)
+    {
+        var newAlpha = (byte)Mathf.Clamp01(alpha) * 255;
+        return new MaterialColor((Value & 0x00FFFFFF) | ((uint)newAlpha << 24));
     }
 
     /// <summary>
