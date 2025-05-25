@@ -268,7 +268,7 @@ public partial class AutoBuildSnapshot
                 .CreateText(
                     container: content,
                     position: LuiPosition.Full,
-                    offset: new(0, 3, 0, 0),
+                    offset: new(0, 1, 0, 0),
                     fontSize: 8,
                     color: "0.5 0.5 0.5 0.4",
                     text: $"AutoBuildSnapshot v{_instance.Version} by hizenxyz",
@@ -452,8 +452,6 @@ public partial class AutoBuildSnapshot
                 var recordId = recordingIds[i];
                 var lastSave = SaveManager.GetLastSave(recordId);
                 var isActive = ChangeManagement.Recordings.TryGetValue(recordId, out var recording) && recording.IsActive;
-
-                isActive = isActive && i < 2;
 
                 var isSelected = i == player.AutoBuildSnapshot_SelectedRecordIndex;
 
@@ -642,7 +640,7 @@ public partial class AutoBuildSnapshot
 
         private static string GetTabButtonTextColor(int index, int targetIndex, MaterialTheme theme)
         {
-            return index == targetIndex ? theme.OnPrimaryContainer : theme.OnSurface;
+            return index == targetIndex ? theme.OnPrimaryContainer : theme.OnPrimaryContainer;
         }
 
         private static LUI.LuiContainer CreateButton(
