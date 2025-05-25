@@ -723,7 +723,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>powershell -ExecutionPolicy Bypass -File "$(SolutionDir)../scripts/update-version.ps1" "$(ProjectDir)Active" "$(SolutionDir)../temp"
+    <PostBuildEvent>powershell -ExecutionPolicy Bypass -File "$(SolutionDir)../scripts/update-version.ps1" "$(ProjectDir)Active"
 powershell -ExecutionPolicy Bypass -File "$(SolutionDir)../scripts/deploy-plugins.ps1"</PostBuildEvent>
   </PropertyGroup>
 </Project>

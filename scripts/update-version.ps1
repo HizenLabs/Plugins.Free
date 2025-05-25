@@ -9,12 +9,25 @@ function Ensure-Cache {
     if (-not (Test-Path $CacheDir)) {
         New-Item -ItemType Directory -Path $CacheDir | Out-Null
     }
+
     if (Test-Path $CacheFile) {
-        return Get-Content $CacheFile | ConvertFrom-Json
-    } else {
-        return @{}
+        try {
+            $raw = Get-Content $CacheFile -Raw | ConvertFrom-Json
+            $dict = @{}
+            foreach ($entry in $raw.PSObject.Properties) {
+                $dict[$entry.Name] = $entry.Value
+            }
+            return $dict
+        }
+        catch {
+            Write-Warning "Failed to load cache. Starting fresh."
+            return @{}
+        }
     }
+
+    return @{}
 }
+
 
 function Save-Cache($cache) {
     $cache | ConvertTo-Json -Depth 10 | Set-Content $CacheFile
