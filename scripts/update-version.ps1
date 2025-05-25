@@ -2,6 +2,9 @@ param (
     [string]$SrcDir = "./src"
 )
 
+$SrcDir = $SrcDir.Trim('"')
+Write-Host "[update-version] Searching $SrcDir for files..."
+
 function Get-Version {
     $now = Get-Date
     $startOfMonth = Get-Date -Year $now.Year -Month $now.Month -Day 1 -Hour 0 -Minute 0 -Second 0
@@ -22,7 +25,7 @@ function Update-FileVersion {
     if ($content -match $pattern) {
         $new = $content -replace $pattern, "[Info(`"`$1`", `"`$2`", `"$version`")]"
         Set-Content $path $new
-        Write-Host "Updated: $path" -ForegroundColor Green
+        Write-Host "[update-version] Updated: $path" -ForegroundColor Green
     }
 }
 
@@ -40,4 +43,4 @@ Get-ChildItem -Path $SrcDir -Filter *.cs -Recurse | ForEach-Object {
     }
 }
 
-Write-Host "`nVersion update completed." -ForegroundColor Cyan
+Write-Host "`n[update-version] Update complete." -ForegroundColor Cyan
