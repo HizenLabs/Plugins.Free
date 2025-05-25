@@ -694,25 +694,25 @@
     <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.Timers.cs" />
     <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.UserInterface.cs" />
     <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.Settings.cs" />
-    <Compile Include="Active\AutoBuildSnapshot_old\AutoBuildSnapshot.BuildingScanner.cs" />
-    <Compile Include="Active\AutoBuildSnapshot_old\AutoBuildSnapshot.BuildSnapshot.cs" />
-    <Compile Include="Active\AutoBuildSnapshot_old\AutoBuildSnapshot.ExecutionBase.cs" />
-    <Compile Include="Active\AutoBuildSnapshot_old\AutoBuildSnapshot.Helpers.cs" />
-    <Compile Include="Active\AutoBuildSnapshot_old\AutoBuildSnapshot.BuildRollback.cs" />
-    <Compile Include="Active\AutoBuildSnapshot_old\AutoBuildSnapshot.PropertyMapping.cs" />
-    <Compile Include="Active\AutoBuildSnapshot_old\AutoBuildSnapshot.PersistantItem.cs" />
-    <Compile Include="Active\AutoBuildSnapshot_old\AutoBuildSnapshot.SerializationHelper.cs" />
-    <Compile Include="Active\AutoBuildSnapshot_old\AutoBuildSnapshot.SnapshotHandle.cs" />
-    <Compile Include="Active\AutoBuildSnapshot_old\AutoBuildSnapshot.ChangeManagement.cs" />
-    <Compile Include="Active\AutoBuildSnapshot_old\AutoBuildSnapshot.cs" />
-    <Compile Include="Active\AutoBuildSnapshot_old\AutoBuildSnapshot.UI.Drawing.cs" />
-    <Compile Include="Active\AutoBuildSnapshot_old\AutoBuildSnapshot.PersistantEntity.cs" />
-    <Compile Include="Active\AutoBuildSnapshot_old\AutoBuildSnapshot.UI.cs" />
-    <Compile Include="Active\AutoBuildSnapshot_old\AutoBuildSnapshot.UI.Drawing.Confirmation.cs" />
-    <Compile Include="Active\AutoBuildSnapshot_old\AutoBuildSnapshot.UI.Drawing.Main.cs" />
-    <Compile Include="Active\AutoBuildSnapshot_old\AutoBuildSnapshot.UI.Drawing.Snapshots.cs" />
-    <Compile Include="Active\AutoBuildSnapshot_old\AutoBuildSnapshot.UI.Handlers.cs" />
-    <Compile Include="Active\AutoBuildSnapshot_old\AutoBuildSnapshot.PersistantBase.cs" />
+    <Compile Include="Removed\AutoBuildSnapshot_old\AutoBuildSnapshot.BuildingScanner.cs" />
+    <Compile Include="Removed\AutoBuildSnapshot_old\AutoBuildSnapshot.BuildSnapshot.cs" />
+    <Compile Include="Removed\AutoBuildSnapshot_old\AutoBuildSnapshot.ExecutionBase.cs" />
+    <Compile Include="Removed\AutoBuildSnapshot_old\AutoBuildSnapshot.Helpers.cs" />
+    <Compile Include="Removed\AutoBuildSnapshot_old\AutoBuildSnapshot.BuildRollback.cs" />
+    <Compile Include="Removed\AutoBuildSnapshot_old\AutoBuildSnapshot.PropertyMapping.cs" />
+    <Compile Include="Removed\AutoBuildSnapshot_old\AutoBuildSnapshot.PersistantItem.cs" />
+    <Compile Include="Removed\AutoBuildSnapshot_old\AutoBuildSnapshot.SerializationHelper.cs" />
+    <Compile Include="Removed\AutoBuildSnapshot_old\AutoBuildSnapshot.SnapshotHandle.cs" />
+    <Compile Include="Removed\AutoBuildSnapshot_old\AutoBuildSnapshot.ChangeManagement.cs" />
+    <Compile Include="Removed\AutoBuildSnapshot_old\AutoBuildSnapshot.cs" />
+    <Compile Include="Removed\AutoBuildSnapshot_old\AutoBuildSnapshot.UI.Drawing.cs" />
+    <Compile Include="Removed\AutoBuildSnapshot_old\AutoBuildSnapshot.PersistantEntity.cs" />
+    <Compile Include="Removed\AutoBuildSnapshot_old\AutoBuildSnapshot.UI.cs" />
+    <Compile Include="Removed\AutoBuildSnapshot_old\AutoBuildSnapshot.UI.Drawing.Confirmation.cs" />
+    <Compile Include="Removed\AutoBuildSnapshot_old\AutoBuildSnapshot.UI.Drawing.Main.cs" />
+    <Compile Include="Removed\AutoBuildSnapshot_old\AutoBuildSnapshot.UI.Drawing.Snapshots.cs" />
+    <Compile Include="Removed\AutoBuildSnapshot_old\AutoBuildSnapshot.UI.Handlers.cs" />
+    <Compile Include="Removed\AutoBuildSnapshot_old\AutoBuildSnapshot.PersistantBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -723,6 +723,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>powershell -ExecutionPolicy Bypass -File "$(SolutionDir)../scripts/deploy-plugins.ps1"</PostBuildEvent>
+    <PostBuildEvent>powershell -ExecutionPolicy Bypass -File "$(SolutionDir)../scripts/update-version.ps1" "$(ProjectDir)Active" "$(SolutionDir)../temp"
+powershell -ExecutionPolicy Bypass -File "$(SolutionDir)../scripts/deploy-plugins.ps1"</PostBuildEvent>
   </PropertyGroup>
 </Project>
