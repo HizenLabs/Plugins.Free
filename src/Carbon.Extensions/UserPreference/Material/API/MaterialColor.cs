@@ -84,7 +84,7 @@ public struct MaterialColor
 
     public readonly MaterialColor WithOpacity(float alpha)
     {
-        var newAlpha = (byte)Mathf.Clamp01(alpha) * 255;
+        var newAlpha = (byte)(Mathf.Clamp01(alpha) * 255f);
         return new MaterialColor((Value & 0x00FFFFFF) | ((uint)newAlpha << 24));
     }
 
