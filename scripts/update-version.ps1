@@ -22,12 +22,19 @@ function Update-FileVersion {
 
     $content = Get-Content $path -Raw
     $pattern = '\[Info\("([^"]+)",\s*"([^"]+)",\s*"([^"]+)"\)\]'
+
     if ($content -match $pattern) {
         $new = $content -replace $pattern, "[Info(`"`$1`", `"`$2`", `"$version`")]"
-        Set-Content $path $new
+        
+        # Remove any extra trailing blank lines
+        $new = $new -replace "(\r?\n)+\z", "`r`n"
+
+        # Write without additional newline
+        [System.IO.File]::WriteAllText($path, $new, [System.Text.Encoding]::UTF8)
         Write-Host "[update-version] Updated: $path" -ForegroundColor Green
     }
 }
+
 
 function Update-AssemblyInfo {
     param (
@@ -47,9 +54,15 @@ function Update-AssemblyInfo {
     $content = $content -replace 'AssemblyVersion\(".*?"\)', "AssemblyVersion(`"$versionFourPart`")"
     $content = $content -replace 'AssemblyFileVersion\(".*?"\)', "AssemblyFileVersion(`"$versionFourPart`")"
 
-    Set-Content $assemblyInfoPath.FullName $content
+    # Trim excessive trailing newlines, leave exactly one
+    $content = $content -replace "(\r?\n)+\z", "`r`n"
+
+    # Write content using System.IO to avoid newline issues
+    [System.IO.File]::WriteAllText($assemblyInfoPath.FullName, $content, [System.Text.Encoding]::UTF8)
+
     Write-Host "Updated AssemblyInfo: $($assemblyInfoPath.FullName)" -ForegroundColor Green
 }
+
 
 # Get new version string
 $version = Get-Version

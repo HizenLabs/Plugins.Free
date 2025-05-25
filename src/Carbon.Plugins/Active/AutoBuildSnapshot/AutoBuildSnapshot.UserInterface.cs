@@ -24,6 +24,8 @@ public partial class AutoBuildSnapshot
         public const string MainMenuId = "abs.mainmenu";
         public const string ConfirmMenuId = "abs.confirmation";
 
+        private const string IconToolCupboardShortname = "cupboard.tool";
+
         private const string mdIconBaseUrl = "https://raw.githubusercontent.com/google/material-design-icons/refs/heads/master/png";
 
         private const string IconCloseId = "md_close";
@@ -35,9 +37,6 @@ public partial class AutoBuildSnapshot
         private const string IconDisplaySettingsId = "md_display_settings";
         private const string IconDisplaySettingsUrl = $"{mdIconBaseUrl}/action/display_settings/materialicons/48dp/2x/baseline_display_settings_black_48dp.png";
 
-        private const string IconToolCupboardId = "tool_cupboard";
-        private const string IconToolCupboardUrl = "https://cdn.carbonmod.gg/items/cupboard.tool.png";
-
         /// <summary>
         /// Initializes the user interface for the plugin.
         /// </summary>
@@ -45,17 +44,9 @@ public partial class AutoBuildSnapshot
         {
             var imageDb = BaseModule.GetModule<ImageDatabaseModule>();
 
-            _instance.Puts($"Queue image '{IconCloseId}': {IconCloseUrl}");
             imageDb.Queue(IconCloseId, IconCloseUrl);
-
-            _instance.Puts($"Queue image for load: {IconDeleteUrl}");
             imageDb.Queue(IconDeleteId, IconDeleteUrl);
-
-            _instance.Puts($"Queue image '{IconDisplaySettingsId}': {IconDisplaySettingsUrl}");
             imageDb.Queue(IconDisplaySettingsId, IconDisplaySettingsUrl);
-
-            _instance.Puts($"Queue image '{IconToolCupboardId}': {IconToolCupboardUrl}");
-            imageDb.Queue(IconToolCupboardId, IconToolCupboardUrl);
         }
 
         /// <summary>
@@ -373,55 +364,9 @@ public partial class AutoBuildSnapshot
             {
                 RenderSelectionOptions(cui, snapshotSelectionContainer, player, recordingIds, userPreference);
 
-                var buttonIndex = 0;
-                var buttonWidth = 0.12f;
-                if (Settings.Commands.Rollback.HasPermission(player))
-                {
-                    var offsetX = 0.005f * buttonIndex;
-                    var buttonXMax = 1 - buttonIndex * buttonWidth - offsetX;
-                    var buttonXMin = 1 - ++buttonIndex * buttonWidth - offsetX;
-                    CreateButton(cui, player, userPreference,
-                        container: tabButtons,
-                        position: new(buttonXMin, 0, buttonXMax, 1),
-                        offset: LuiOffset.None,
-                        color: theme.TertiaryContainer,
-                        textColor: theme.OnTertiaryContainer,
-                        textKey: LangKeys.menu_content_rollback,
-                        commandName: nameof(CommandMenuRollback)
-                    );
-                }
+                RenderSnapshotButtons(cui, tabButtons, player, userPreference);
 
-                if (Settings.Commands.Backup.HasPermission(player))
-                {
-                    var offsetX = 0.005f * buttonIndex;
-                    var buttonXMax = 1 - buttonIndex * buttonWidth - offsetX;
-                    var buttonXMin = 1 - ++buttonIndex * buttonWidth - offsetX;
-                    CreateButton(cui, player, userPreference,
-                        container: tabButtons,
-                        position: new(buttonXMin, 0, buttonXMax, 1),
-                        offset: LuiOffset.None,
-                        color: theme.SecondaryContainer,
-                        textColor: theme.OnSecondaryContainer,
-                        textKey: LangKeys.menu_content_backup,
-                        commandName: nameof(CommandMenuBackup)
-                    );
-                }
 
-                if (Settings.Commands.HasAdminPermission(player))
-                {
-                    var offsetX = 0.005f * buttonIndex;
-                    var buttonXMax = 1 - buttonIndex * buttonWidth - offsetX;
-                    var buttonXMin = 1 - ++buttonIndex * buttonWidth - offsetX;
-                    CreateButton(cui, player, userPreference,
-                        container: tabButtons,
-                        position: new(buttonXMin, 0, buttonXMax, 1),
-                        offset: LuiOffset.None,
-                        color: theme.PrimaryContainer,
-                        textColor: theme.OnPrimaryContainer,
-                        textKey: LangKeys.menu_content_teleport,
-                        commandName: nameof(CommandMenuTeleport)
-                    );
-                }
             }
             else
             {
@@ -472,25 +417,25 @@ public partial class AutoBuildSnapshot
                 );
 
                 cui.v2
-                    .CreateImageFromDb(
+                    .CreateItemIcon(
                         container: selectRecordButton,
                         position: LuiPosition.LowerLeft,
                         offset: new(2, 2, panelHeight - 7, panelHeight - 7),
-                        dbName: IconToolCupboardId)
-                    .SetMaterial("assets/content/ui/namefontmaterial.mat");
+                        shortname: IconToolCupboardShortname
+                    );
 
                 if (!isSelected)
                 {
                     var iconMaskColor = theme.SecondaryContainer.WithOpacity(.7f);
 
-                    var iconMask = cui.v2
-                        .CreateImageFromDb(
+
+                    cui.v2
+                        .CreateItemIcon(
                             container: selectRecordButton,
                             position: LuiPosition.LowerLeft,
                             offset: new(2, 2, panelHeight - 7, panelHeight - 7),
-                            dbName: IconToolCupboardId,
-                            color: iconMaskColor)
-                        .SetMaterial("assets/content/ui/namefontmaterial.mat");
+                            shortname: IconToolCupboardShortname,
+                            color: iconMaskColor);
                 }
 
                 if (!isActive)
@@ -520,6 +465,7 @@ public partial class AutoBuildSnapshot
                     )
                     .SetTextFont(FontTypes.DroidSansMono);
 
+
                 cui.v2
                     .CreateText(
                         container: selectRecordButton,
@@ -534,6 +480,65 @@ public partial class AutoBuildSnapshot
             }
         }
         
+        private static void RenderSnapshotButtons(
+            CUI cui,
+            LUI.LuiContainer tabButtons,
+            BasePlayer player,
+            UserPreferenceData userPreference)
+        {
+            var theme = userPreference.Theme;
+            var buttonIndex = 0;
+            var buttonWidth = 0.12f;
+
+            if (Settings.Commands.Rollback.HasPermission(player))
+            {
+                var offsetX = 0.005f * buttonIndex;
+                var buttonXMax = 1 - buttonIndex * buttonWidth - offsetX;
+                var buttonXMin = 1 - ++buttonIndex * buttonWidth - offsetX;
+                CreateButton(cui, player, userPreference,
+                    container: tabButtons,
+                    position: new(buttonXMin, 0, buttonXMax, 1),
+                    offset: LuiOffset.None,
+                    color: theme.TertiaryContainer,
+                    textColor: theme.OnTertiaryContainer,
+                    textKey: LangKeys.menu_content_rollback,
+                    commandName: nameof(CommandMenuRollback)
+                );
+            }
+
+            if (Settings.Commands.Backup.HasPermission(player))
+            {
+                var offsetX = 0.005f * buttonIndex;
+                var buttonXMax = 1 - buttonIndex * buttonWidth - offsetX;
+                var buttonXMin = 1 - ++buttonIndex * buttonWidth - offsetX;
+                CreateButton(cui, player, userPreference,
+                    container: tabButtons,
+                    position: new(buttonXMin, 0, buttonXMax, 1),
+                    offset: LuiOffset.None,
+                    color: theme.SecondaryContainer,
+                    textColor: theme.OnSecondaryContainer,
+                    textKey: LangKeys.menu_content_backup,
+                    commandName: nameof(CommandMenuBackup)
+                );
+            }
+
+            if (Settings.Commands.HasAdminPermission(player))
+            {
+                var offsetX = 0.005f * buttonIndex;
+                var buttonXMax = 1 - buttonIndex * buttonWidth - offsetX;
+                var buttonXMin = 1 - ++buttonIndex * buttonWidth - offsetX;
+                CreateButton(cui, player, userPreference,
+                    container: tabButtons,
+                    position: new(buttonXMin, 0, buttonXMax, 1),
+                    offset: LuiOffset.None,
+                    color: theme.PrimaryContainer,
+                    textColor: theme.OnPrimaryContainer,
+                    textKey: LangKeys.menu_content_teleport,
+                    commandName: nameof(CommandMenuTeleport)
+                );
+            }
+        }
+
         private static void RenderLogsTab(
             CUI cui,
             BasePlayer player,

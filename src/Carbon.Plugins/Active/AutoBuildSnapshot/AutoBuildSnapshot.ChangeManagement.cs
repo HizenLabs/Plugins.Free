@@ -349,6 +349,11 @@ public partial class AutoBuildSnapshot
                 var pos = MathfEx.Round(tc.ServerPosition);
                 return new RecordingId(pos);
             }
+
+            public string ToFileSafeId()
+            {
+                return $"{Position.x}_{Position.y}_{Position.z}";
+            }
         }
 
         /// <summary>

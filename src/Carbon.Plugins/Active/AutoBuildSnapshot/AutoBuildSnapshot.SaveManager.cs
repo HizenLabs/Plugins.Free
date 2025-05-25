@@ -552,7 +552,7 @@ public partial class AutoBuildSnapshot
         /// <param name="id">The prefix of the save file.</param>
         private string GetFileNamePrefix()
         {
-            return $"{TimeStamp:HH-mm-ss}-{Id}";
+            return $"{TimeStamp:HH-mm-ss}_{RecordId.ToFileSafeId()}";
         }
 
         /// <summary>

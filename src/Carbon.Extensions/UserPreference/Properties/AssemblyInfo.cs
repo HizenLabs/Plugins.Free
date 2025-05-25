@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("HizenLabs")]
 [assembly: AssemblyProduct("UserPreference")]
-[assembly: AssemblyCopyright("Copyright � HizenLabs 2025")]
+[assembly: AssemblyCopyright("Copyright © HizenLabs 2025")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -29,9 +29,8 @@ using System.Runtime.InteropServices;
 //      Build Number
 //      Revision
 //
-[assembly: AssemblyVersion("25.5.35552.0")]
-[assembly: AssemblyFileVersion("25.5.35552.0")]
+[assembly: AssemblyVersion("25.5.35727.0")]
+[assembly: AssemblyFileVersion("25.5.35727.0")]
 
 // Expose internal members to the test project
 [assembly: InternalsVisibleTo("Carbon.Tests")]
-

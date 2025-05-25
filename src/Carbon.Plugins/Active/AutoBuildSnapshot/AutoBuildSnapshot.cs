@@ -1,11 +1,11 @@
-// Reference: HizenLabs.Extensions.UserPreference
+﻿// Reference: HizenLabs.Extensions.UserPreference
 
 namespace Carbon.Plugins;
 
 /// <summary>
 /// Creates snapshots of user bases which can then be rolled back to at a later date.
 /// </summary>
-[Info("AutoBuildSnapshot", "hizenxyz", "25.5.35552")]
+[Info("AutoBuildSnapshot", "hizenxyz", "25.5.35727")]
 [Description("Creates snapshots of user bases which can then be rolled back to at a later date.")]
 public partial class AutoBuildSnapshot : CarbonPlugin
 {
@@ -103,22 +103,3 @@ public partial class AutoBuildSnapshot : CarbonPlugin
         UserInterface.HandleDisconnect(player);
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
