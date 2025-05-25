@@ -24,11 +24,18 @@ public partial class AutoBuildSnapshot
         public const string MainMenuId = "abs.mainmenu";
         public const string ConfirmMenuId = "abs.confirmation";
 
-        private const string IconGearId = "gear";
-        private const string IconCloseId = "close";
-        private const string IconTrashCanId = "trashcan";
+        private const string mdIconBaseUrl = "https://raw.githubusercontent.com/google/material-design-icons/refs/heads/master/png";
 
-        private const string IconToolCupboardId = "cupboard.tool";
+        private const string IconCloseId = "md_close";
+        private const string IconCloseUrl = $"{mdIconBaseUrl}/navigation/close/materialicons/48dp/2x/baseline_close_black_48dp.png";
+
+        private const string IconDeleteId = "md_delete";
+        private const string IconDeleteUrl = $"{mdIconBaseUrl}/action/delete/materialicons/48dp/2x/baseline_delete_black_48dp.png";
+
+        private const string IconDisplaySettingsId = "md_display_settings";
+        private const string IconDisplaySettingsUrl = $"{mdIconBaseUrl}/action/display_settings/materialicons/48dp/2x/baseline_display_settings_black_48dp.png";
+
+        private const string IconToolCupboardId = "tool_cupboard";
         private const string IconToolCupboardUrl = "https://cdn.carbonmod.gg/items/cupboard.tool.png";
 
         /// <summary>
@@ -37,6 +44,17 @@ public partial class AutoBuildSnapshot
         public static void Init()
         {
             var imageDb = BaseModule.GetModule<ImageDatabaseModule>();
+
+            _instance.Puts($"Queue image '{IconCloseId}': {IconCloseUrl}");
+            imageDb.Queue(IconCloseId, IconCloseUrl);
+
+            _instance.Puts($"Queue image for load: {IconDeleteUrl}");
+            imageDb.Queue(IconDeleteId, IconDeleteUrl);
+
+            _instance.Puts($"Queue image '{IconDisplaySettingsId}': {IconDisplaySettingsUrl}");
+            imageDb.Queue(IconDisplaySettingsId, IconDisplaySettingsUrl);
+
+            _instance.Puts($"Queue image '{IconToolCupboardId}': {IconToolCupboardUrl}");
             imageDb.Queue(IconToolCupboardId, IconToolCupboardUrl);
         }
 
@@ -195,31 +213,47 @@ public partial class AutoBuildSnapshot
                     color: theme.Transparent
                 );
 
-            var closeButtonWidth = 0.18f;
+            var closeButtonWidth = 0.08f;
             var closeButtonX = 1 - closeButtonWidth;
-            CreateButton(cui, player, userPreference,
+            var closeButton = CreateButton(cui, player, userPreference,
                 container: headerButtons,
                 position: new(closeButtonX, 0, 1, 1),
                 offset: LuiOffset.None,
                 color: theme.PrimaryContainer,
                 textColor: theme.OnPrimaryContainer,
-                textKey: LangKeys.menu_close,
+                textKey: LangKeys.StringEmpty,
                 commandName: nameof(CommandMenuClose),
                 fontSize: 14
             );
 
-            var optionsButtonWidth = 0.2f;
+            cui.v2
+                .CreateImageFromDb(
+                    container: closeButton,
+                    position: LuiPosition.MiddleCenter,
+                    offset: new(-14, -14, 14, 14),
+                    dbName: IconCloseId,
+                    color: theme.OnPrimaryContainer);
+
+            var optionsButtonWidth = 0.08f;
             var optionsButtonX = closeButtonX - optionsButtonWidth;
-            CreateButton(cui, player, userPreference,
+            var optionsButton = CreateButton(cui, player, userPreference,
                 container: headerButtons,
-                position: new(optionsButtonX, 0, closeButtonX, 1),
+                position: new(optionsButtonX - .005f, 0, closeButtonX - .005f, 1),
                 offset: LuiOffset.None,
                 color: theme.PrimaryContainer,
                 textColor: theme.OnPrimaryContainer,
-                textKey: LangKeys.menu_options,
+                textKey: LangKeys.StringEmpty,
                 commandName: nameof(CommandMenuSettings),
                 fontSize: 14
             );
+
+            cui.v2
+                .CreateImageFromDb(
+                    container: optionsButton,
+                    position: LuiPosition.MiddleCenter,
+                    offset: new(-13, -13, 13, 13),
+                    dbName: IconDisplaySettingsId,
+                    color: theme.OnPrimaryContainer);
 
             var content = cui.v2
                 .CreatePanel(
@@ -467,8 +501,8 @@ public partial class AutoBuildSnapshot
                         .CreateImageFromDb(
                             container: selectRecordButton,
                             position: LuiPosition.LowerLeft,
-                            offset: new(2, 2, 16, 16),
-                            dbName: IconTrashCanId,
+                            offset: new(2, 2, 20, 20),
+                            dbName: IconDeleteId,
                             color: theme.Background.WithOpacity(.95f));
                 }
 
