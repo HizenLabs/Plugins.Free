@@ -116,4 +116,49 @@ public partial class AutoBuildSnapshot
             await recording.AttemptSaveAsync();
         }
     }
+
+    private static class SnapshotCleaner
+    {
+        private static Timer _timer;
+        private static bool _isProcessing;
+
+        /// <summary>
+        /// Monitors build changes and triggers the appropriate actions.
+        /// </summary>
+        public static void Start()
+        {
+            _timer = _instance.timer.Every(3600, () => ProcessIntervalAsync().Forget());
+        }
+
+        /// <summary>
+        /// Stops monitoring build changes.
+        /// </summary>
+        public static void Stop()
+        {
+            _timer?.Dispose();
+            _timer = null;
+        }
+
+        /// <summary>
+        /// Processes the interval for monitoring build changes. This is where the main logic for handling changes occurs.
+        /// </summary>
+        public static async UniTaskVoid ProcessIntervalAsync()
+        {
+            if (_isProcessing)
+            {
+                return;
+            }
+
+            try
+            {
+                _isProcessing = true;
+
+                await SaveManager.CleanupAsync();
+            }
+            finally
+            {
+                _isProcessing = false;
+            }
+        }
+    }
 }

@@ -106,6 +106,78 @@ public partial class AutoBuildSnapshot
             }
         }
 
+        public static async UniTask CleanupAsync()
+        {
+            using var metaList = Pool.Get<PooledList<MetaInfo>>();
+            foreach (var list in _recordingSaves.Values)
+            {
+                metaList.AddRange(list);
+            }
+
+            var retentionDate = DateTime.UtcNow.AddHours(-Settings.General.SnapshotRetentionPeriodHours);
+            using var toRemove = Pool.Get<PooledList<MetaInfo>>();
+            await UniTask.RunOnThreadPool(() =>
+            {
+                foreach (var meta in metaList)
+                {
+                    var metaFilePath = meta.GetFilePath();
+                    var dataFilePath = meta.GetDataFilePath();
+
+                    if (!File.Exists(metaFilePath))
+                    {
+                        Helpers.Log(LangKeys.save_cleanup_missing, null, meta.RecordId, metaFilePath);
+                        toRemove.Add(meta);
+                        continue;
+                    }
+
+                    if (!File.Exists(dataFilePath))
+                    {
+                        Helpers.Log(LangKeys.save_cleanup_missing, null, meta.RecordId, dataFilePath);
+                        toRemove.Add(meta);
+                        continue;
+                    }
+
+                    if (meta.TimeStamp < retentionDate)
+                    {
+                        Helpers.Log(LangKeys.save_cleanup_old, null, meta.RecordId, meta.TimeStamp);
+                        toRemove.Add(meta);
+                        continue;
+                    }
+                }
+            });
+
+            foreach (var meta in toRemove)
+            {
+                try
+                {
+                    var metaFilePath = meta.GetFilePath();
+                    if (File.Exists(metaFilePath))
+                    {
+                        File.Delete(metaFilePath);
+                    }
+
+                    var dataFilePath = meta.GetDataFilePath();
+                    if (File.Exists(dataFilePath))
+                    {
+                        File.Delete(dataFilePath);
+                    }
+
+                    if (_recordingSaves.TryGetValue(meta.RecordId, out var saves))
+                    {
+                        saves.Remove(meta);
+                        if (saves.Count == 0)
+                        {
+                            _recordingSaves.Remove(meta.RecordId);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Helpers.Log(LangKeys.save_cleanup_error, null, meta.RecordId, ex.Message);
+                }
+            }
+        }
+
         public static void GetRecordingsByDistanceTo(Vector3 location, List<ChangeManagement.RecordingId> results)
         {
             results.Clear();
@@ -299,11 +371,6 @@ public partial class AutoBuildSnapshot
         /// <returns>The opened file stream.</returns>
         private static Stream GetDataFileStream(string filePath, bool isReading)
         {
-            if (!isReading && Settings.Advanced.DataSaveFormat == DataFormat.GZip)
-            {
-                filePath += gzipExtension;
-            }
-
             return isReading
                 ? OpenRead(filePath)
                 : OpenWrite(filePath);
@@ -512,7 +579,8 @@ public partial class AutoBuildSnapshot
         [JsonProperty] Quaternion OriginRotation,
         [JsonProperty] int OriginalEntityCount,
         [JsonProperty] int ZoneCount,
-        [JsonProperty] int AuthorizedCount
+        [JsonProperty] int AuthorizedCount,
+        [JsonProperty] bool IsCompressed
     )
     {
         /// <summary>
@@ -534,7 +602,7 @@ public partial class AutoBuildSnapshot
             var directory = GetTimestampDirectory();
             var fileNamePrefix = GetFileNamePrefix();
 
-            return Path.Combine(directory, $"{fileNamePrefix}.{dataExtension}");
+            return Path.Combine(directory, $"{fileNamePrefix}.{dataExtension}{(IsCompressed ? ".gz" : string.Empty)}");
         }
 
         /// <summary>
@@ -571,7 +639,8 @@ public partial class AutoBuildSnapshot
                 OriginRotation: recording.BaseTC.ServerRotation,
                 OriginalEntityCount: entities.Count,
                 ZoneCount: zones.Count,
-                AuthorizedCount: recording.BaseTC.authorizedPlayers.Count
+                AuthorizedCount: recording.BaseTC.authorizedPlayers.Count,
+                IsCompressed: Settings.Advanced.DataSaveFormat == DataFormat.GZip
             );
         }
     }

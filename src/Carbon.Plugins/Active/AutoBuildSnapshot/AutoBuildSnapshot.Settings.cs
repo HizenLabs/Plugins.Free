@@ -120,6 +120,9 @@ public partial class AutoBuildSnapshot
                 [nameof(LangKeys.save_retention_deletion)] = "Snapshot {0} is older than {1} hour(s) and will be deleted.",
                 [nameof(LangKeys.save_retention_deletion_error)] = "Failed to delete file: {0}",
                 [nameof(LangKeys.save_loading)] = "Found snapshots for record at position {0}",
+                [nameof(LangKeys.save_cleanup_missing)] = "Cleanup save for '{0}', missing file: {1}",
+                [nameof(LangKeys.save_cleanup_error)] = "Failed to cleanup save for '{0}', error: {1}",
+                [nameof(LangKeys.save_cleanup_old)] = "Cleanup save for '{0}' due to retention policy (expired: {1})",
                 [nameof(LangKeys.menu_content_teleport)] = "Teleport",
                 [nameof(LangKeys.menu_content_teleport_confirm)] = "You will be teleported to the base at position:\n{0}",
                 [nameof(LangKeys.menu_content_rollback)] = "Rollback",
@@ -388,6 +391,21 @@ public partial class AutoBuildSnapshot
         /// Found snapshots for record at position {0}
         /// </summary>
         save_loading,
+
+        /// <summary>
+        /// Cleanup save for '{0}', missing file: {1}
+        /// </summary>
+        save_cleanup_missing,
+
+        /// <summary>
+        /// Failed to cleanup save for '{0}', error: {1}
+        /// </summary>
+        save_cleanup_error,
+
+        /// <summary>
+        /// Cleanup save for '{0}' due to retention policy (expired: {1})
+        /// </summary>
+        save_cleanup_old,
     }
 
     /// <summary>
