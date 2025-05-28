@@ -1,8 +1,6 @@
-﻿using System.Linq;
+﻿namespace Carbon.Plugins;
 
-namespace Carbon.Plugins;
-
-[Info("Server Broadcast", "hizenxyz", "25.5.39946")]
+[Info("Server Broadcast", "hizenxyz", "25.5.39951")]
 [Description("Allows broadcasting formatted server messages from the console.")]
 public class ServerBroadcast : CarbonPlugin
 {
