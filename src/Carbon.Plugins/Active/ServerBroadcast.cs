@@ -2,14 +2,29 @@
 
 namespace Carbon.Plugins;
 
-[Info("Server Broadcast", "hizenxyz", "25.5.38860")]
+[Info("Server Broadcast", "hizenxyz", "25.5.39719")]
 [Description("Allows broadcasting formatted server messages from the console.")]
 public class ServerBroadcast : CarbonPlugin
 {
+    private const string command_broadcast = "broadcast";
+    private const string command_broadcast_icon = "broadcast.icon";
+    private const string command_broadcast_user = "broadcast.user";
+
+    private const string permission_broadcast = "broadcast.use";
+    private const string permission_broadcast_icon = "broadcast.icon";
+    private const string permission_broadcast_user = "broadcast.user";
+
+    private void Init()
+    {
+        permission.RegisterPermission(permission_broadcast, this);
+        permission.RegisterPermission(permission_broadcast_icon, this);
+        permission.RegisterPermission(permission_broadcast_user, this);
+    }
+
     /// <summary>
     /// Sends a broadcast to all players on the server.
     /// </summary>
-    [ConsoleCommand("broadcast"), Permission("broadcast.admin"), Permission("broadcast.use")]
+    [Command(command_broadcast), Permission(permission_broadcast)]
     private void BroadcastCommand(ConsoleSystem.Arg arg)
     {
         if (arg.Args.Length < 1)
@@ -25,7 +40,7 @@ public class ServerBroadcast : CarbonPlugin
     /// <summary>
     /// Sends a broadcast to all players on the server with the specified user's icon.
     /// </summary>
-    [ConsoleCommand("broadcast.icon"), Permission("broadcast.admin"), Permission("broadcast.icon")]
+    [Command(command_broadcast_icon), Permission(permission_broadcast_icon)]
     private void BroadcastIconCommand(ConsoleSystem.Arg arg)
     {
         if (arg.Args.Length < 2)
@@ -49,7 +64,7 @@ public class ServerBroadcast : CarbonPlugin
     /// <summary>
     /// Sends a broadcast to all players on the server with the specified user's name and icon.
     /// </summary>
-    [ConsoleCommand("broadcast.user"), Permission("broadcast.admin"), Permission("broadcast.user")]
+    [Command(command_broadcast_user), Permission(permission_broadcast_user)]
     private void BroadcastUserCommand(ConsoleSystem.Arg arg)
     {
         if (arg.Args.Length < 2)
