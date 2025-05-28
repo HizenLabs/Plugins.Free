@@ -339,6 +339,10 @@
     </Reference>
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Configuration" />
+    <Reference Include="System.Memory, Version=4.0.1.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\managed\System.Memory.dll</HintPath>
+    </Reference>
     <Reference Include="TimeZoneConverter, Version=6.1.0.0, Culture=neutral, PublicKeyToken=e20ab7d0d9479841, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\managed\TimeZoneConverter.dll</HintPath>
@@ -694,6 +698,8 @@
     <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.Timers.cs" />
     <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.UserInterface.cs" />
     <Compile Include="Active\AutoBuildSnapshot\AutoBuildSnapshot.Settings.cs" />
+    <Compile Include="Active\ChatMarkdown.cs" />
+    <Compile Include="Active\ServerBroadcast.cs" />
     <Compile Include="Removed\AutoBuildSnapshot_old\AutoBuildSnapshot.BuildingScanner.cs" />
     <Compile Include="Removed\AutoBuildSnapshot_old\AutoBuildSnapshot.BuildSnapshot.cs" />
     <Compile Include="Removed\AutoBuildSnapshot_old\AutoBuildSnapshot.ExecutionBase.cs" />
