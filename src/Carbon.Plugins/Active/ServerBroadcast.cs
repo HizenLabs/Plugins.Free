@@ -2,7 +2,7 @@
 
 namespace Carbon.Plugins;
 
-[Info("Server Broadcast", "hizenxyz", "25.5.39719")]
+[Info("Server Broadcast", "hizenxyz", "25.5.39946")]
 [Description("Allows broadcasting formatted server messages from the console.")]
 public class ServerBroadcast : CarbonPlugin
 {
@@ -57,8 +57,8 @@ public class ServerBroadcast : CarbonPlugin
             return;
         }
 
-        var message = string.Join(" ", arg.Args.Skip(1));
-        server.Broadcast(message, player.displayName, player.userID);
+        var message = string.Join(" ", arg.Args, 1, arg.Args.Length - 1);
+        server.Broadcast(message, player.userID);
     }
 
     /// <summary>
@@ -81,7 +81,7 @@ public class ServerBroadcast : CarbonPlugin
             return;
         }
 
-        var message = string.Join(" ", arg.Args.Skip(1));
+        var message = string.Join(" ", arg.Args, 1, arg.Args.Length - 1);
         server.Broadcast(message, player.displayName, player.userID);
     }
 }
