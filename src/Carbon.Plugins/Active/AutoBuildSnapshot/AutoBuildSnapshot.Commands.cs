@@ -118,6 +118,8 @@ public partial class AutoBuildSnapshot
 
     #region Home
 
+    #region Record Navigation
+
     [ProtectedCommand(CommandPrefix + nameof(CommandMenuSelectRecord))]
     private void CommandMenuSelectRecord(BasePlayer player, string command, string[] args)
     {
@@ -128,6 +130,10 @@ public partial class AutoBuildSnapshot
 
         UserInterface.ShowMenu(player);
     }
+
+    #endregion
+
+    #region Teleport
 
     [ProtectedCommand(CommandPrefix + nameof(CommandMenuTeleport))]
     private void CommandMenuTeleport(BasePlayer player, string command, string[] args)
@@ -154,6 +160,10 @@ public partial class AutoBuildSnapshot
         UserInterface.ShowMenu(player);
     }
 
+    #endregion
+
+    #region Backup
+
     [ProtectedCommand(CommandPrefix + nameof(CommandMenuBackup))]
     private void CommandMenuBackup(BasePlayer player, string command, string[] args)
     {
@@ -173,6 +183,10 @@ public partial class AutoBuildSnapshot
         recording.AttemptSaveAsync(player).Forget();
     }
 
+    #endregion
+
+    #region Rollback
+
     [ProtectedCommand(CommandPrefix + nameof(CommandMenuRollback))]
     private void CommandMenuRollback(BasePlayer player, string command, string[] args)
     {
@@ -189,32 +203,7 @@ public partial class AutoBuildSnapshot
         _instance.Puts("Rollback not yet implemented.");
     }
 
-    private bool TryGetSelectedRecordingId(BasePlayer player, out ChangeManagement.RecordingId recordingId)
-    {
-        recordingId = default;
-
-        var selectedIndex = player.AutoBuildSnapshot_SelectedRecordIndex;
-        if (selectedIndex < 0)
-        {
-            Localizer.ChatMessage(player, LangKeys.error_no_record_selected);
-            return false;
-        }
-
-        if (player.AutoBuildSnapshot_RecordOptions is not List<ChangeManagement.RecordingId> recordingIds)
-        {
-            Localizer.ChatMessage(player, LangKeys.error_no_record_selected);
-            return false;
-        }
-
-        if (selectedIndex >= recordingIds.Count)
-        {
-            Localizer.ChatMessage(player, LangKeys.error_no_record_selected);
-            return false;
-        }
-
-        recordingId = recordingIds[selectedIndex];
-        return true;
-    }
+    #endregion
 
     #endregion
 
@@ -299,6 +288,33 @@ public partial class AutoBuildSnapshot
             return false;
         }
 
+        return true;
+    }
+
+    private bool TryGetSelectedRecordingId(BasePlayer player, out ChangeManagement.RecordingId recordingId)
+    {
+        recordingId = default;
+
+        var selectedIndex = player.AutoBuildSnapshot_SelectedRecordIndex;
+        if (selectedIndex < 0)
+        {
+            Localizer.ChatMessage(player, LangKeys.error_no_record_selected);
+            return false;
+        }
+
+        if (player.AutoBuildSnapshot_RecordOptions is not List<ChangeManagement.RecordingId> recordingIds)
+        {
+            Localizer.ChatMessage(player, LangKeys.error_no_record_selected);
+            return false;
+        }
+
+        if (selectedIndex >= recordingIds.Count)
+        {
+            Localizer.ChatMessage(player, LangKeys.error_no_record_selected);
+            return false;
+        }
+
+        recordingId = recordingIds[selectedIndex];
         return true;
     }
 
