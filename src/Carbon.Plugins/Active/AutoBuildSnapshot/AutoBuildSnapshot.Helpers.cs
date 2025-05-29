@@ -478,9 +478,115 @@ public partial class AutoBuildSnapshot
             return new(player.eyes.position, player.eyes.HeadForward());
         }
 
+        /// <summary>
+        /// Finds the nearest valid teleport position around a given origin that is not blocked by obstacles.
+        /// </summary>
+        /// <param name="origin">
+        /// The starting position to check around. This is typically the entity or reference point from which
+        /// the search for a free spot begins.
+        /// </param>
+        /// <param name="playerRadius">
+        /// The radius of the player’s collision boundary. This defines how much space around a candidate position
+        /// must be free for the player to fit without clipping into obstacles.
+        /// </param>
+        /// <param name="maxSearchRadius">
+        /// The maximum distance from the origin to search for a valid teleport position. The search will
+        /// expand outward in concentric circles up to this radius.
+        /// </param>
+        /// <param name="radiusSteps">
+        /// The number of concentric rings (steps) to check between the origin and the max search radius.
+        /// More steps increase the granularity of the search but also the cost.
+        /// </param>
+        /// <param name="samplesPerStep">
+        /// The number of sample points checked evenly around each concentric ring.
+        /// Must be a positive integer. More samples improve search thoroughness at the cost of performance.
+        /// </param>
+        /// <returns>
+        /// Returns the nearest valid position where the player can teleport without colliding with obstacles.
+        /// If the origin itself is free, it is returned immediately. If no valid position is found within
+        /// the search radius, the original origin position is returned as a fallback.
+        /// </returns>
+        /// <remarks>
+        /// This method assumes a horizontal plane search around the origin and uses a spherical collision
+        /// check (e.g., Physics.CheckSphere) to determine if a position is blocked.  
+        /// Angles are sampled symmetrically left and right from the forward direction (0 degrees) to prioritize
+        /// spots directly in front before exploring wider angles.
+        /// </remarks>
+        public static Vector3 FindNearestTeleportPosition(
+            Vector3 origin,
+            float playerRadius,
+            float maxSearchRadius,
+            int radiusSteps,
+            int samplesPerStep)
+        {
+            // 1. Check if origin itself is free
+            if (!Physics.CheckSphere(origin, playerRadius))
+            {
+                return origin;
+            }
+
+            // 2. For each concentric ring
+            for (int step = 1; step <= radiusSteps; step++)
+            {
+                // Calculate radius for this ring
+                float currentRadius = (step / (float)radiusSteps) * maxSearchRadius;
+
+                // Angle between samples on this ring
+                float angleIncrement = 360f / samplesPerStep;
+
+                // We'll sample points alternating left/right around forward (0°)
+                // So create an order: 0°, -angleIncrement, +angleIncrement, -2*angleIncrement, +2*angleIncrement, ...
+                // First sample is forward direction (0°)
+                if (step == 1)
+                {
+                    // Try forward directly on first ring
+                    Vector3 candidate = origin + Quaternion.Euler(0, 0, 0) * Vector3.forward * currentRadius;
+                    if (!Physics.CheckSphere(candidate, playerRadius))
+                        return candidate;
+                }
+
+                for (int i = 1; i <= samplesPerStep / 2; i++)
+                {
+                    // Calculate angles left and right
+                    float leftAngle = -angleIncrement * i;
+                    float rightAngle = angleIncrement * i;
+
+                    // Left candidate
+                    Vector3 leftCandidate = origin + Quaternion.Euler(0, leftAngle, 0) * Vector3.forward * currentRadius;
+                    if (!Physics.CheckSphere(leftCandidate, playerRadius))
+                        return leftCandidate;
+
+                    // Right candidate
+                    Vector3 rightCandidate = origin + Quaternion.Euler(0, rightAngle, 0) * Vector3.forward * currentRadius;
+                    if (!Physics.CheckSphere(rightCandidate, playerRadius))
+                        return rightCandidate;
+                }
+            }
+
+            // If no spot found, fallback to origin
+            return origin;
+        }
+
+
         #endregion
 
         #region Misc
+
+        /// <summary>
+        /// Calculates a position at a specified distance from an origin point in the direction of a given rotation.
+        /// </summary>
+        /// <param name="origin">The origin position from which to calculate the new position.</param>
+        /// <param name="rotation">The rotation that determines the direction in which to calculate the new position.</param>
+        /// <param name="distance">The distance from the origin to the new position.</param>
+        /// <returns>A Vector3 representing the new position at the specified distance from the origin in the direction of the rotation.</returns>
+        public static Vector3 GetPosition(Vector3 origin, Quaternion rotation, float distance)
+        {
+            // Calculate the forward direction from the rotation
+            Vector3 forward = rotation * Vector3.forward;
+
+            // Calculate the new position at the specified distance in the forward direction
+            return origin + forward * distance;
+        }
 
         /// <summary>
         /// Tries to parse a string into a specified type.

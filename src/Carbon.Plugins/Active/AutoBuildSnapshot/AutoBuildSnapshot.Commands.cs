@@ -2,6 +2,7 @@
 using Oxide.Game.Rust.Cui;
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace Carbon.Plugins;
 
@@ -135,12 +136,21 @@ public partial class AutoBuildSnapshot
 
         var meta = SaveManager.GetLastSave(recordingId);
 
-        UserInterface.ShowConfirmation(player, CommandMenuTeleport_OnConfirm, LangKeys.menu_content_teleport_confirm, meta.OriginPosition);
+        Vector3 offsetY = new(0, .5f, 0);
+        var destination = Helpers.GetPosition(meta.OriginPosition, meta.OriginRotation, 1.5f);
+        destination = Helpers.FindNearestTeleportPosition(destination + offsetY, .5f, 12f, 4, 25) - offsetY;
+
+        UserInterface.ShowConfirmation(player, player => CommandMenuTeleport_OnConfirm(player, destination), LangKeys.menu_content_teleport_confirm, destination);
     }
 
-    private void CommandMenuTeleport_OnConfirm(BasePlayer player)
+    private void CommandMenuTeleport_OnConfirm(BasePlayer player, Vector3 destination)
     {
-        _instance.Puts("Teleport not yet implemented.");
+        Localizer.ChatMessage(player, LangKeys.menu_content_teleport_message, destination);
+        player.Teleport(destination);
+
+        // Refresh the menu and update the section index to the first (nearest) one
+        player.AutoBuildSnapshot_SelectedRecordIndex = 0;
+        UserInterface.ShowMenu(player);
     }
 
     [ProtectedCommand(CommandPrefix + nameof(CommandMenuBackup))]

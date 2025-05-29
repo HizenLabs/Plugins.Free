@@ -125,6 +125,7 @@ public partial class AutoBuildSnapshot
                 [nameof(LangKeys.save_cleanup_old)] = "Cleanup save for '{0}' due to retention policy (expired: {1})",
                 [nameof(LangKeys.menu_content_teleport)] = "Teleport",
                 [nameof(LangKeys.menu_content_teleport_confirm)] = "You will be teleported to the base at position:\n{0}",
+                [nameof(LangKeys.menu_content_teleport_message)] = "Teleporting to base at position: {0}",
                 [nameof(LangKeys.menu_content_rollback)] = "Rollback",
                 [nameof(LangKeys.menu_content_rollback_confirm)] = "This will revert the state of the base to the snapshot at:\n{0}",
                 [nameof(LangKeys.menu_content_backup)] = "Backup",
@@ -353,9 +354,14 @@ public partial class AutoBuildSnapshot
         menu_content_teleport_confirm,
 
         /// <summary>
-        /// Rollback
+        /// Teleporting to base at position: {0}
         /// </summary>
-        menu_content_rollback,
+        menu_content_teleport_message,
+
+    /// <summary>
+    /// Rollback
+    /// </summary>
+    menu_content_rollback,
 
         /// <summary>
         /// This will revert the state of the base to the {0} snapshot, are you sure?
