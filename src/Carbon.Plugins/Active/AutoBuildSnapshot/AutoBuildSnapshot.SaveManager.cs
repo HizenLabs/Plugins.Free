@@ -226,9 +226,12 @@ public partial class AutoBuildSnapshot
         /// </summary>
         /// <param name="recording">The recording to save.</param>
         /// <returns>A task representing the asynchronous save operation.</returns>
-        public static async UniTask SaveAsync(ChangeManagement.BaseRecording recording, BasePlayer player = null)
+        public static async UniTask<int> SaveAsync(ChangeManagement.BaseRecording recording, BasePlayer player = null)
         {
-            Helpers.Log(LangKeys.message_save_begin, player, recording.Id, recording.BaseTC.ServerPosition);
+            if (!recording.IsActive)
+            {
+                throw new LocalizedException(LangKeys.error_save_recording_inactive, player, recording.Id);
+            }
 
             using var entities = Pool.Get<PooledList<BaseEntity>>();
             using var zones = Pool.Get<PooledList<Vector3>>();
@@ -241,6 +244,8 @@ public partial class AutoBuildSnapshot
 
             var meta = await SaveMetaDataAsync(recording, entities, zones, player);
             await SaveEntitiesAsync(meta, entities, zones, player);
+
+            return entities.Count;
         }
 
         /// <summary>

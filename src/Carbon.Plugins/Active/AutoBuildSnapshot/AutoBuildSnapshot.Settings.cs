@@ -83,6 +83,7 @@ public partial class AutoBuildSnapshot
                 [nameof(LangKeys.error_save_no_entities_found)] = "No entities found for saving.",
                 [nameof(LangKeys.message_init_recordings)] = "Initialize found {0} building(s) to track",
                 [nameof(LangKeys.message_save_begin)] = "Begin saving base at position {1}...",
+                [nameof(LangKeys.message_save_success)] = "Saved <color=#26AA00>{1}</color> entities in <color=#0082E0>{2}</color> ms",
                 [nameof(LangKeys.error_save_file_exists)] = "The save file at '{0}' already exists.",
                 [nameof(LangKeys.error_recording_locked)] = "The base is currently locked for processing. Please try again later.",
                 [nameof(LangKeys.error_must_face_target)] = "Must be facing building and be within {0} meters.",
@@ -229,6 +230,16 @@ public partial class AutoBuildSnapshot
         error_no_record_selected,
 
         /// <summary>
+        /// Could not find recording with id '{0}'
+        /// </summary>
+        error_record_not_found,
+
+        /// <summary>
+        /// Recording is not active and cannot be saved: {0}
+        /// </summary>
+        error_save_recording_inactive,
+
+        /// <summary>
         /// Backup command for base {0} completed in: {1}
         /// </summary>
         message_backup_success,
@@ -239,9 +250,14 @@ public partial class AutoBuildSnapshot
         message_init_recordings,
 
         /// <summary>
-        /// Begin saving base {0} at position {1}...
+        /// Begin saving base at position {1}...
         /// </summary>
         message_save_begin,
+
+        /// <summary>
+        /// Saved {1} entities for base {0} (duration: {2} ms)
+        /// </summary>
+        message_save_success,
 
         /// <summary>
         /// Auto Build Snapshot
@@ -349,7 +365,7 @@ public partial class AutoBuildSnapshot
         menu_content_teleport,
 
         /// <summary>
-        /// You will be teleported to the base at position {0}, are you sure?
+        /// You will be teleported to the base at position:\n{0}
         /// </summary>
         menu_content_teleport_confirm,
 
@@ -358,13 +374,13 @@ public partial class AutoBuildSnapshot
         /// </summary>
         menu_content_teleport_message,
 
-    /// <summary>
-    /// Rollback
-    /// </summary>
-    menu_content_rollback,
+        /// <summary>
+        /// Rollback
+        /// </summary>
+        menu_content_rollback,
 
         /// <summary>
-        /// This will revert the state of the base to the {0} snapshot, are you sure?
+        /// A manual backup will be created for the base at:\n{0}
         /// </summary>
         menu_content_rollback_confirm,
 
@@ -374,7 +390,7 @@ public partial class AutoBuildSnapshot
         menu_content_backup,
 
         /// <summary>
-        /// This will create a new backup of the base, are you sure?
+        /// A manual backup will be created for the base at:\n{0}
         /// </summary>
         menu_content_backup_confirm,
 

@@ -282,9 +282,14 @@ public partial class AutoBuildSnapshot
 
                     using var recordingLock = CreateLock(player);
 
-                    await SaveManager.SaveAsync(this, player);
+                    Helpers.Log(LangKeys.message_save_begin, player, Id, BaseTC.ServerPosition);
+
+                    var entityCount = await SaveManager.SaveAsync(this, player);
 
                     saveAttempt.UpdateResult(true);
+
+                    var durationMS = Math.Round(saveAttempt.Duration.TotalMilliseconds, 3);
+                    Helpers.Log(LangKeys.message_save_success, player, Id.Position, entityCount, durationMS);
                 }
                 catch (Exception ex)
                 {

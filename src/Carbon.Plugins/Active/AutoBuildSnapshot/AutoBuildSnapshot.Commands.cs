@@ -1,4 +1,5 @@
-﻿using HizenLabs.Extensions.UserPreference.UI;
+﻿using Cysharp.Threading.Tasks;
+using HizenLabs.Extensions.UserPreference.UI;
 using Oxide.Game.Rust.Cui;
 using System;
 using System.Collections.Generic;
@@ -159,14 +160,17 @@ public partial class AutoBuildSnapshot
         if (!Settings.Commands.Backup.HasPermission(player)) return;
         if (!TryGetSelectedRecordingId(player, out var recordingId)) return;
 
-        var meta = SaveManager.GetLastSave(recordingId);
-
-        UserInterface.ShowConfirmation(player, CommandMenuBackup_OnConfirm, LangKeys.menu_content_backup_confirm, meta.OriginPosition);
+        UserInterface.ShowConfirmation(player, player => CommandMenuBackup_OnConfirm(player, recordingId), LangKeys.menu_content_backup_confirm, recordingId.Position);
     }
 
-    private void CommandMenuBackup_OnConfirm(BasePlayer player)
+    private void CommandMenuBackup_OnConfirm(BasePlayer player, ChangeManagement.RecordingId recordingId)
     {
-        _instance.Puts("Manual backup not yet implemented.");
+        if (!ChangeManagement.Recordings.TryGetValue(recordingId, out var recording))
+        {
+            Localizer.ChatMessage(player, LangKeys.error_record_not_found, recordingId);
+        }
+
+        recording.AttemptSaveAsync(player).Forget();
     }
 
     [ProtectedCommand(CommandPrefix + nameof(CommandMenuRollback))]
