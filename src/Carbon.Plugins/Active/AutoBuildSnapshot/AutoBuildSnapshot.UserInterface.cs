@@ -366,9 +366,16 @@ public partial class AutoBuildSnapshot
                     color: theme.SurfaceContainer
                 );
 
-            var snapshotDetailContainer = cui.v2
+            var snapshotOptionsContainer = cui.v2
                 .CreatePanel(tabContent,
-                    position: new(.26f, 0, 1, 1),
+                    position: new(.26f, 0, .5f, 1),
+                    offset: new(0, 12, -12, 0),
+                    color: theme.SurfaceContainer
+                );
+
+            var snapshotDetailsContainer = cui.v2
+                .CreatePanel(tabContent,
+                    position: new(.5f, 0, 1, 1),
                     offset: new(0, 12, -12, 0),
                     color: theme.SurfaceContainer
                 );
@@ -390,26 +397,44 @@ public partial class AutoBuildSnapshot
 
             if (recordingIds.Count > 0)
             {
+                var selectedRecord = recordingIds[player.AutoBuildSnapshot_SelectedRecordIndex];
+
                 RenderRecordOptions(cui, recordOptionsContainer, player, recordingIds, userPreference);
 
                 RenderRecordButtons(cui, tabButtons, player, recordingIds, userPreference);
 
-                RenderSnapshotOptions(cui, snapshotDetailContainer, player, recordingIds, userPreference);
+                if (player.AutoBuildSnapshot_SnapshotOptions is List<MetaInfo> snapshotMetas)
+                {
+                    Pool.FreeUnmanaged(ref snapshotMetas);
+                }
 
+                snapshotMetas = Pool.Get<List<MetaInfo>>();
+                SaveManager.GetSaves(selectedRecord, snapshotMetas);
+                player.AutoBuildSnapshot_SnapshotOptions = snapshotMetas;
 
+                if (snapshotMetas.Count > 0)
+                {
+                    RenderSnapshotOptions(cui, snapshotOptionsContainer, player, snapshotMetas, userPreference);
+
+                    if (player.AutoBuildSnapshot_SelectedSnapshotIndex >= snapshotMetas.Count)
+                    {
+                        player.AutoBuildSnapshot_SelectedSnapshotIndex = 0;
+                    }
+
+                    var snapshotMetaInfo = snapshotMetas[player.AutoBuildSnapshot_SelectedSnapshotIndex];
+                    RenderSnapshotDetails(cui, snapshotDetailsContainer, player, snapshotMetaInfo, userPreference);
+                }
+                else
+                {
+                    RenderEmpty(cui, snapshotOptionsContainer, player, userPreference, LangKeys.menu_no_snapshots_found);
+                    RenderEmpty(cui, snapshotDetailsContainer, player, userPreference, LangKeys.menu_no_snapshot_selected);
+                }
             }
             else
             {
-                cui.v2
-                    .CreateText(
-                        container: snapshotDetailContainer,
-                        position: LuiPosition.MiddleCenter,
-                        offset: new(-100, -20, 100, 20),
-                        fontSize: 12,
-                        color: theme.OnSurface,
-                        text: Localizer.Text(LangKeys.menu_no_records_found, player),
-                        alignment: TextAnchor.MiddleCenter)
-                    .SetTextFont(FontTypes.RobotoCondensedRegular);
+                RenderEmpty(cui, recordOptionsContainer, player, userPreference, LangKeys.menu_no_records_found);
+                RenderEmpty(cui, snapshotOptionsContainer, player, userPreference, LangKeys.menu_no_snapshots_found);
+                RenderEmpty(cui, snapshotDetailsContainer, player, userPreference, LangKeys.menu_no_snapshot_selected);
             }
         }
 
@@ -582,23 +607,13 @@ public partial class AutoBuildSnapshot
             CUI cui,
             LUI.LuiContainer snapshotOptionContainer,
             BasePlayer player,
-            List<ChangeManagement.RecordingId> recordingIds,
+            List<MetaInfo> snapshotMetas,
             UserPreferenceData userPreference)
         {
             var theme = userPreference.Theme;
 
             int panelHeight = 34;
-            int panelWidth = 250;
-
-            var selectedRecord = recordingIds[player.AutoBuildSnapshot_SelectedRecordIndex];
-
-            if (player.AutoBuildSnapshot_SnapshotOptions is not List<MetaInfo> snapshotMetas)
-            {
-                snapshotMetas = Pool.Get<List<MetaInfo>>();
-                player.AutoBuildSnapshot_SnapshotOptions = snapshotMetas;
-            }
-
-            SaveManager.GetSaves(selectedRecord, snapshotMetas);
+            int panelWidth = 200;
 
             RenderOptionsList(
                 cui: cui,
@@ -647,6 +662,26 @@ public partial class AutoBuildSnapshot
                         .SetTextFont(FontTypes.DroidSansMono);
                 }
             );
+        }
+
+        #endregion
+
+        #region Snapshot Details
+
+        private static void RenderSnapshotDetails(
+            CUI cui,
+            LUI.LuiContainer container,
+            BasePlayer player,
+            MetaInfo meta,
+            UserPreferenceData userPreference)
+        {
+            int line = 0;
+            RenderInfoLine(cui, container, userPreference, Localizer.Text(LangKeys.info_snapshotid, player, meta.Id), line++);
+            RenderInfoLine(cui, container, userPreference, Localizer.Text(LangKeys.info_position, player, meta.OriginPosition), line++);
+            RenderInfoLine(cui, container, userPreference, Localizer.Text(LangKeys.info_timestamp, player, meta.TimeStamp), line++);
+            RenderInfoLine(cui, container, userPreference, Localizer.Text(LangKeys.info_entities, player, meta.OriginalEntityCount), line++);
+            RenderInfoLine(cui, container, userPreference, Localizer.Text(LangKeys.info_buildingblocks, player, meta.ZoneCount), line++);
+            RenderInfoLine(cui, container, userPreference, Localizer.Text(LangKeys.info_authorized, player, meta.AuthorizedCount), line++);
         }
 
         #endregion
@@ -772,6 +807,30 @@ public partial class AutoBuildSnapshot
         {
             var theme = userPreference.Theme;
 
+            var optionsScrollView = cui.v2
+                .CreateScrollView(container,
+                    position: LuiPosition.Full,
+                    offset: LuiOffset.None,
+                    vertical: true,
+                    horizontal: false,
+                    movementType: ScrollRect.MovementType.Elastic,
+                    elasticity: 0,
+                    inertia: true,
+                    decelerationRate: 0.1f,
+                    scrollSensitivity: 20,
+                    verticalScrollOptions: new()
+                    {
+                        size = 6,
+                        autoHide = true,
+                        handleColor = theme.Primary
+                    });
+
+            var scrollY = -height * options.Count + 420;
+            if (scrollY < 0)
+            {
+                optionsScrollView.SetScrollContent(LuiPosition.Full, new(0, scrollY, width, 0));
+            }
+
             for (int i = 0; i < options.Count; i++)
             {
                 var isSelected = isSelectedFunc(i);
@@ -779,7 +838,7 @@ public partial class AutoBuildSnapshot
                 var color = isSelected ? theme.PrimaryContainer : theme.OutlineVariant;
 
                 var selectRecordButton = CreateButton(cui, player, userPreference,
-                    container: container,
+                    container: optionsScrollView,
                     position: LuiPosition.UpperLeft,
                     offset: new(5, -height + offsetY, width, -5 + offsetY),
                     color: color,
@@ -840,6 +899,49 @@ public partial class AutoBuildSnapshot
                 .SetTextFont(fontType);
 
             return button;
+        }
+
+        private static void RenderEmpty(
+            CUI cui,
+            LUI.LuiContainer container,
+            BasePlayer player,
+            UserPreferenceData userPreference,
+            LangKeys textKey)
+        {
+            var theme = userPreference.Theme;
+            cui.v2
+                .CreateText(
+                    container: container,
+                    position: LuiPosition.MiddleCenter,
+                    offset: new(-100, -20, 100, 20),
+                    fontSize: 12,
+                    color: theme.OnSurface,
+                    text: Localizer.Text(textKey, player),
+                    alignment: TextAnchor.MiddleCenter)
+                .SetTextFont(FontTypes.RobotoCondensedRegular);
+        }
+
+        private static void RenderInfoLine(
+            CUI cui,
+            LUI.LuiContainer container,
+            UserPreferenceData userPreference,
+            string text,
+            int line)
+        {
+            const int lineHeight = 25;
+
+            var theme = userPreference.Theme;
+            int yOffset = -lineHeight * line - 5;
+            cui.v2
+                .CreateText(
+                    container: container,
+                    position: LuiPosition.UpperLeft,
+                    offset: new(10, yOffset - lineHeight, 400, yOffset),
+                    fontSize: 12,
+                    color: theme.OnSurface,
+                    text: text,
+                    alignment: TextAnchor.MiddleLeft)
+                .SetTextFont(FontTypes.RobotoCondensedRegular);
         }
 
         #endregion

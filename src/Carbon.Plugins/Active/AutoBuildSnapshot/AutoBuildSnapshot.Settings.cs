@@ -119,7 +119,9 @@ public partial class AutoBuildSnapshot
                 [nameof(LangKeys.menu_logs_empty)] = "The logs are empty.",
                 [nameof(LangKeys.menu_confirm)] = "Confirm",
                 [nameof(LangKeys.menu_cancel)] = "Cancel",
-                [nameof(LangKeys.menu_no_records_found)] = "Could not find any snapshots.",
+                [nameof(LangKeys.menu_no_records_found)] = "Could not find any records.",
+                [nameof(LangKeys.menu_no_snapshots_found)] = "Could not find any snapshots.",
+                [nameof(LangKeys.menu_no_snapshot_selected)] = "No snapshot selected.",
                 [nameof(LangKeys.save_retention_deletion)] = "Snapshot {0} is older than {1} hour(s) and will be deleted.",
                 [nameof(LangKeys.save_retention_deletion_error)] = "Failed to delete file: {0}",
                 [nameof(LangKeys.save_loading)] = "Found snapshots for record at position {0}",
@@ -133,6 +135,12 @@ public partial class AutoBuildSnapshot
                 [nameof(LangKeys.menu_content_rollback_confirm)] = "A rollback will be performed to the snapshot at:\nPosition: {0}\nTime: {1}",
                 [nameof(LangKeys.menu_content_backup)] = "Backup",
                 [nameof(LangKeys.menu_content_backup_confirm)] = "A manual backup will be created for the base at:\n{0}",
+                [nameof(LangKeys.info_snapshotid)] = "Snapshot Id: {0}",
+                [nameof(LangKeys.info_position)] = "Position: {0}",
+                [nameof(LangKeys.info_timestamp)] = "Timestamp: {0}",
+                [nameof(LangKeys.info_entities)] = "Entities: {0}",
+                [nameof(LangKeys.info_buildingblocks)] = "Building Blocks: {0}",
+                [nameof(LangKeys.info_authorized)] = "Authorized User(s): {0}",
                 [nameof(LangKeys.Default)] = "Default",
                 [nameof(LangKeys.StringEmpty)] = string.Empty,
             }, plugin, "en");
@@ -407,9 +415,19 @@ public partial class AutoBuildSnapshot
         menu_content_backup_confirm,
 
         /// <summary>
-        /// Could not find any snapshots.
+        /// Could not find any records.
         /// </summary>
         menu_no_records_found,
+
+        /// <summary>
+        /// Could not find any snapshots.
+        /// </summary>
+        menu_no_snapshots_found,
+
+        /// <summary>
+        /// No snapshot selected.
+        /// </summary>
+        menu_no_snapshot_selected,
 
         /// <summary>
         /// File {0} is older than {1} hour(s) and will be deleted.
@@ -440,6 +458,36 @@ public partial class AutoBuildSnapshot
         /// Cleanup save for '{0}' due to retention policy (expired: {1})
         /// </summary>
         save_cleanup_old,
+
+        /// <summary>
+        /// Snapshot Id: {0}
+        /// </summary>
+        info_snapshotid,
+        
+        /// <summary>
+        /// Position: {0}
+        /// </summary>
+        info_position,
+
+        /// <summary>
+        /// Timestamp: {0}
+        /// </summary>
+        info_timestamp,
+
+        /// <summary>
+        /// Entities: {0}
+        /// </summary>
+        info_entities,
+
+        /// <summary>
+        /// Building Blocks: {0}
+        /// </summary>
+        info_buildingblocks,
+
+        /// <summary>
+        /// Authorized User(s): {0}
+        /// </summary>
+        info_authorized,
     }
 
     /// <summary>
