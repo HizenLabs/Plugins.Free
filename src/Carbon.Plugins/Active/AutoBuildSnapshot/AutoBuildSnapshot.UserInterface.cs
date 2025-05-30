@@ -28,7 +28,8 @@ public partial class AutoBuildSnapshot
         public const string MainMenuId = "abs.mainmenu";
         public const string ConfirmMenuId = "abs.confirmation";
 
-        private const string IconToolCupboardShortname = "cupboard.tool";
+        private const int ItemCameraId = -2001260025;
+        private const int ItemToolCupboardId = -97956382;
 
         private const string mdIconBaseUrl = "https://raw.githubusercontent.com/google/material-design-icons/refs/heads/master/png";
 
@@ -512,7 +513,7 @@ public partial class AutoBuildSnapshot
                             container: button,
                             position: LuiPosition.LowerLeft,
                             offset: new(2, 2, panelHeight - 7, panelHeight - 7),
-                            shortname: IconToolCupboardShortname
+                            itemId: ItemToolCupboardId
                         );
 
                     if (!isSelected)
@@ -525,7 +526,7 @@ public partial class AutoBuildSnapshot
                                 container: button,
                                 position: LuiPosition.LowerLeft,
                                 offset: new(2, 2, panelHeight - 7, panelHeight - 7),
-                                shortname: IconToolCupboardShortname,
+                                itemId: ItemToolCupboardId,
                                 color: iconMaskColor);
                     }
 
@@ -612,16 +613,26 @@ public partial class AutoBuildSnapshot
                 template: (button, index, meta, isSelected) =>
                 {
                     cui.v2
-                        .CreateText(
+                        .CreateItemIcon(
                             container: button,
                             position: LuiPosition.LowerLeft,
-                            offset: new(5, 0, panelWidth, panelHeight - 8),
-                            fontSize: 8,
-                            color: theme.OnSecondaryContainer,
-                            text: $"Time: {meta.TimeStamp}\nEntities: {meta.OriginalEntityCount} | Blocks: {meta.ZoneCount}",
-                            alignment: TextAnchor.UpperLeft
-                        )
-                        .SetTextFont(FontTypes.DroidSansMono);
+                            offset: new(2, 2, panelHeight - 7, panelHeight - 7),
+                            itemId: ItemCameraId
+                        );
+
+                    if (!isSelected)
+                    {
+                        var iconMaskColor = theme.SecondaryContainer.WithOpacity(.7f);
+
+
+                        cui.v2
+                            .CreateItemIcon(
+                                container: button,
+                                position: LuiPosition.LowerLeft,
+                                offset: new(2, 2, panelHeight - 7, panelHeight - 7),
+                                itemId: ItemCameraId,
+                                color: iconMaskColor);
+                    }
 
                     cui.v2
                         .CreateText(
@@ -630,7 +641,7 @@ public partial class AutoBuildSnapshot
                             offset: new(panelHeight, 0, panelWidth, panelHeight - 8),
                             fontSize: 8,
                             color: theme.OnSecondaryContainer,
-                            text: $"",
+                            text: $"Time: {meta.TimeStamp}\nEntities: {meta.OriginalEntityCount} | Blocks: {meta.ZoneCount}",
                             alignment: TextAnchor.UpperLeft
                         )
                         .SetTextFont(FontTypes.DroidSansMono);
