@@ -4,12 +4,14 @@ using Carbon.Modules;
 using Facepunch;
 using HizenLabs.Extensions.UserPreference.Data;
 using HizenLabs.Extensions.UserPreference.Material.API;
+using HizenLabs.Extensions.UserPreference.UI;
 using Oxide.Game.Rust.Cui;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using static Carbon.Components.CUI.Handler;
+using static GameTip;
 
 namespace Carbon.Plugins;
 
@@ -20,6 +22,8 @@ public partial class AutoBuildSnapshot
     /// </summary>
     private static class UserInterface
     {
+        #region Fields
+
         private const string BlurAsset = "assets/content/ui/uibackgroundblur.mat";
         public const string MainMenuId = "abs.mainmenu";
         public const string ConfirmMenuId = "abs.confirmation";
@@ -36,6 +40,10 @@ public partial class AutoBuildSnapshot
 
         private const string IconDisplaySettingsId = "md_display_settings";
         private const string IconDisplaySettingsUrl = $"{mdIconBaseUrl}/action/display_settings/materialicons/48dp/2x/baseline_display_settings_black_48dp.png";
+
+        #endregion
+
+        #region API
 
         /// <summary>
         /// Initializes the user interface for the plugin.
@@ -132,6 +140,12 @@ public partial class AutoBuildSnapshot
 
             player.AutoBuildSnapshot_MenuState = true;
         }
+
+        #endregion
+
+        #region Render
+
+        #region Main Container
 
         /// <summary>
         /// Renders the main menu for the user.
@@ -322,6 +336,12 @@ public partial class AutoBuildSnapshot
             }
         }
 
+        #endregion
+
+        #region Home
+
+        #region Home Container
+
         private static void RenderHomeTab(
             CUI cui,
             BasePlayer player,
@@ -362,9 +382,9 @@ public partial class AutoBuildSnapshot
 
             if (recordingIds.Count > 0)
             {
-                RenderSelectionOptions(cui, snapshotSelectionContainer, player, recordingIds, userPreference);
+                RenderRecordOptions(cui, snapshotSelectionContainer, player, recordingIds, userPreference);
 
-                RenderSnapshotButtons(cui, tabButtons, player, userPreference);
+                RenderRecordButtons(cui, tabButtons, player, recordingIds, userPreference);
 
 
             }
@@ -383,112 +403,23 @@ public partial class AutoBuildSnapshot
             }
         }
 
-        private static void RenderSelectionOptions(
+        #endregion
+
+        #region Record Buttons
+
+        private static void RenderRecordButtons(
             CUI cui,
-            LUI.LuiContainer snapshotSelectionContainer,
+            LUI.LuiContainer tabButtons,
             BasePlayer player,
             List<ChangeManagement.RecordingId> recordingIds,
             UserPreferenceData userPreference)
         {
             var theme = userPreference.Theme;
-
-            for (int i = 0; i < recordingIds.Count; i++)
-            {
-                var recordId = recordingIds[i];
-                var lastSave = SaveManager.GetLastSave(recordId);
-                var isActive = ChangeManagement.Recordings.TryGetValue(recordId, out var recording) && recording.IsActive;
-
-                var isSelected = i == player.AutoBuildSnapshot_SelectedRecordIndex;
-
-                int panelHeight = 45;
-                int panelWidth = 205;
-                int offsetY = -panelHeight * i;
-                var color = isSelected ? theme.PrimaryContainer : theme.OutlineVariant;
-
-                var selectRecordButton = CreateButton(cui, player, userPreference,
-                    container: snapshotSelectionContainer,
-                    position: LuiPosition.UpperLeft,
-                    offset: new(5, -panelHeight + offsetY, panelWidth, -5 + offsetY),
-                    color: color,
-                    textColor: theme.OnPrimary,
-                    textKey: LangKeys.StringEmpty,
-                    commandName: nameof(CommandMenuSelectRecord),
-                    commandArgs: i.ToString()
-                );
-
-                cui.v2
-                    .CreateItemIcon(
-                        container: selectRecordButton,
-                        position: LuiPosition.LowerLeft,
-                        offset: new(2, 2, panelHeight - 7, panelHeight - 7),
-                        shortname: IconToolCupboardShortname
-                    );
-
-                if (!isSelected)
-                {
-                    var iconMaskColor = theme.SecondaryContainer.WithOpacity(.7f);
-
-
-                    cui.v2
-                        .CreateItemIcon(
-                            container: selectRecordButton,
-                            position: LuiPosition.LowerLeft,
-                            offset: new(2, 2, panelHeight - 7, panelHeight - 7),
-                            shortname: IconToolCupboardShortname,
-                            color: iconMaskColor);
-                }
-
-                if (!isActive)
-                {
-                    cui.v2
-                        .CreateImageFromDb(
-                            container: selectRecordButton,
-                            position: LuiPosition.LowerLeft,
-                            offset: new(2, 2, 20, 20),
-                            dbName: IconDeleteId,
-                            color: theme.Background.WithOpacity(.95f));
-                }
-
-                float posX = recordingIds[i].Position.x;
-                float posY = recordingIds[i].Position.y;
-                float posZ = recordingIds[i].Position.z;
-
-                cui.v2
-                    .CreateText(
-                        container: selectRecordButton,
-                        position: LuiPosition.LowerLeft,
-                        offset: new(panelHeight, 0, panelWidth, panelHeight - 8),
-                        fontSize: 8,
-                        color: theme.OnSecondaryContainer,
-                        text: $"X: {posX}\nY: {posY}\nZ: {posZ}",
-                        alignment: TextAnchor.UpperLeft
-                    )
-                    .SetTextFont(FontTypes.DroidSansMono);
-
-
-                cui.v2
-                    .CreateText(
-                        container: selectRecordButton,
-                        position: LuiPosition.LowerLeft,
-                        offset: new(panelHeight * 2 + 20, 0, panelWidth, panelHeight - 8),
-                        fontSize: 8,
-                        color: theme.OnSecondaryContainer,
-                        text: $"Entities: {lastSave.OriginalEntityCount}\nZones: {lastSave.ZoneCount}\nAuthorized: {lastSave.AuthorizedCount}",
-                        alignment: TextAnchor.UpperLeft
-                    )
-                    .SetTextFont(FontTypes.DroidSansMono);
-            }
-        }
-        
-        private static void RenderSnapshotButtons(
-            CUI cui,
-            LUI.LuiContainer tabButtons,
-            BasePlayer player,
-            UserPreferenceData userPreference)
-        {
-            var theme = userPreference.Theme;
             var buttonIndex = 0;
             var buttonWidth = 0.12f;
+
+            var recordId = recordingIds[player.AutoBuildSnapshot_SelectedRecordIndex];
+            var isActive = ChangeManagement.Recordings.TryGetValue(recordId, out var recording) && recording.IsActive;
 
             if (Settings.Commands.Rollback.HasPermission(player))
             {
@@ -506,7 +437,7 @@ public partial class AutoBuildSnapshot
                 );
             }
 
-            if (Settings.Commands.Backup.HasPermission(player))
+            if (isActive && Settings.Commands.Backup.HasPermission(player))
             {
                 var offsetX = 0.005f * buttonIndex;
                 var buttonXMax = 1 - buttonIndex * buttonWidth - offsetX;
@@ -538,6 +469,110 @@ public partial class AutoBuildSnapshot
                 );
             }
         }
+
+        #endregion
+
+        #region Record Options
+
+        private static void RenderRecordOptions(
+            CUI cui,
+            LUI.LuiContainer snapshotSelectionContainer,
+            BasePlayer player,
+            List<ChangeManagement.RecordingId> recordingIds,
+            UserPreferenceData userPreference)
+        {
+            var theme = userPreference.Theme;
+
+            int panelHeight = 45;
+            int panelWidth = 205;
+
+            RenderOptionsList(
+                cui: cui,
+                container: snapshotSelectionContainer,
+                player: player,
+                userPreference: userPreference,
+                height: panelHeight,
+                width: panelWidth,
+                onSelectCommand: nameof(CommandMenuSelectRecord),
+                options: recordingIds,
+                isSelectedFunc: index => index == player.AutoBuildSnapshot_SelectedRecordIndex,
+                template: (button, index, recordId, isSelected) =>
+                {
+                    cui.v2
+                        .CreateItemIcon(
+                            container: button,
+                            position: LuiPosition.LowerLeft,
+                            offset: new(2, 2, panelHeight - 7, panelHeight - 7),
+                            shortname: IconToolCupboardShortname
+                        );
+
+                    if (!isSelected)
+                    {
+                        var iconMaskColor = theme.SecondaryContainer.WithOpacity(.7f);
+
+
+                        cui.v2
+                            .CreateItemIcon(
+                                container: button,
+                                position: LuiPosition.LowerLeft,
+                                offset: new(2, 2, panelHeight - 7, panelHeight - 7),
+                                shortname: IconToolCupboardShortname,
+                                color: iconMaskColor);
+                    }
+
+                    var isActive = ChangeManagement.Recordings.TryGetValue(recordId, out var recording) && recording.IsActive;
+                    if (!isActive)
+                    {
+                        cui.v2
+                            .CreateImageFromDb(
+                                container: button,
+                                position: LuiPosition.LowerLeft,
+                                offset: new(2, 2, 20, 20),
+                                dbName: IconDeleteId,
+                                color: theme.Background.WithOpacity(.95f));
+                    }
+
+                    float posX = recordingIds[index].Position.x;
+                    float posY = recordingIds[index].Position.y;
+                    float posZ = recordingIds[index].Position.z;
+
+                    cui.v2
+                        .CreateText(
+                            container: button,
+                            position: LuiPosition.LowerLeft,
+                            offset: new(panelHeight, 0, panelWidth, panelHeight - 8),
+                            fontSize: 8,
+                            color: theme.OnSecondaryContainer,
+                            text: $"X: {posX}\nY: {posY}\nZ: {posZ}",
+                            alignment: TextAnchor.UpperLeft
+                        )
+                        .SetTextFont(FontTypes.DroidSansMono);
+
+                    var lastSave = SaveManager.GetLastSave(recordId);
+                    cui.v2
+                        .CreateText(
+                            container: button,
+                            position: LuiPosition.LowerLeft,
+                            offset: new(panelHeight * 2 + 20, 0, panelWidth, panelHeight - 8),
+                            fontSize: 8,
+                            color: theme.OnSecondaryContainer,
+                            text: $"Entities: {lastSave.OriginalEntityCount}\nZones: {lastSave.ZoneCount}\nAuthorized: {lastSave.AuthorizedCount}",
+                            alignment: TextAnchor.UpperLeft
+                        )
+                        .SetTextFont(FontTypes.DroidSansMono);
+                }
+            );
+        }
+
+        #endregion
+
+        #region Snapshot Options
+
+        #endregion
+
+        #endregion
+
+        #region Logs
 
         private static void RenderLogsTab(
             CUI cui,
@@ -638,14 +673,43 @@ public partial class AutoBuildSnapshot
             }
         }
 
-        private static string GetTabButtonColor(int index, int targetIndex, MaterialTheme theme)
-        {
-            return index == targetIndex ? theme.PrimaryContainer : theme.OutlineVariant;
-        }
+        #endregion
 
-        private static string GetTabButtonTextColor(int index, int targetIndex, MaterialTheme theme)
+        #region UI Helpers
+
+        private static void RenderOptionsList<T>(
+            CUI cui,
+            LUI.LuiContainer container,
+            BasePlayer player,
+            UserPreferenceData userPreference,
+            int height,
+            int width,
+            string onSelectCommand,
+            List<T> options,
+            Func<int, bool> isSelectedFunc,
+            Action<LUI.LuiContainer, int, T, bool> template)
         {
-            return index == targetIndex ? theme.OnPrimaryContainer : theme.OnPrimaryContainer;
+            var theme = userPreference.Theme;
+
+            for (int i = 0; i < options.Count; i++)
+            {
+                var isSelected = isSelectedFunc(i);
+                int offsetY = -height * i;
+                var color = isSelected ? theme.PrimaryContainer : theme.OutlineVariant;
+
+                var selectRecordButton = CreateButton(cui, player, userPreference,
+                    container: container,
+                    position: LuiPosition.UpperLeft,
+                    offset: new(5, -height + offsetY, width, -5 + offsetY),
+                    color: color,
+                    textColor: theme.OnPrimary,
+                    textKey: LangKeys.StringEmpty,
+                    commandName: onSelectCommand,
+                    commandArgs: i.ToString()
+                );
+
+                template(selectRecordButton, i, options[i], isSelected);
+            }
         }
 
         private static LUI.LuiContainer CreateButton(
@@ -696,6 +760,10 @@ public partial class AutoBuildSnapshot
 
             return button;
         }
+
+        #endregion
+
+        #region Confirmation
 
         public static void ShowConfirmation(
             BasePlayer player,
@@ -766,5 +834,23 @@ public partial class AutoBuildSnapshot
 
             cui.v2.SendUi(player);
         }
+
+        #endregion
+
+        #endregion
+
+        #region Helpers
+
+        private static string GetTabButtonColor(int index, int targetIndex, MaterialTheme theme)
+        {
+            return index == targetIndex ? theme.PrimaryContainer : theme.OutlineVariant;
+        }
+
+        private static string GetTabButtonTextColor(int index, int targetIndex, MaterialTheme theme)
+        {
+            return index == targetIndex ? theme.OnPrimaryContainer : theme.OnPrimaryContainer;
+        }
+
+        #endregion
     }
 }
