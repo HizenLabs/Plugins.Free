@@ -113,11 +113,18 @@ public partial class AutoBuildSnapshot
             CuiHelper.DestroyUi(player, MainMenuId);
             CuiHelper.DestroyUi(player, ConfirmMenuId);
 
-            // We use pooled list for RecordOptions, so just dispose it so it goes back into the pool
+            // Free record options
             if (player.AutoBuildSnapshot_RecordOptions is List<ChangeManagement.RecordingId> recordingIds)
             {
                 Pool.FreeUnmanaged(ref recordingIds);
                 player.AutoBuildSnapshot_RecordOptions = null;
+            }
+
+            // Free snapshot options
+            if (player.AutoBuildSnapshot_SnapshotOptions is List<MetaInfo> snapshotMetas)
+            {
+                Pool.FreeUnmanaged(ref snapshotMetas);
+                player.AutoBuildSnapshot_SnapshotOptions = null;
             }
 
             // Reset the menu
@@ -351,7 +358,7 @@ public partial class AutoBuildSnapshot
         {
             var theme = userPreference.Theme;
 
-            var snapshotSelectionContainer = cui.v2
+            var recordOptionsContainer = cui.v2
                 .CreatePanel(tabContent,
                     position: new(0, 0, .26f, 1),
                     offset: new(12, 12, -12, 0),
@@ -382,9 +389,11 @@ public partial class AutoBuildSnapshot
 
             if (recordingIds.Count > 0)
             {
-                RenderRecordOptions(cui, snapshotSelectionContainer, player, recordingIds, userPreference);
+                RenderRecordOptions(cui, recordOptionsContainer, player, recordingIds, userPreference);
 
                 RenderRecordButtons(cui, tabButtons, player, recordingIds, userPreference);
+
+                RenderSnapshotOptions(cui, snapshotDetailContainer, player, recordingIds, userPreference);
 
 
             }
@@ -476,7 +485,7 @@ public partial class AutoBuildSnapshot
 
         private static void RenderRecordOptions(
             CUI cui,
-            LUI.LuiContainer snapshotSelectionContainer,
+            LUI.LuiContainer recordOptionsContainer,
             BasePlayer player,
             List<ChangeManagement.RecordingId> recordingIds,
             UserPreferenceData userPreference)
@@ -488,7 +497,7 @@ public partial class AutoBuildSnapshot
 
             RenderOptionsList(
                 cui: cui,
-                container: snapshotSelectionContainer,
+                container: recordOptionsContainer,
                 player: player,
                 userPreference: userPreference,
                 height: panelHeight,
@@ -556,7 +565,7 @@ public partial class AutoBuildSnapshot
                             offset: new(panelHeight * 2 + 20, 0, panelWidth, panelHeight - 8),
                             fontSize: 8,
                             color: theme.OnSecondaryContainer,
-                            text: $"Entities: {lastSave.OriginalEntityCount}\nZones: {lastSave.ZoneCount}\nAuthorized: {lastSave.AuthorizedCount}",
+                            text: $"Entities: {lastSave.OriginalEntityCount}\nBlocks: {lastSave.ZoneCount}\nAuth: {lastSave.AuthorizedCount}",
                             alignment: TextAnchor.UpperLeft
                         )
                         .SetTextFont(FontTypes.DroidSansMono);
@@ -567,6 +576,67 @@ public partial class AutoBuildSnapshot
         #endregion
 
         #region Snapshot Options
+
+        private static void RenderSnapshotOptions(
+            CUI cui,
+            LUI.LuiContainer snapshotOptionContainer,
+            BasePlayer player,
+            List<ChangeManagement.RecordingId> recordingIds,
+            UserPreferenceData userPreference)
+        {
+            var theme = userPreference.Theme;
+
+            int panelHeight = 34;
+            int panelWidth = 250;
+
+            var selectedRecord = recordingIds[player.AutoBuildSnapshot_SelectedRecordIndex];
+
+            if (player.AutoBuildSnapshot_SnapshotOptions is not List<MetaInfo> snapshotMetas)
+            {
+                snapshotMetas = Pool.Get<List<MetaInfo>>();
+                player.AutoBuildSnapshot_SnapshotOptions = snapshotMetas;
+            }
+
+            SaveManager.GetSaves(selectedRecord, snapshotMetas);
+
+            RenderOptionsList(
+                cui: cui,
+                container: snapshotOptionContainer,
+                player: player,
+                userPreference: userPreference,
+                height: panelHeight,
+                width: panelWidth,
+                onSelectCommand: nameof(CommandMenuSelectSnapshot),
+                options: snapshotMetas,
+                isSelectedFunc: index => index == player.AutoBuildSnapshot_SelectedSnapshotIndex,
+                template: (button, index, meta, isSelected) =>
+                {
+                    cui.v2
+                        .CreateText(
+                            container: button,
+                            position: LuiPosition.LowerLeft,
+                            offset: new(5, 0, panelWidth, panelHeight - 8),
+                            fontSize: 8,
+                            color: theme.OnSecondaryContainer,
+                            text: $"Time: {meta.TimeStamp}\nEntities: {meta.OriginalEntityCount} | Blocks: {meta.ZoneCount}",
+                            alignment: TextAnchor.UpperLeft
+                        )
+                        .SetTextFont(FontTypes.DroidSansMono);
+
+                    cui.v2
+                        .CreateText(
+                            container: button,
+                            position: LuiPosition.LowerLeft,
+                            offset: new(panelHeight, 0, panelWidth, panelHeight - 8),
+                            fontSize: 8,
+                            color: theme.OnSecondaryContainer,
+                            text: $"",
+                            alignment: TextAnchor.UpperLeft
+                        )
+                        .SetTextFont(FontTypes.DroidSansMono);
+                }
+            );
+        }
 
         #endregion
 
@@ -769,7 +839,8 @@ public partial class AutoBuildSnapshot
             BasePlayer player,
             Action<BasePlayer> onConfirm,
             LangKeys langKey,
-            object arg1 = null)
+            object arg1 = null,
+            object arg2 = null)
         {
             var userPreference = UserPreferenceData.Load(_instance, player);
             var theme = userPreference.Theme;
@@ -803,10 +874,10 @@ public partial class AutoBuildSnapshot
                 .CreateText(
                     container: container,
                     position: LuiPosition.MiddleCenter,
-                    offset: new(-150, 10, 150, 40),
+                    offset: new(-150, 0, 150, 50),
                     fontSize: 12,
                     color: theme.OnSurface,
-                    text: Localizer.Text(langKey, player, arg1),
+                    text: Localizer.Text(langKey, player, arg1, arg2),
                     alignment: TextAnchor.MiddleCenter)
                 .SetTextFont(FontTypes.RobotoCondensedRegular);
 

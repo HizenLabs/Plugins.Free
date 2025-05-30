@@ -128,6 +128,20 @@ public partial class AutoBuildSnapshot
 
         player.AutoBuildSnapshot_SelectedRecordIndex = selectionId;
 
+        // Reset snapshot selection when changing record
+        player.AutoBuildSnapshot_SelectedSnapshotIndex = 0;
+
+        UserInterface.ShowMenu(player);
+    }
+
+    [ProtectedCommand(CommandPrefix + nameof(CommandMenuSelectSnapshot))]
+    private void CommandMenuSelectSnapshot(BasePlayer player, string command, string[] args)
+    {
+        if (!CheckPermission(player, Settings.Commands.ToggleMenu)) return;
+        if (!TryGetArgument(player, args, out int selectionId)) return;
+
+        player.AutoBuildSnapshot_SelectedSnapshotIndex = selectionId;
+
         UserInterface.ShowMenu(player);
     }
 
@@ -193,9 +207,28 @@ public partial class AutoBuildSnapshot
         if (!Settings.Commands.Rollback.HasPermission(player)) return;
         if (!TryGetSelectedRecordingId(player, out var recordingId)) return;
 
-        var meta = SaveManager.GetLastSave(recordingId);
+        if (player.AutoBuildSnapshot_SnapshotOptions is not List<MetaInfo> snapshotsMeta
+            || snapshotsMeta.Count == 0
+            || snapshotsMeta.Count <= player.AutoBuildSnapshot_SelectedSnapshotIndex)
+        {
+            Localizer.ChatMessage(player, LangKeys.error_invalid_snapshot);
+            return;
+        }
 
-        UserInterface.ShowConfirmation(player, CommandMenuRollback_OnConfirm, LangKeys.menu_content_rollback_confirm, meta.TimeStamp);
+        var meta = snapshotsMeta[player.AutoBuildSnapshot_SelectedSnapshotIndex];
+        if (meta.RecordId != recordingId)
+        {
+            Localizer.ChatMessage(player, LangKeys.error_record_snapshot_mismatch);
+
+            // Reset the selected indices
+            player.AutoBuildSnapshot_SelectedRecordIndex = 0;
+            player.AutoBuildSnapshot_SelectedSnapshotIndex = 0;
+
+            UserInterface.ShowMenu(player);
+            return;
+        }
+
+        UserInterface.ShowConfirmation(player, CommandMenuRollback_OnConfirm, LangKeys.menu_content_rollback_confirm, recordingId.Position, meta.TimeStamp);
     }
 
     private void CommandMenuRollback_OnConfirm(BasePlayer player)

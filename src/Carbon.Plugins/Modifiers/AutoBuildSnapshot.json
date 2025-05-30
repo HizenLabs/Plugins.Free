@@ -26,12 +26,17 @@
       {
         "Name": "AutoBuildSnapshot_SelectedRecordIndex",
         "Type": "System.Int32",
+        "DefaultValue": 0
+      },
+      {
+        "Name": "AutoBuildSnapshot_SnapshotOptions",
+        "Type": "System.Object",
         "DefaultValue": null
       },
       {
-        "Name": "AutoBuildSnapshot_SelectedSnapshotId",
-        "Type": "System.Guid",
-        "DefaultValue": "Guid.Empty"
+        "Name": "AutoBuildSnapshot_SelectedSnapshotIndex",
+        "Type": "System.Int32",
+        "DefaultValue": 0
       }
     ]
   }

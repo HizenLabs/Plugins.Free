@@ -96,6 +96,8 @@ public partial class AutoBuildSnapshot
                 [nameof(LangKeys.error_backup_failed_exception)] = "Backup command for base {0} failed, reason: {1}",
                 [nameof(LangKeys.error_load_config_failed)] = "Failed to load config: {0}, creating from default.",
                 [nameof(LangKeys.error_no_record_selected)] = "No record selected.",
+                [nameof(LangKeys.error_invalid_snapshot)] = "Could not determine selected snapshot.",
+                [nameof(LangKeys.error_record_snapshot_mismatch)] = "The selected snapshot did not match the selected record. Please try again.",
                 [nameof(LangKeys.message_backup_success)] = "Backup command for base {0} completed in: {1}",
                 [nameof(LangKeys.menu_title)] = "Auto Build Snapshot",
                 [nameof(LangKeys.menu_close)] = "Close",
@@ -128,7 +130,7 @@ public partial class AutoBuildSnapshot
                 [nameof(LangKeys.menu_content_teleport_confirm)] = "You will be teleported to the base at position:\n{0}",
                 [nameof(LangKeys.menu_content_teleport_message)] = "Teleporting to base at position: {0}",
                 [nameof(LangKeys.menu_content_rollback)] = "Rollback",
-                [nameof(LangKeys.menu_content_rollback_confirm)] = "This will revert the state of the base to the snapshot at:\n{0}",
+                [nameof(LangKeys.menu_content_rollback_confirm)] = "A rollback will be performed to the snapshot at:\nPosition: {0}\nTime: {1}",
                 [nameof(LangKeys.menu_content_backup)] = "Backup",
                 [nameof(LangKeys.menu_content_backup_confirm)] = "A manual backup will be created for the base at:\n{0}",
                 [nameof(LangKeys.Default)] = "Default",
@@ -238,6 +240,16 @@ public partial class AutoBuildSnapshot
         /// Recording is not active and cannot be saved: {0}
         /// </summary>
         error_save_recording_inactive,
+
+        /// <summary>
+        /// Could not determine selected snapshot.
+        /// </summary>
+        error_invalid_snapshot,
+
+        /// <summary>
+        /// The selected snapshot did not match the selected record. Please try again.
+        /// </summary>
+        error_record_snapshot_mismatch,
 
         /// <summary>
         /// Backup command for base {0} completed in: {1}
@@ -380,7 +392,7 @@ public partial class AutoBuildSnapshot
         menu_content_rollback,
 
         /// <summary>
-        /// A manual backup will be created for the base at:\n{0}
+        /// A rollback will be performed to the snapshot at:\nPosition: {0}\nTime: {1}
         /// </summary>
         menu_content_rollback_confirm,
 

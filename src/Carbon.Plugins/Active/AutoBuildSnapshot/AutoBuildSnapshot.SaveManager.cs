@@ -200,6 +200,11 @@ public partial class AutoBuildSnapshot
             {
                 results.AddRange(saves);
             }
+
+            results.Sort((a, b) =>
+            {
+                return b.TimeStamp.CompareTo(a.TimeStamp);
+            });
         }
 
         public static MetaInfo GetLastSave(ChangeManagement.RecordingId recordingId)
