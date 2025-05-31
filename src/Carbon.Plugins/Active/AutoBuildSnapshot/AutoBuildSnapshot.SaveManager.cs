@@ -18,17 +18,25 @@ public partial class AutoBuildSnapshot
     private const string metaExtension = "meta.json";
     private const string dataExtension = "data.bin";
 
+    #region Save Manager
+
     /// <summary>
     /// Helper class for managing saving and loading of the base records.
     /// </summary>
     private static class SaveManager
     {
+        #region Fields
+
         /// <summary>
         /// The number of entities to process before yielding to avoid blocking the main thread.
         /// </summary>
-        const int processEntitiesBeforeYield = 500;
+        private const int processEntitiesBeforeYield = 500;
 
         private static Dictionary<ChangeManagement.RecordingId, List<MetaInfo>> _recordingSaves;
+
+        #endregion
+
+        #region Lifecycle
 
         public static void Init()
         {
@@ -90,6 +98,10 @@ public partial class AutoBuildSnapshot
             Pool.FreeUnmanaged(ref _recordingSaves);
         }
 
+        #endregion
+
+        #region Indexing and Retrieval
+
         private static void IndexMetaInfo(MetaInfo meta)
         {
             if (!_recordingSaves.TryGetValue(meta.RecordId, out var saves))
@@ -105,6 +117,58 @@ public partial class AutoBuildSnapshot
                 saves.Add(meta);
             }
         }
+
+        public static void GetRecordingsByDistanceTo(Vector3 location, List<ChangeManagement.RecordingId> results)
+        {
+            results.Clear();
+
+            results.AddRange(_recordingSaves.Keys);
+
+            results.Sort((a, b) =>
+            {
+                float aDistSq = (a.Position - location).sqrMagnitude;
+                float bDistSq = (b.Position - location).sqrMagnitude;
+                return aDistSq.CompareTo(bDistSq);
+            });
+        }
+
+        public static void GetSaves(ChangeManagement.RecordingId recordingId, List<MetaInfo> results)
+        {
+            results.Clear();
+
+            if (_recordingSaves.TryGetValue(recordingId, out var saves))
+            {
+                results.AddRange(saves);
+            }
+
+            results.Sort((a, b) =>
+            {
+                return b.TimeStamp.CompareTo(a.TimeStamp);
+            });
+        }
+
+        public static MetaInfo GetLastSave(ChangeManagement.RecordingId recordingId)
+        {
+            if (!_recordingSaves.TryGetValue(recordingId, out var saves))
+            {
+                return default;
+            }
+
+            MetaInfo lastSave = default;
+            foreach (var save in saves)
+            {
+                if (lastSave.TimeStamp < save.TimeStamp)
+                {
+                    lastSave = save;
+                }
+            }
+
+            return lastSave;
+        }
+        
+        #endregion
+
+        #region Cleanup
 
         public static async UniTask CleanupAsync()
         {
@@ -178,53 +242,9 @@ public partial class AutoBuildSnapshot
             }
         }
 
-        public static void GetRecordingsByDistanceTo(Vector3 location, List<ChangeManagement.RecordingId> results)
-        {
-            results.Clear();
+        #endregion
 
-            results.AddRange(_recordingSaves.Keys);
-
-            results.Sort((a, b) =>
-            {
-                float aDistSq = (a.Position - location).sqrMagnitude;
-                float bDistSq = (b.Position - location).sqrMagnitude;
-                return aDistSq.CompareTo(bDistSq);
-            });
-        }
-
-        public static void GetSaves(ChangeManagement.RecordingId recordingId, List<MetaInfo> results)
-        {
-            results.Clear();
-
-            if (_recordingSaves.TryGetValue(recordingId, out var saves))
-            {
-                results.AddRange(saves);
-            }
-
-            results.Sort((a, b) =>
-            {
-                return b.TimeStamp.CompareTo(a.TimeStamp);
-            });
-        }
-
-        public static MetaInfo GetLastSave(ChangeManagement.RecordingId recordingId)
-        {
-            if (!_recordingSaves.TryGetValue(recordingId, out var saves))
-            {
-                return default;
-            }
-
-            MetaInfo lastSave = default;
-            foreach (var save in saves)
-            {
-                if (lastSave.TimeStamp < save.TimeStamp)
-                {
-                    lastSave = save;
-                }
-            }
-
-            return lastSave;
-        }
+        #region Saving
 
         /// <summary>
         /// Saves the current state of the base recording.
@@ -251,62 +271,6 @@ public partial class AutoBuildSnapshot
             await SaveEntitiesAsync(meta, entities, zones, player);
 
             return entities.Count;
-        }
-
-        /// <summary>
-        /// Finds entities to save for the given recording.
-        /// </summary>
-        /// <param name="recording">The recording to find entities for.</param>
-        /// <param name="entities">The list to store the found entities.</param>
-        /// <returns>A task representing the asynchronous operation.</returns>
-        private static async UniTask FindEntitiesForSaveAsync(
-            ChangeManagement.BaseRecording recording, 
-            List<BaseEntity> entities,
-            List<Vector3> zones,
-            BasePlayer player = null)
-        {
-            foreach (var block in recording.Building.buildingBlocks)
-            {
-                zones.Add(block.ServerPosition);
-            }
-
-            int processed = 0;
-            foreach (var zone in zones)
-            {
-                processed = await FindEntitiesForFoundation(entities, zone, Settings.Advanced.FoundationPrivilegeRadius, Masks.BaseEntities, processed);
-            }
-        }
-
-        /// <summary>
-        /// Finds entities for the given foundation block within a specified radius and layer mask.
-        /// </summary>
-        /// <param name="entities">The list to store the found entities.</param>
-        /// <param name="block">The foundation block to check.</param>
-        /// <param name="radius">The radius to search within.</param>
-        /// <param name="layerMask">The layer mask to use for the search.</param>
-        private static async UniTask<int> FindEntitiesForFoundation(
-            List<BaseEntity> entities,
-            Vector3 zone,
-            float radius,
-            int layerMask,
-            int processed)
-        {
-            var colliders = Physics.OverlapSphere(zone, radius, layerMask);
-            foreach (var collider in colliders)
-            {
-                var entity = collider.GetComponentInParent<BaseEntity>();
-                if (entity != null && !entities.Contains(entity))
-                {
-                    entities.Add(entity);
-                }
-
-                if (++processed % processEntitiesBeforeYield == 0)
-                {
-                    await UniTask.Yield();
-                }
-            }
-
-            return processed;
         }
 
         /// <summary>
@@ -372,6 +336,120 @@ public partial class AutoBuildSnapshot
             var segment = buffer.GetBuffer();
             await writer.WriteAsync(segment.Array, segment.Offset, segment.Count);
         }
+
+        /// <summary>
+        /// Ensures that the save file is valid and does not already exist. Also creates the directory if it doesn't exist.
+        /// </summary>
+        /// <param name="filePath">The file path to check.</param>
+        /// <param name="player">The player who initiated the save (optional).</param>
+        /// <exception cref="LocalizedException">Thrown if the file already exists.</exception>
+        private static void EnsureValidSaveFile(string filePath, BasePlayer player = null)
+        {
+            var directory = Path.GetDirectoryName(filePath);
+            if (!Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+            else if (File.Exists(filePath))
+            {
+                throw new LocalizedException(LangKeys.error_save_file_exists, player, filePath);
+            }
+        }
+
+        #endregion
+
+        #region Rollback
+
+        public static async UniTaskVoid AttemptRollbackAsync(BasePlayer player, MetaInfo meta)
+        {
+            // Helpers.Log(LangKeys.rollback_attempt_begin, player, meta.Id, meta.TimeStamp);
+
+            try
+            {
+                // Check if recording exists and if so, create lock
+                // using var recordingLock = CreateLock(player);
+
+                // Check for the data file
+                // Load the zones in the data file
+                // Create backup from the zones if possible
+                // Load the copypaste data from the file
+                // Paste the copypaste entities into the world
+
+                // Log rollback success
+                // Helpers.Log(LangKeys.rollback_attempt_success, player, Id.Position);
+            }
+            catch (Exception ex)
+            {
+                // Log rollback failure
+                // Helpers.Log(LangKeys.rollback_attempt_fail, player, ex.Message);
+            }
+        }
+
+        #endregion
+
+        #region Find Entities
+
+        /// <summary>
+        /// Finds entities to save for the given recording.
+        /// </summary>
+        /// <param name="recording">The recording to find entities for.</param>
+        /// <param name="entities">The list to store the found entities.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        private static async UniTask FindEntitiesForSaveAsync(
+            ChangeManagement.BaseRecording recording,
+            List<BaseEntity> entities,
+            List<Vector3> zones,
+            BasePlayer player = null)
+        {
+            foreach (var block in recording.Building.buildingBlocks)
+            {
+                zones.Add(block.ServerPosition);
+            }
+
+            int processed = 0;
+            foreach (var zone in zones)
+            {
+                processed = await FindEntitiesForFoundation(entities, zone, Settings.Advanced.FoundationPrivilegeRadius, Masks.BaseEntities, processed);
+            }
+        }
+
+        /// <summary>
+        /// Finds entities for the given foundation block within a specified radius and layer mask.
+        /// </summary>
+        /// <param name="entities">The list to store the found entities.</param>
+        /// <param name="block">The foundation block to check.</param>
+        /// <param name="radius">The radius to search within.</param>
+        /// <param name="layerMask">The layer mask to use for the search.</param>
+        private static async UniTask<int> FindEntitiesForFoundation(
+            List<BaseEntity> entities,
+            Vector3 zone,
+            float radius,
+            int layerMask,
+            int processed)
+        {
+            var colliders = Physics.OverlapSphere(zone, radius, layerMask);
+            foreach (var collider in colliders)
+            {
+                var entity = collider.GetComponentInParent<BaseEntity>();
+                if (entity != null && !entities.Contains(entity))
+                {
+                    entities.Add(entity);
+                }
+
+                if (++processed % processEntitiesBeforeYield == 0)
+                {
+                    await UniTask.Yield();
+                }
+            }
+
+            return processed;
+        }
+
+        #endregion
+
+        #region Helpers
+
+        #region File Operations
 
         /// <summary>
         /// Gets a file stream for reading or writing based on the specified mode.
@@ -441,6 +519,10 @@ public partial class AutoBuildSnapshot
 
             return new GZipStream(stream, mode);
         }
+
+        #endregion
+
+        #region Block Zones Serialization
 
         /// <summary>
         /// Writes the block data to the file stream.
@@ -512,24 +594,9 @@ public partial class AutoBuildSnapshot
             }
         }
 
-        /// <summary>
-        /// Ensures that the save file is valid and does not already exist. Also creates the directory if it doesn't exist.
-        /// </summary>
-        /// <param name="filePath">The file path to check.</param>
-        /// <param name="player">The player who initiated the save (optional).</param>
-        /// <exception cref="LocalizedException">Thrown if the file already exists.</exception>
-        private static void EnsureValidSaveFile(string filePath, BasePlayer player = null)
-        {
-            var directory = Path.GetDirectoryName(filePath);
-            if (!Directory.Exists(directory))
-            {
-                Directory.CreateDirectory(directory);
-            }
-            else if (File.Exists(filePath))
-            {
-                throw new LocalizedException(LangKeys.error_save_file_exists, player, filePath);
-            }
-        }
+        #endregion
+
+        #region Entity Serialization
 
         /// <summary>
         /// Saves the copy-paste entities to the given CopyPasteEntityInfo.
@@ -576,7 +643,15 @@ public partial class AutoBuildSnapshot
             transform.rotation = meta.OriginRotation;
             return transform;
         }
+
+        #endregion
+
+        #endregion
     }
+
+    #endregion
+
+    #region Meta Info
 
     /// <summary>
     /// Represents metadata information for saves.
@@ -654,4 +729,6 @@ public partial class AutoBuildSnapshot
             );
         }
     }
+
+    #endregion
 }

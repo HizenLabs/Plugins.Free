@@ -229,12 +229,12 @@ public partial class AutoBuildSnapshot
             return;
         }
 
-        UserInterface.ShowConfirmation(player, CommandMenuRollback_OnConfirm, LangKeys.menu_content_rollback_confirm, recordingId.Position, meta.TimeStamp);
+        UserInterface.ShowConfirmation(player, p => CommandMenuRollback_OnConfirm(p, meta), LangKeys.menu_content_rollback_confirm, recordingId.Position, meta.TimeStamp);
     }
 
-    private void CommandMenuRollback_OnConfirm(BasePlayer player)
+    private void CommandMenuRollback_OnConfirm(BasePlayer player, MetaInfo snapshotMeta)
     {
-        _instance.Puts("Rollback not yet implemented.");
+        SaveManager.AttemptRollbackAsync(player, snapshotMeta).Forget();
     }
 
     #endregion
