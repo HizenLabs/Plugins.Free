@@ -4,14 +4,12 @@ using Carbon.Modules;
 using Facepunch;
 using HizenLabs.Extensions.UserPreference.Data;
 using HizenLabs.Extensions.UserPreference.Material.API;
-using HizenLabs.Extensions.UserPreference.UI;
 using Oxide.Game.Rust.Cui;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using static Carbon.Components.CUI.Handler;
-using static GameTip;
 
 namespace Carbon.Plugins;
 
