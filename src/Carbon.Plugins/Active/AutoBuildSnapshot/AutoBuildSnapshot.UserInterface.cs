@@ -699,16 +699,19 @@ public partial class AutoBuildSnapshot
         {
             var theme = userPreference.Theme;
 
-            var clearButtonWidth = 0.12f;
-            CreateButton(cui, player, userPreference,
-                container: tabButtons,
-                position: new(1 - clearButtonWidth, 0, 1, 1),
-                offset: LuiOffset.None,
-                color: theme.PrimaryContainer,
-                textColor: theme.OnPrimaryContainer,
-                textKey: LangKeys.menu_content_clear,
-                commandName: nameof(CommandMenuClearLogs)
-            );
+            if (Settings.Commands.HasAdminPermission(player))
+            {
+                var clearButtonWidth = 0.12f;
+                CreateButton(cui, player, userPreference,
+                    container: tabButtons,
+                    position: new(1 - clearButtonWidth, 0, 1, 1),
+                    offset: LuiOffset.None,
+                    color: theme.PrimaryContainer,
+                    textColor: theme.OnPrimaryContainer,
+                    textKey: LangKeys.menu_content_clear,
+                    commandName: nameof(CommandMenuClearLogs)
+                );
+            }
 
             var logsPanel = cui.v2
                 .CreatePanel(tabContent,

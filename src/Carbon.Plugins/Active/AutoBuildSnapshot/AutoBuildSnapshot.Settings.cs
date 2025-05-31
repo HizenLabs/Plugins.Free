@@ -632,9 +632,13 @@ public partial class AutoBuildSnapshot
         {
             plugin.Config.WriteObject(_config, true);
 
-            plugin.AddCovalenceCommand(Commands.ToggleMenu.Alias, nameof(CommandToggleMenu), Commands.ToggleMenu.Permission);
-            plugin.AddCovalenceCommand(Commands.Backup.Alias, nameof(CommandBackup), Commands.Backup.Permission);
-            plugin.AddCovalenceCommand(Commands.Rollback.Alias, nameof(CommandRollback), Commands.Rollback.Permission);
+            plugin.AddCovalenceCommand(Commands.ToggleMenu.Command, nameof(CommandToggleMenu), Commands.ToggleMenu.Permission);
+            plugin.permission.RegisterPermission(Commands.Backup.Permission, plugin);
+            plugin.permission.RegisterPermission(Commands.Rollback.Permission, plugin);
+            plugin.permission.RegisterPermission(Commands.AdminPermission, plugin);
+
+            // plugin.AddCovalenceCommand(Commands.Backup.Alias, nameof(CommandBackup), Commands.Backup.Permission);
+            // plugin.AddCovalenceCommand(Commands.Rollback.Alias, nameof(CommandRollback), Commands.Rollback.Permission);
         }
     }
 
@@ -821,14 +825,14 @@ public partial class AutoBuildSnapshot
             /// <summary>
             /// Settings for the manual backup command.
             /// </summary>
-            [JsonProperty("Backup (manual)")]
-            public CommandSetting Backup { get; set; } = new(SettingDefaults.Commands.Backup);
+            [JsonProperty("Backup")]
+            public CommandPermission Backup { get; set; } = new(SettingDefaults.Commands.Backup);
 
             /// <summary>
             /// Settings for the rollback command.
             /// </summary>
             [JsonProperty("Rollback")]
-            public CommandSetting Rollback { get; set; } = new(SettingDefaults.Commands.Rollback);
+            public CommandPermission Rollback { get; set; } = new(SettingDefaults.Commands.Rollback);
 
             /// <summary>
             /// Checks if the player has the admin permission, allowing them to run all commands.
@@ -841,28 +845,37 @@ public partial class AutoBuildSnapshot
             }
         }
 
-        /// <summary>
-        /// Represents a command setting.
-        /// </summary>
-        public class CommandSetting
+        public class CommandSetting : CommandPermission
         {
             public CommandSetting() { }
 
-            /// <summary>
-            /// Creates a new command setting with the specified name and permission.
-            /// </summary>
-            /// <param name="name"></param>
-            public CommandSetting(string name)
+            public CommandSetting(string name) : base(name)
             {
-                Alias = name;
-                Permission = name;
+                Command = name;
             }
 
             /// <summary>
             /// The name of the command to type into chat.
             /// </summary>
-            [JsonProperty("Alias")]
-            public string Alias { get; set; }
+            [JsonProperty("Command")]
+            public string Command { get; set; }
+        }
+
+        /// <summary>
+        /// Represents a command setting.
+        /// </summary>
+        public class CommandPermission
+        {
+            public CommandPermission() { }
+
+            /// <summary>
+            /// Creates a new command setting with the specified name and permission.
+            /// </summary>
+            /// <param name="name"></param>
+            public CommandPermission(string name)
+            {
+                Permission = name;
+            }
 
             /// <summary>
             /// The permission required to run the command.

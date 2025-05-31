@@ -21,11 +21,12 @@ public partial class AutoBuildSnapshot
     /// <param name="args">The arguments passed to the command.</param>
     private void CommandToggleMenu(BasePlayer player, string command, string[] args)
     {
-        if (!CheckPermission(player, Settings.Commands.Rollback)) return;
+        if (!CheckPermission(player, Settings.Commands.ToggleMenu)) return;
 
         UserInterface.ToggleMenu(player);
     }
 
+    /*
     /// <summary>
     /// Handles the command to create a backup of the current state of a base.
     /// </summary>
@@ -34,7 +35,7 @@ public partial class AutoBuildSnapshot
     /// <param name="args">The arguments passed to the command.</param>
     private void CommandBackup(BasePlayer player, string command, string[] args)
     {
-        if (!CheckPermission(player, Settings.Commands.Rollback)) return;
+        if (!CheckPermission(player, Settings.Commands.Backup)) return;
         if (!TryGetArgument(player, args, out ChangeManagement.RecordingId recordingId)) return;
 
         // Open backup menu for nearest base
@@ -56,6 +57,7 @@ public partial class AutoBuildSnapshot
 
         throw new NotImplementedException();
     }
+    */
 
     #endregion
 
@@ -85,7 +87,7 @@ public partial class AutoBuildSnapshot
     [ProtectedCommand(CommandPrefix + nameof(CommandMenuSwitchTab))]
     private void CommandMenuSwitchTab(BasePlayer player, string command, string[] args)
     {
-        if (!CheckPermission(player, Settings.Commands.Rollback)) return;
+        if (!CheckPermission(player, Settings.Commands.ToggleMenu)) return;
         if (!TryGetArgument(player, args, out int tabIndex)) return;
 
         UserInterface.SwitchTab(player, tabIndex);
@@ -269,7 +271,7 @@ public partial class AutoBuildSnapshot
     /// <param name="player">The player who initiated the command.</param>
     /// <param name="command">The command settings to check against.</param>
     /// <returns>True if the player has permission, false otherwise.</returns>
-    private static bool CheckPermission(BasePlayer player, AutoBuildSnapshotConfig.CommandSetting command)
+    private static bool CheckPermission(BasePlayer player, AutoBuildSnapshotConfig.CommandPermission command)
     {
         if (!command.HasPermission(player))
         {
