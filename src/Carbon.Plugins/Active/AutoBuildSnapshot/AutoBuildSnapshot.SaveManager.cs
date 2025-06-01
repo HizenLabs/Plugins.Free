@@ -308,7 +308,8 @@ public partial class AutoBuildSnapshot
         /// </summary>
         /// <param name="meta">The metadata for the save.</param>
         /// <param name="entities">The list of entities to save.</param>
-        /// <param name="outputFile">The output file path.</param>
+        /// <param name="zones">The list of zones to save.</param>
+        /// <param name="player">The player who initiated the save (optional).</param>
         /// <returns>A task representing the asynchronous save operation.</returns>
         private static async UniTask SaveEntitiesAsync(
             MetaInfo meta,
@@ -327,15 +328,11 @@ public partial class AutoBuildSnapshot
             await SaveCopyPasteEntitiesAsync(copyPasteEntityInfo, entities, alignObject);
             UnityEngine.Object.Destroy(alignObject.gameObject);
 
-            using var buffer = Pool.Get<BufferStream>().Initialize();  // Ensure proper initialization
-            copyPasteEntityInfo.ToProto(buffer);
-
             using Stream writer = GetDataFileStream(binFilePath, isReading: false);
 
             await WriteBlockZonesAsync(writer, zones);
 
-            var segment = buffer.GetBuffer();
-            await writer.WriteAsync(segment.Array, segment.Offset, segment.Count);
+            await WriteCopyPasteEntityInfoAsync(writer, copyPasteEntityInfo);
         }
 
         /// <summary>
@@ -509,7 +506,7 @@ public partial class AutoBuildSnapshot
                         continue;
                     }
 
-                    // entity.Kill();
+                    entity.Kill();
 
                     if (++processed % processEntitiesBeforeYield == 0)
                     {
@@ -779,7 +776,28 @@ public partial class AutoBuildSnapshot
 
         #endregion
 
-        #region Entity Serialization
+        #region CopyPasteEntityInfo Serialization
+
+        /// <summary>
+        /// Writes the CopyPasteEntityInfo to the given stream.
+        /// </summary>
+        /// <param name="writer">The stream to write to.</param>
+        /// <param name="copyPasteEntityInfo">The CopyPasteEntityInfo to write.</param>
+        /// <returns>A task representing the asynchronous write operation.</returns>
+        private static async UniTask WriteCopyPasteEntityInfoAsync(
+            Stream writer,
+            CopyPasteEntityInfo copyPasteEntityInfo)
+        {
+            using var buffer = Pool.Get<BufferStream>().Initialize();
+            copyPasteEntityInfo.ToProto(buffer);
+
+            var segment = buffer.GetBuffer();
+            await writer.WriteAsync(segment.Array, segment.Offset, segment.Count);
+        }
+
+        #endregion
+
+        #region CopyPaste Entity Saving
 
         /// <summary>
         /// Saves the copy-paste entities to the given CopyPasteEntityInfo.
@@ -812,13 +830,6 @@ public partial class AutoBuildSnapshot
                     await UniTask.Yield();
                 }
             }
-        }
-
-
-        private static async UniTask<CopyPasteEntityInfo> ReadCopyPasteEntitiesAsync(Stream stream)
-        {
-
-            return null;
         }
 
         /// <summary>
