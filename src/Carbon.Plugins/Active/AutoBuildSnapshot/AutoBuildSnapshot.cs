@@ -5,7 +5,7 @@ namespace Carbon.Plugins;
 /// <summary>
 /// Creates snapshots of user bases which can then be rolled back to at a later date.
 /// </summary>
-[Info("AutoBuildSnapshot", "hizenxyz", "25.6.713")]
+[Info("AutoBuildSnapshot", "hizenxyz", "25.6.733")]
 [Description("Creates snapshots of user bases which can then be rolled back to at a later date.")]
 public partial class AutoBuildSnapshot : CarbonPlugin
 {
@@ -49,6 +49,8 @@ public partial class AutoBuildSnapshot : CarbonPlugin
         if (_instance == null) return;
 
         ChangeManagement.ScanBasesToRecord();
+
+        ChangeMonitor.ProcessIntervalAsync().Forget();
     }
 
     /// <summary>
