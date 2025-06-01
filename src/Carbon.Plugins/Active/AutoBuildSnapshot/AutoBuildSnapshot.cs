@@ -5,7 +5,7 @@ namespace Carbon.Plugins;
 /// <summary>
 /// Creates snapshots of user bases which can then be rolled back to at a later date.
 /// </summary>
-[Info("AutoBuildSnapshot", "hizenxyz", "25.6.680")]
+[Info("AutoBuildSnapshot", "hizenxyz", "25.6.684")]
 [Description("Creates snapshots of user bases which can then be rolled back to at a later date.")]
 public partial class AutoBuildSnapshot : CarbonPlugin
 {
@@ -26,8 +26,6 @@ public partial class AutoBuildSnapshot : CarbonPlugin
         SaveManager.Init();
         ChangeManagement.Init();
         UserInterface.Init();
-
-        UserInterface.ToggleMenu(BasePlayer.activePlayerList[0]);
     }
 
     /// <summary>
