@@ -4,6 +4,8 @@ using Oxide.Game.Rust.Cui;
 using System.Collections.Generic;
 using UnityEngine;
 
+#pragma warning disable IDE0001 // Method signatures need to fully qualify in root plugin bc generated internal.cs is not including the refs
+
 namespace Carbon.Plugins;
 
 public partial class AutoBuildSnapshot
@@ -170,7 +172,7 @@ public partial class AutoBuildSnapshot
         UserInterface.ShowConfirmation(player, player => CommandMenuTeleport_OnConfirm(player, destination), LangKeys.menu_content_teleport_confirm, destination);
     }
 
-    private void CommandMenuTeleport_OnConfirm(BasePlayer player, Vector3 destination)
+    private void CommandMenuTeleport_OnConfirm(BasePlayer player, UnityEngine.Vector3 destination)
     {
         Localizer.ChatMessage(player, LangKeys.menu_content_teleport_message, destination);
         player.Teleport(destination);
