@@ -1,14 +1,11 @@
 ﻿// Reference: HizenLabs.Extensions.UserPreference
 
-using HarmonyLib;
-using Oxide.Core.Plugins;
-
 namespace Carbon.Plugins;
 
 /// <summary>
 /// Creates snapshots of user bases which can then be rolled back to at a later date.
 /// </summary>
-[Info("AutoBuildSnapshot", "hizenxyz", "25.5.44573")]
+[Info("AutoBuildSnapshot", "hizenxyz", "25.6.585")]
 [Description("Creates snapshots of user bases which can then be rolled back to at a later date.")]
 public partial class AutoBuildSnapshot : CarbonPlugin
 {
@@ -47,12 +44,32 @@ public partial class AutoBuildSnapshot : CarbonPlugin
     }
 
     /// <summary>
+    /// Called when the server has finished initializing (startup complete).
+    /// </summary>
+    void OnServerInitialized()
+    {
+        if (_instance == null) return;
+
+        ChangeManagement.ScanBasesToRecord();
+    }
+
+    /// <summary>
+    /// Called when an entity’s data has been loaded from storage (e.g., during server startup or entity spawning from a save).
+    /// </summary>
+    /// param name="networkable">The entity that was loaded.</param>
+    /// <param name="info">Information about how the entity was loaded.</param>
+    void OnEntityLoaded(BaseNetworkable networkable, BaseNetworkable.LoadInfo info)
+    {
+        ChangeManagement.ProcessEntry(networkable);
+    }
+
+    /// <summary>
     /// Called when an entity is spawned in the world.
     /// </summary>
     /// <param name="networkable">The entity that was spawned.</param>
     void OnEntitySpawned(BaseNetworkable networkable)
     {
-        ChangeManagement.HandleOnEntitySpawned(networkable);
+        ChangeManagement.ProcessEntry(networkable);
     }
 
     /// <summary>
@@ -106,20 +123,6 @@ public partial class AutoBuildSnapshot : CarbonPlugin
     void OnPlayerDisconnected(BasePlayer player, string reason)
     {
         UserInterface.HandleDisconnect(player);
-    }
-
-    #endregion
-
-    #region Patches
-
-    [AutoPatch(IsRequired = true)]
-    [HarmonyPatch(typeof(BuildingPrivlidge), nameof(BuildingPrivlidge.Load))]
-    public class Patch_BuildingPrivlidge_Load
-    {
-        static void Postfix(BuildingPrivlidge __instance, BaseNetworkable.LoadInfo info)
-        {
-            ChangeManagement.StartRecording(__instance);
-        }
     }
 
     #endregion

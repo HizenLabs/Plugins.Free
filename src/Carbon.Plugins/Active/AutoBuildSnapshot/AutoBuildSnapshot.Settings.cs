@@ -81,7 +81,8 @@ public partial class AutoBuildSnapshot
                 [nameof(LangKeys.error_save_fail)] = "Failed to save base {0} at position {1}: {2}",
                 [nameof(LangKeys.error_save_baserecording_invalid)] = "BaseRecording is not valid.",
                 [nameof(LangKeys.error_save_no_entities_found)] = "No entities found for saving.",
-                [nameof(LangKeys.message_init_recordings)] = "Initialize found {0} building(s) to track",
+                [nameof(LangKeys.message_recordings_found)] = "Initialize found {0} building(s) to track",
+                [nameof(LangKeys.message_recording_start)] = "Begin recording base at position: {0}...",
                 [nameof(LangKeys.message_save_begin)] = "Begin saving base at position {1}...",
                 [nameof(LangKeys.message_save_success)] = "Saved <color=#26AA00>{1}</color> entities in <color=#0082E0>{2}</color> ms",
                 [nameof(LangKeys.error_save_file_exists)] = "The save file at '{0}' already exists.",
@@ -293,7 +294,12 @@ public partial class AutoBuildSnapshot
         /// <summary>
         /// Initialize found {0} building(s) to track
         /// </summary>
-        message_init_recordings,
+        message_recordings_found,
+
+        /// <summary>
+        /// Begin recording base at position: {0}...
+        /// </summary>
+        message_recording_start,
 
         /// <summary>
         /// Begin saving base at position {1}...

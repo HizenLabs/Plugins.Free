@@ -40,15 +40,23 @@ public partial class AutoBuildSnapshot
             _snapshotsMeta = Pool.Get<Dictionary<RecordingId, List<MetaInfo>>>();
             _locks = Pool.Get<Dictionary<RecordingId, RecordingLock>>();
 
+            ScanBasesToRecord();
+
+            ChangeMonitor.Start();
+        }
+
+        /// <summary>
+        /// Scans the server for existing tool cupboards and starts recording them.
+        /// </summary>
+        public static void ScanBasesToRecord()
+        {
             var buildings = BaseNetworkable.serverEntities.OfType<BuildingPrivlidge>();
-            Helpers.Log(LangKeys.message_init_recordings, null, buildings.Count());
+            Helpers.Log(LangKeys.message_recordings_found, null, buildings.Count());
 
             foreach (var tc in buildings)
             {
                 StartRecording(tc);
             }
-
-            ChangeMonitor.Start();
         }
 
         /// <summary>
@@ -74,7 +82,7 @@ public partial class AutoBuildSnapshot
         /// Handles the spawning of an entity and starts recording if it's a tool cupboard.
         /// </summary>
         /// <param name="networkable">The BaseNetworkable that was spawned.</param>
-        public static void HandleOnEntitySpawned(BaseNetworkable networkable)
+        public static void ProcessEntry(BaseNetworkable networkable)
         {
             if (networkable is BuildingPrivlidge priv)
             {
@@ -122,6 +130,8 @@ public partial class AutoBuildSnapshot
             }
 
             _recordings.Add(recording.Id, recording);
+
+            Helpers.Log(LangKeys.message_recording_start, null, recording.Id.Position);
         }
 
         /// <summary>
