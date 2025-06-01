@@ -103,8 +103,10 @@ public partial class AutoBuildSnapshot
                 [nameof(LangKeys.error_save_recording_inactive)] = "Recording is not active and cannot be saved: {0}",
                 [nameof(LangKeys.error_rollback_attempt_fail)] = "The rollback attempt failed: {0}",
                 [nameof(LangKeys.error_rollback_data_file_missing)] = "Data file missing, expected: '{0}'",
+                [nameof(LangKeys.error_rollback_priv_invalid)] = "The building priv was invalid after rollback.",
                 [nameof(LangKeys.rollback_attempt_begin)] = "Begin rollback attempt for base at position {0} (snapshot: {1})...",
                 [nameof(LangKeys.rollback_confirm_overwrite)] = "The rollback command will overwrite the base(s) at:\n{0}",
+                [nameof(LangKeys.rollback_attempt_success)] = "Rollback complete (duration: {0} ms)",
                 [nameof(LangKeys.message_backup_success)] = "Backup command for base {0} completed in: {1}",
                 [nameof(LangKeys.menu_title)] = "Auto Build Snapshot",
                 [nameof(LangKeys.menu_close)] = "Close",
@@ -277,6 +279,11 @@ public partial class AutoBuildSnapshot
         error_rollback_data_file_missing,
 
         /// <summary>
+        /// The building priv was invalid after rollback.
+        /// </summary>
+        error_rollback_priv_invalid,
+
+        /// <summary>
         /// Begin rollback attempt for base at position {0} (snapshot: {1})...
         /// </summary>
         rollback_attempt_begin,
@@ -285,6 +292,11 @@ public partial class AutoBuildSnapshot
         /// The rollback command will overwrite the base(s) at: {0}
         /// </summary>
         rollback_confirm_overwrite,
+
+        /// <summary>
+        /// Rollback complete (duration: {0} ms)
+        /// </summary>
+        rollback_attempt_success,
 
         /// <summary>
         /// Backup command for base {0} completed in: {1}

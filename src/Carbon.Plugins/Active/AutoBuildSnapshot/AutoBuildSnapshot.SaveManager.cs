@@ -5,10 +5,13 @@ using Oxide.Core;
 using ProtoBuf;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
+using System.Security.Policy;
 using System.Text;
 using UnityEngine;
+using static Carbon.Modules.AdminModule.Tab;
 
 namespace Carbon.Plugins;
 
@@ -459,8 +462,11 @@ public partial class AutoBuildSnapshot
             List<BuildingPrivlidge> privs)
         {
             using var locks = Pool.Get<PooledList<ChangeManagement.RecordingLock>>();
+            var stopwatch = Pool.Get<Stopwatch>();
             try
             {
+                stopwatch.Start();
+
                 // Find any existing recordings for the given TCs
                 using var recordings = Pool.Get<PooledList<ChangeManagement.BaseRecording>>();
                 foreach (var priv in privs)
@@ -488,7 +494,7 @@ public partial class AutoBuildSnapshot
                 }
 
                 // Load the copypaste data from the file
-
+                var copyPasteEntityInfo = await ReadCopyPasteEntityInfoAsync(stream);
 
                 // Kill all entities
                 int processed = 0;
@@ -515,14 +521,33 @@ public partial class AutoBuildSnapshot
                 }
 
                 // Paste the copypaste entities into the world
+                var request = new PasteRequest
+                {
+                    resources = Settings.General.IncludeGroundResources,
+                    origin = meta.OriginPosition,
+                    playerRotation = meta.OriginRotation.eulerAngles,
+                    deployables = true,
+                    vehicles = true
+                };
+                ConVar.CopyPaste.PasteEntitiesInternal(copyPasteEntityInfo, new(request));
+
+                // Get the building priv after the paste
+                var updatedPriv = FindBuildingPrivlidge(meta.OriginPosition);
+                if (!updatedPriv)
+                {
+                    throw new LocalizedException(LangKeys.error_rollback_priv_invalid, player);
+                }
+
+                // Start recording the priv
+                ChangeManagement.StartRecording(updatedPriv);
 
                 // Log rollback success
-                // Helpers.Log(LangKeys.rollback_attempt_success, player, Id.Position);
+                Helpers.Log(LangKeys.rollback_attempt_success, player, Math.Round(stopwatch.Elapsed.TotalMilliseconds, 2));
             }
             catch (Exception ex)
             {
                 // Log rollback failure
-                Helpers.Log(LangKeys.error_rollback_attempt_fail, player, ex.Message);
+                Helpers.Log(LangKeys.error_rollback_attempt_fail, player, ex.ToString());
             }
             finally
             {
@@ -537,17 +562,12 @@ public partial class AutoBuildSnapshot
                 }
                 finally
                 {
-
+                    Pool.FreeUnmanaged(ref stopwatch);
                     Pool.FreeUnmanaged(ref zones);
                     Pool.FreeUnmanaged(ref entities);
                     Pool.FreeUnmanaged(ref privs);
                 }
             }
-            // Destroy all entities in the zones
-
-            // Load the copypaste data from the file
-
-            // Paste the copypaste entities into the world
         }
 
         #endregion
@@ -623,6 +643,26 @@ public partial class AutoBuildSnapshot
             }
 
             return processed;
+        }
+
+        /// <summary>
+        /// Finds the BuildingPrivlidge associated with the given position.
+        /// </summary>
+        /// <param name="position">The position to search for the BuildingPrivlidge.</param>
+        /// <returns>The found BuildingPrivlidge, or null if none was found.</returns>
+        private static BuildingPrivlidge FindBuildingPrivlidge(Vector3 position)
+        {
+            var colliders = Physics.OverlapSphere(position, 3f, Masks.BaseEntities);
+            foreach (var collider in colliders)
+            {
+                var entity = collider.GetComponentInParent<BaseEntity>();
+                if (entity is BuildingPrivlidge priv)
+                {
+                    return priv;
+                }
+            }
+
+            return null;
         }
 
         #endregion
@@ -792,7 +832,52 @@ public partial class AutoBuildSnapshot
             copyPasteEntityInfo.ToProto(buffer);
 
             var segment = buffer.GetBuffer();
+
+            var sizeBytes = BufferStream.Shared.ArrayPool.Rent(sizeof(int));
+            try
+            {
+                int offset = 0;
+                Helpers.WriteInt32(sizeBytes, segment.Count - segment.Offset, ref offset);
+                await writer.WriteAsync(sizeBytes, 0, sizeof(int));
+            }
+            finally
+            {
+                BufferStream.Shared.ArrayPool.Return(sizeBytes);
+            }
+
             await writer.WriteAsync(segment.Array, segment.Offset, segment.Count);
+        }
+
+        /// <summary>
+        /// Reads the CopyPasteEntityInfo from the given stream.
+        /// </summary>
+        /// <param name="stream">The stream to read from.</param>
+        /// <returns>A task representing the asynchronous read operation, returning the CopyPasteEntityInfo.</returns>
+        private static async UniTask<CopyPasteEntityInfo> ReadCopyPasteEntityInfoAsync(Stream stream)
+        {
+            var buffer = BufferStream.Shared.ArrayPool.Rent(sizeof(int));
+            try
+            {
+                await stream.ReadAsync(buffer, 0, sizeof(int));
+
+                int offset = 0;
+                int payloadSize = Helpers.ReadInt32(buffer, ref offset);
+
+                BufferStream.Shared.ArrayPool.Return(buffer);
+                buffer = BufferStream.Shared.ArrayPool.Rent(payloadSize);
+
+                await stream.ReadAsync(buffer, 0, payloadSize);
+
+                using var bufferStream = Pool.Get<BufferStream>().Initialize(buffer, payloadSize);
+                var copyPasteEntityInfo = Pool.Get<CopyPasteEntityInfo>();
+                copyPasteEntityInfo.FromProto(bufferStream);
+
+                return copyPasteEntityInfo;
+            }
+            finally
+            {
+                BufferStream.Shared.ArrayPool.Return(buffer);
+            }
         }
 
         #endregion
