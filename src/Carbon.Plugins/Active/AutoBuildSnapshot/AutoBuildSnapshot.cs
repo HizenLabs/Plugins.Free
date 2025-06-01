@@ -5,7 +5,7 @@ namespace Carbon.Plugins;
 /// <summary>
 /// Creates snapshots of user bases which can then be rolled back to at a later date.
 /// </summary>
-[Info("AutoBuildSnapshot", "hizenxyz", "25.6.585")]
+[Info("AutoBuildSnapshot", "hizenxyz", "25.6.593")]
 [Description("Creates snapshots of user bases which can then be rolled back to at a later date.")]
 public partial class AutoBuildSnapshot : CarbonPlugin
 {
@@ -58,30 +58,27 @@ public partial class AutoBuildSnapshot : CarbonPlugin
     /// </summary>
     /// param name="networkable">The entity that was loaded.</param>
     /// <param name="info">Information about how the entity was loaded.</param>
-    void OnEntityLoaded(BaseNetworkable networkable, BaseNetworkable.LoadInfo info)
+    void OnEntityLoaded(BuildingPrivlidge priv, BaseNetworkable.LoadInfo info)
     {
-        ChangeManagement.ProcessEntry(networkable);
+        ChangeManagement.StartRecording(priv);
     }
 
     /// <summary>
     /// Called when an entity is spawned in the world.
     /// </summary>
     /// <param name="networkable">The entity that was spawned.</param>
-    void OnEntitySpawned(BaseNetworkable networkable)
+    void OnEntitySpawned(BuildingPrivlidge priv)
     {
-        ChangeManagement.ProcessEntry(networkable);
+        ChangeManagement.StartRecording(priv);
     }
 
     /// <summary>
     /// Called when an entity is killed/destroyed (cleanup is initiated). Useful for handling removal logic.
     /// </summary>
     /// <param name="networkable">The entity that was killed.</param>
-    void OnEntityKill(BaseNetworkable networkable)
+    void OnEntityKill(BaseEntity entity)
     {
-        if (networkable is BaseEntity entity)
-        {
-            ChangeManagement.HandleChange(entity, ChangeAction.Kill);
-        }
+        ChangeManagement.HandleChange(entity, ChangeAction.Kill);
     }
 
     /// <summary>

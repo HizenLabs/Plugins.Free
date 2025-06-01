@@ -79,18 +79,6 @@ public partial class AutoBuildSnapshot
         }
 
         /// <summary>
-        /// Handles the spawning of an entity and starts recording if it's a tool cupboard.
-        /// </summary>
-        /// <param name="networkable">The BaseNetworkable that was spawned.</param>
-        public static void ProcessEntry(BaseNetworkable networkable)
-        {
-            if (networkable is BuildingPrivlidge priv)
-            {
-                StartRecording(priv);
-            }
-        }
-
-        /// <summary>
         /// Handles changes to an entity and records them if applicable.
         /// </summary>
         /// <param name="entity">The entity that was changed.</param>
