@@ -1,6 +1,6 @@
 ﻿namespace Carbon.Plugins;
 
-[Info("Server Broadcast", "hizenxyz", "25.5.39951")]
+[Info("Server Broadcast", "hizenxyz", "25.6.713")]
 [Description("Allows broadcasting formatted server messages from the console.")]
 public class ServerBroadcast : CarbonPlugin
 {

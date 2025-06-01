@@ -5,7 +5,7 @@ using Facepunch;
 
 namespace Carbon.Plugins;
 
-[Info("Chat Markdown", "hizenxyz", "25.5.38860")]
+[Info("Chat Markdown", "hizenxyz", "25.6.713")]
 [Description("Allows custom markdown formatting in chat messages, enhancing readability and style.")]
 public class ChatMarkdown : CarbonPlugin
 {

@@ -5,7 +5,7 @@ using System;
 
 namespace HizenLabs.Extensions.UserPreference;
 
-[Info("User Preference", "hizenxyz", "25.5.35727")]
+[Info("User Preference", "hizenxyz", "25.6.713")]
 [Description("User Preference is an extension that enables plugin authors to allow their users to configure their visual preferences, such as theme color, display mode (light/dark), and contrast level.")]
 public class UserPreferenceExtension : ICarbonExtension
 {

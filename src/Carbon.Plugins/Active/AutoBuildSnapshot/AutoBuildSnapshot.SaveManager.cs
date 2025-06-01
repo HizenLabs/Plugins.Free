@@ -49,50 +49,63 @@ public partial class AutoBuildSnapshot
 
         private static async UniTaskVoid LoadSavesAsync()
         {
-            await UniTask.SwitchToThreadPool();
-
             var retentionHours = Settings.General.SnapshotRetentionPeriodHours;
             var retentionDateUtc = DateTime.UtcNow.AddHours(-retentionHours);
-            foreach (var dir in Directory.GetDirectories(BackupDirectory))
+
+            if (!Directory.Exists(BackupDirectory))
             {
-                foreach(var file in Directory.GetFiles(dir, $"*.*"))
+                Directory.CreateDirectory(BackupDirectory);
+
+                // No need to continue if no backups exist
+                return;
+            }
+
+            using var files = Pool.Get<PooledList<string>>();
+            await UniTask.RunOnThreadPool(() =>
+            {
+                foreach (var dir in Directory.EnumerateDirectories(BackupDirectory))
                 {
-                    try
+                    foreach (var file in Directory.EnumerateFiles(dir, "*.*"))
                     {
-                        if (File.GetCreationTimeUtc(file) < retentionDateUtc)
+                        files.Add(file);
+                    }
+                }
+            });
+
+            foreach (var file in files)
+            {
+                try
+                {
+                    if (File.GetCreationTimeUtc(file) < retentionDateUtc)
+                    {
+                        try
                         {
                             Helpers.Log(LangKeys.save_retention_deletion, null, Path.GetFileName(file), retentionHours);
 
-                            File.Delete(file);
+                            await UniTask.RunOnThreadPool(() =>
+                            {
+                                File.Delete(file);
+                            });
+                        }
+                        catch
+                        {
+                            Helpers.Log(LangKeys.save_retention_deletion_error, null, Path.GetFileName(file));
                         }
                     }
-                    catch
-                    {
-                        Helpers.Log(LangKeys.save_retention_deletion_error, null, Path.GetFileName(file));
-                    }
-                }
-
-                foreach (var metaFile in Directory.GetFiles(dir, $"*.{metaExtension}"))
-                {
-                    try
+                    else if (file.EndsWith(metaExtension, StringComparison.OrdinalIgnoreCase))
                     {
                         MetaInfo meta = default;
                         await UniTask.RunOnThreadPool(() =>
                         {
-                            var json = File.ReadAllText(metaFile);
+                            var json = File.ReadAllText(file);
                             meta = JsonConvert.DeserializeObject<MetaInfo>(json);
                         });
 
                         IndexMetaInfo(meta);
                     }
-                    catch
-                    {
-                        continue;
-                    }
                 }
+                catch { }
             }
-
-            await UniTask.SwitchToMainThread();
         }
 
         public static void Unload()
