@@ -8,10 +8,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
-using System.Security.Policy;
 using System.Text;
 using UnityEngine;
-using static Carbon.Modules.AdminModule.Tab;
 
 namespace Carbon.Plugins;
 
