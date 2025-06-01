@@ -1,15 +1,20 @@
 ﻿// Reference: HizenLabs.Extensions.UserPreference
 
+using HarmonyLib;
+using Oxide.Core.Plugins;
+
 namespace Carbon.Plugins;
 
 /// <summary>
 /// Creates snapshots of user bases which can then be rolled back to at a later date.
 /// </summary>
-[Info("AutoBuildSnapshot", "hizenxyz", "25.5.44360")]
+[Info("AutoBuildSnapshot", "hizenxyz", "25.5.44573")]
 [Description("Creates snapshots of user bases which can then be rolled back to at a later date.")]
 public partial class AutoBuildSnapshot : CarbonPlugin
 {
     private static AutoBuildSnapshot _instance;
+
+    #region Hooks
 
     /// <summary>
     /// Called when a plugin initializes (setting up on plugin load).
@@ -102,4 +107,20 @@ public partial class AutoBuildSnapshot : CarbonPlugin
     {
         UserInterface.HandleDisconnect(player);
     }
+
+    #endregion
+
+    #region Patches
+
+    [AutoPatch(IsRequired = true)]
+    [HarmonyPatch(typeof(BuildingPrivlidge), nameof(BuildingPrivlidge.Load))]
+    public class Patch_BuildingPrivlidge_Load
+    {
+        static void Postfix(BuildingPrivlidge __instance, BaseNetworkable.LoadInfo info)
+        {
+            ChangeManagement.StartRecording(__instance);
+        }
+    }
+
+    #endregion
 }

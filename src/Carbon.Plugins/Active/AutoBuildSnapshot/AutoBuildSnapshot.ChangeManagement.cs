@@ -109,7 +109,7 @@ public partial class AutoBuildSnapshot
         /// Starts recording the changes for the given tool cupboard.
         /// </summary>
         /// <param name="priv">The tool cupboard to record.</param>
-        private static void StartRecording(BuildingPrivlidge priv)
+        internal static void StartRecording(BuildingPrivlidge priv)
         {
             if (!priv || TryGetRecording(priv, out _)) return;
 
@@ -246,6 +246,8 @@ public partial class AutoBuildSnapshot
             public bool TryInitialize(BuildingPrivlidge priv)
             {
                 BaseTC = priv;
+                BaseTC.AutoBuildSnapshot_BaseRecording = this;
+
                 Building = priv.GetBuilding();
 
                 if (IsValid)
@@ -311,7 +313,7 @@ public partial class AutoBuildSnapshot
             /// <param name="player">The player requesting the lock.</param>
             /// <returns>The created lock.</returns>
             /// <exception cref="LocalizedException">Thrown if the recording is already locked.</exception>
-            private RecordingLock CreateLock(BasePlayer player)
+            public RecordingLock CreateLock(BasePlayer player)
             {
                 if (!RecordingLock.TryCreate(this, out var recordingLock))
                 {
@@ -326,7 +328,12 @@ public partial class AutoBuildSnapshot
             /// </summary>
             public void EnterPool()
             {
-                BaseTC = null;
+                if (BaseTC != null)
+                {
+                    BaseTC.AutoBuildSnapshot_BaseRecording = null;
+                    BaseTC = null;
+                }
+
                 Building = null;
 
                 Pool.Free(ref _changeRecords, true);

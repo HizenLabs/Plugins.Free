@@ -129,6 +129,7 @@ public partial class AutoBuildSnapshot
             // Reset the menu
             player.AutoBuildSnapshot_MenuState = false;
             player.AutoBuildSnapshot_OnConfirm = null;
+            player.AutoBuildSnapshot_OnCancel = null;
             player.AutoBuildSnapshot_SelectedRecordIndex = 0;
             player.AutoBuildSnapshot_TabIndex = 0;
         }
@@ -954,7 +955,9 @@ public partial class AutoBuildSnapshot
             Action<BasePlayer> onConfirm,
             LangKeys langKey,
             object arg1 = null,
-            object arg2 = null)
+            object arg2 = null,
+            object arg3 = null,
+            Action<BasePlayer> onCancel = null)
         {
             var userPreference = UserPreferenceData.Load(_instance, player);
             var theme = userPreference.Theme;
@@ -991,7 +994,7 @@ public partial class AutoBuildSnapshot
                     offset: new(-150, 0, 150, 50),
                     fontSize: 12,
                     color: theme.OnSurface,
-                    text: Localizer.Text(langKey, player, arg1, arg2),
+                    text: Localizer.Text(langKey, player, arg1, arg2, arg3),
                     alignment: TextAnchor.MiddleCenter)
                 .SetTextFont(FontTypes.RobotoCondensedRegular);
 
@@ -1015,7 +1018,15 @@ public partial class AutoBuildSnapshot
                 commandName: nameof(CommandMenuConfirmCancel)
             );
 
-            player.AutoBuildSnapshot_OnConfirm = () => onConfirm(player);
+            if (onConfirm != null)
+            {
+                player.AutoBuildSnapshot_OnConfirm = () => onConfirm(player);
+            }
+
+            if (onCancel != null)
+            {
+                player.AutoBuildSnapshot_OnCancel = () => onCancel(player);
+            }
 
             cui.v2.SendUi(player);
         }

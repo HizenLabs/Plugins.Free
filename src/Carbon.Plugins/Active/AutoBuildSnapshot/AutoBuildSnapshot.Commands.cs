@@ -105,7 +105,11 @@ public partial class AutoBuildSnapshot
     [ProtectedCommand(CommandPrefix + nameof(CommandMenuConfirmCancel))]
     private void CommandMenuConfirmCancel(BasePlayer player, string command, string[] args)
     {
+        var onCancel = player.AutoBuildSnapshot_OnCancel;
+
         ConfirmClose(player);
+
+        onCancel?.Invoke();
     }
 
     private static void ConfirmClose(BasePlayer player)
@@ -113,6 +117,7 @@ public partial class AutoBuildSnapshot
         CuiHelper.DestroyUi(player, UserInterface.ConfirmMenuId);
 
         player.AutoBuildSnapshot_OnConfirm = null;
+        player.AutoBuildSnapshot_OnCancel = null;
     }
 
     #endregion
@@ -234,7 +239,7 @@ public partial class AutoBuildSnapshot
 
     private void CommandMenuRollback_OnConfirm(BasePlayer player, MetaInfo snapshotMeta)
     {
-        SaveManager.AttemptRollbackAsync(player, snapshotMeta).Forget();
+        SaveManager.BeginRollbackAttemptAsync(player, snapshotMeta).Forget();
     }
 
     #endregion

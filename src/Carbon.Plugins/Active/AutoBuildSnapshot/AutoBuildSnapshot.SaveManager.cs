@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Text;
 using UnityEngine;
 
 namespace Carbon.Plugins;
@@ -360,19 +361,162 @@ public partial class AutoBuildSnapshot
 
         #region Rollback
 
-        public static async UniTaskVoid AttemptRollbackAsync(BasePlayer player, MetaInfo meta)
+        public static async UniTaskVoid BeginRollbackAttemptAsync(BasePlayer player, MetaInfo meta)
         {
-            // Helpers.Log(LangKeys.rollback_attempt_begin, player, meta.Id, meta.TimeStamp);
+            Helpers.Log(LangKeys.rollback_attempt_begin, player, meta.RecordId.Position, meta.TimeStamp);
 
+            var sb = Pool.Get<StringBuilder>();
             try
             {
                 // Check if recording exists and if so, create lock
-                // using var recordingLock = CreateLock(player);
+                var privs = Pool.Get<List<BuildingPrivlidge>>();
 
                 // Check for the data file
+                var dataFilePath = meta.GetDataFilePath();
+                if (!File.Exists(dataFilePath))
+                {
+                    throw new LocalizedException(LangKeys.error_rollback_data_file_missing, player, dataFilePath);
+                }
+
                 // Load the zones in the data file
-                // Create backup from the zones if possible
+                var zones = Pool.Get<List<Vector3>>();
+                var stream = GetDataFileStream(dataFilePath, isReading: true);
+                var radius = await ReadBlockZoneDataAsync(stream, zones);
+
+                // Check each zone for any existing TCs and create backup for each linked recordid to the TCs found
+                var entities = Pool.Get<List<BaseEntity>>();
+                await FindEntitiesForSaveAsync(zones, entities, radius, player);
+
+                // extract all the TCs from the entities found
+                bool showConfirmation = false;
+                foreach (var entity in entities)
+                {
+                    if (entity is BuildingPrivlidge tc && !privs.Contains(tc))
+                    {
+                        privs.Add(tc);
+
+                        if (tc.AutoBuildSnapshot_BaseRecording is ChangeManagement.BaseRecording recording
+                            && recording.Id != meta.RecordId)
+                        {
+                            if (showConfirmation)
+                            {
+                                sb.Append(", ");
+                            }
+
+                            sb.Append(recording.Id.Position.ToString());
+
+                            // If the TC is not the current recording, we need to show confirmation
+                            showConfirmation = true;
+                        }
+                    }
+                }
+
+                // if any TCs were found that != current record, show confirmation first
+                if (showConfirmation)
+                {
+                    UserInterface.ShowConfirmation(
+                        player: player,
+                        langKey: LangKeys.rollback_confirm_overwrite,
+                        arg1: sb.ToString(),
+                        onConfirm: p =>
+                        {
+                            ProcessRollbackAsync(p, meta, stream, zones, entities, privs).Forget();
+                        },
+                        onCancel: p =>
+                        {
+                            try
+                            {
+                                stream?.Dispose();
+                            }
+                            finally
+                            {
+                                Pool.FreeUnmanaged(ref zones);
+                                Pool.FreeUnmanaged(ref entities);
+                                Pool.FreeUnmanaged(ref privs);
+                            }
+                        });
+                }
+                else
+                {
+                    // Run on separate thread so it follows the same flow as the confirmation
+                    ProcessRollbackAsync(player, meta, stream, zones, entities, privs).Forget();
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log rollback failure
+                Helpers.Log(LangKeys.error_rollback_attempt_fail, player, ex.Message);
+            }
+            finally
+            {
+                Pool.FreeUnmanaged(ref sb);
+            }
+        }
+
+        private static async UniTask ProcessRollbackAsync(
+            BasePlayer player,
+            MetaInfo meta,
+            Stream stream,
+            List<Vector3> zones,
+            List<BaseEntity> entities,
+            List<BuildingPrivlidge> privs)
+        {
+            using var locks = Pool.Get<PooledList<ChangeManagement.RecordingLock>>();
+            try
+            {
+                // Find any existing recordings for the given TCs
+                using var recordings = Pool.Get<PooledList<ChangeManagement.BaseRecording>>();
+                foreach (var priv in privs)
+                {
+                    if (priv.AutoBuildSnapshot_BaseRecording is ChangeManagement.BaseRecording tcRecord)
+                    {
+                        recordings.Add(tcRecord);
+                    }
+                }
+
+                // Create backups for each recording
+                foreach (var recording in recordings)
+                {
+                    if (recording.IsActive)
+                    {
+                        await recording.AttemptSaveAsync(player);
+                    }
+                }
+
+                // Create locks for each recording
+                foreach (var recording in recordings)
+                {
+                    var recordLock = recording.CreateLock(player);
+                    locks.Add(recordLock);
+                }
+
                 // Load the copypaste data from the file
+
+
+                // Kill all entities
+                int processed = 0;
+                foreach (var entity in entities)
+                {
+                    // The mask should already exclude this, but just in case
+                    if (entity is BasePlayer)
+                    {
+                        continue;
+                    }
+
+                    // Skip if already destroyed
+                    if (!entity || entity.IsDestroyed)
+                    {
+                        continue;
+                    }
+
+                    // entity.Kill();
+
+                    if (++processed % processEntitiesBeforeYield == 0)
+                    {
+                        await UniTask.Yield();
+                    }
+                }
+
                 // Paste the copypaste entities into the world
 
                 // Log rollback success
@@ -381,8 +525,32 @@ public partial class AutoBuildSnapshot
             catch (Exception ex)
             {
                 // Log rollback failure
-                // Helpers.Log(LangKeys.rollback_attempt_fail, player, ex.Message);
+                Helpers.Log(LangKeys.error_rollback_attempt_fail, player, ex.Message);
             }
+            finally
+            {
+                try
+                {
+                    stream?.Dispose();
+
+                    foreach (var recordLock in locks)
+                    {
+                        recordLock?.Dispose();
+                    }
+                }
+                finally
+                {
+
+                    Pool.FreeUnmanaged(ref zones);
+                    Pool.FreeUnmanaged(ref entities);
+                    Pool.FreeUnmanaged(ref privs);
+                }
+            }
+            // Destroy all entities in the zones
+
+            // Load the copypaste data from the file
+
+            // Paste the copypaste entities into the world
         }
 
         #endregion
@@ -403,13 +571,28 @@ public partial class AutoBuildSnapshot
         {
             foreach (var block in recording.Building.buildingBlocks)
             {
-                zones.Add(block.ServerPosition);
+                zones.Add(block.ServerPosition + block.bounds.center);
             }
 
+            await FindEntitiesForSaveAsync(zones, entities, Settings.Advanced.FoundationZoneRadius, player);
+        }
+
+        /// <summary>
+        /// Finds entities to save for the given recording.
+        /// </summary>
+        /// <param name="zones">The list of zones to search for entities.</param>
+        /// <param name="entities">The list to store the found entities.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        private static async UniTask FindEntitiesForSaveAsync(
+            List<Vector3> zones,
+            List<BaseEntity> entities,
+            float radius,
+            BasePlayer player = null)
+        {
             int processed = 0;
             foreach (var zone in zones)
             {
-                processed = await FindEntitiesForFoundation(entities, zone, Settings.Advanced.FoundationPrivilegeRadius, Masks.BaseEntities, processed);
+                processed = await FindEntitiesForFoundation(entities, zone, radius, Masks.BaseEntities, processed);
             }
         }
 
@@ -540,7 +723,7 @@ public partial class AutoBuildSnapshot
                 int payloadSize = blockBufferSize - sizeof(int);
                 Helpers.WriteInt32(blockBuffer, payloadSize, ref bufferOffset);
 
-                Helpers.WriteSingle(blockBuffer, Settings.Advanced.FoundationPrivilegeRadius, ref bufferOffset);
+                Helpers.WriteSingle(blockBuffer, Settings.Advanced.FoundationZoneRadius, ref bufferOffset);
 
                 for (int i = 0; i < zones.Count; i++)
                 {
@@ -561,7 +744,7 @@ public partial class AutoBuildSnapshot
         /// <param name="reader">The file stream to read from.</param>
         /// <param name="zones">The list to store the read zones.</param>
         /// <returns>The radius of the zones.</returns>
-        private static async UniTask<float> ReadBlockZoneData(FileStream reader, List<Vector3> zones)
+        private static async UniTask<float> ReadBlockZoneDataAsync(Stream reader, List<Vector3> zones)
         {
             var buffer = BufferStream.Shared.ArrayPool.Rent(sizeof(int));
             try
@@ -629,6 +812,13 @@ public partial class AutoBuildSnapshot
                     await UniTask.Yield();
                 }
             }
+        }
+
+
+        private static async UniTask<CopyPasteEntityInfo> ReadCopyPasteEntitiesAsync(Stream stream)
+        {
+
+            return null;
         }
 
         /// <summary>

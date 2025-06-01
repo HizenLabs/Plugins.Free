@@ -98,6 +98,12 @@ public partial class AutoBuildSnapshot
                 [nameof(LangKeys.error_no_record_selected)] = "No record selected.",
                 [nameof(LangKeys.error_invalid_snapshot)] = "Could not determine selected snapshot.",
                 [nameof(LangKeys.error_record_snapshot_mismatch)] = "The selected snapshot did not match the selected record. Please try again.",
+                [nameof(LangKeys.error_record_not_found)] = "Could not find recording with id '{0}'",
+                [nameof(LangKeys.error_save_recording_inactive)] = "Recording is not active and cannot be saved: {0}",
+                [nameof(LangKeys.error_rollback_attempt_fail)] = "The rollback attempt failed: {0}",
+                [nameof(LangKeys.error_rollback_data_file_missing)] = "Data file missing, expected: '{0}'",
+                [nameof(LangKeys.rollback_attempt_begin)] = "Begin rollback attempt for base at position {0} (snapshot: {1})...",
+                [nameof(LangKeys.rollback_confirm_overwrite)] = "The rollback command will overwrite the base(s) at:\n{0}",
                 [nameof(LangKeys.message_backup_success)] = "Backup command for base {0} completed in: {1}",
                 [nameof(LangKeys.menu_title)] = "Auto Build Snapshot",
                 [nameof(LangKeys.menu_close)] = "Close",
@@ -258,6 +264,26 @@ public partial class AutoBuildSnapshot
         /// The selected snapshot did not match the selected record. Please try again.
         /// </summary>
         error_record_snapshot_mismatch,
+
+        /// <summary>
+        /// The rollback attempt failed: {0}
+        /// </summary>
+        error_rollback_attempt_fail,
+
+        /// <summary>
+        /// Data file missing, expected: '{0}'
+        /// </summary>
+        error_rollback_data_file_missing,
+
+        /// <summary>
+        /// Begin rollback attempt for base at position {0} (snapshot: {1})...
+        /// </summary>
+        rollback_attempt_begin,
+
+        /// <summary>
+        /// The rollback command will overwrite the base(s) at: {0}
+        /// </summary>
+        rollback_confirm_overwrite,
 
         /// <summary>
         /// Backup command for base {0} completed in: {1}
@@ -701,8 +727,8 @@ public partial class AutoBuildSnapshot
         /// <inheritdoc cref="AutoBuildSnapshotConfig.Advanced"/>
         public static class Advanced
         {
-            /// <inheritdoc cref="AutoBuildSnapshotConfig.AdvancedSettings.FoundationPrivilegeRadius"/>
-            public const float FoundationPrivRadius = 40;
+            /// <inheritdoc cref="AutoBuildSnapshotConfig.AdvancedSettings.FoundationZoneRadius"/>
+            public const float FoundationZoneRadius = 3.5f;
 
             /// <inheritdoc cref="AutoBuildSnapshotConfig.AdvancedSettings.MaxSaveFailRetries"/>
             public const int MaxSaveFailRetries = 3;
@@ -899,11 +925,13 @@ public partial class AutoBuildSnapshot
         public class AdvancedSettings
         {
             /// <summary>
-            /// The default radius is something close to 37, but we use 40 to catch a broader range.
-            /// We also want to allow users to change in-case they have plugins or something using a different radius.
+            /// This is going to be the size of the foundation -- used to scan for collisions on the foundation.
             /// </summary>
-            [JsonProperty("Foundation Privilege Radius")]
-            public float FoundationPrivilegeRadius { get; set; } = SettingDefaults.Advanced.FoundationPrivRadius;
+            /// <remarks>
+            /// Normal radius is 3f, but we're giving a little padding.
+            /// </remarks>
+            [JsonProperty("Foundation Zone Radius")]
+            public float FoundationZoneRadius => SettingDefaults.Advanced.FoundationZoneRadius;
 
             /// <summary>
             /// The maximum number of retries to save a snapshot before giving up.

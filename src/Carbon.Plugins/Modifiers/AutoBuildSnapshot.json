@@ -9,6 +9,11 @@
         "DefaultValue": null
       },
       {
+        "Name": "AutoBuildSnapshot_OnCancel",
+        "Type": "System.Action",
+        "DefaultValue": null
+      },
+      {
         "Name": "AutoBuildSnapshot_TabIndex",
         "Type": "System.Int32",
         "DefaultValue": 0
@@ -37,6 +42,17 @@
         "Name": "AutoBuildSnapshot_SelectedSnapshotIndex",
         "Type": "System.Int32",
         "DefaultValue": 0
+      }
+    ]
+  },
+  {
+    "Assembly": "Assembly-CSharp",
+    "Name": "BuildingPrivlidge",
+    "Fields": [
+      {
+        "Name": "AutoBuildSnapshot_BaseRecording",
+        "Type": "System.Object",
+        "DefaultValue": null
       }
     ]
   }
