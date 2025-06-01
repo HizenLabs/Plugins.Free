@@ -707,9 +707,9 @@ public partial class AutoBuildSnapshot
         /// <summary>
         /// Writes the block data to the file stream.
         /// </summary>
-        /// <param name="writer">The file stream to write to.</param>
+        /// <param name="stream">The file stream to write to.</param>
         /// <param name="zones">The list of building blocks to write.</param>
-        private static async UniTask WriteBlockZonesAsync(Stream writer, List<Vector3> zones)
+        private static async UniTask WriteBlockZonesAsync(Stream stream, List<Vector3> zones)
         {
             var blockBufferSize = sizeof(int) + sizeof(float) + (zones.Count * DataLength.Vector3); // payload size + radius + (zones * size)
             var blockBuffer = BufferStream.Shared.ArrayPool.Rent(blockBufferSize);
@@ -727,7 +727,7 @@ public partial class AutoBuildSnapshot
                     Helpers.WriteVector3(blockBuffer, zones[i], ref bufferOffset);
                 }
 
-                await writer.WriteAsync(blockBuffer, 0, blockBufferSize);
+                await stream.WriteAsync(blockBuffer, 0, blockBufferSize);
             }
             finally
             {
@@ -738,15 +738,15 @@ public partial class AutoBuildSnapshot
         /// <summary>
         /// Reads the block zones from the file stream.
         /// </summary>
-        /// <param name="reader">The file stream to read from.</param>
+        /// <param name="stream">The file stream to read from.</param>
         /// <param name="zones">The list to store the read zones.</param>
         /// <returns>The radius of the zones.</returns>
-        private static async UniTask<float> ReadBlockZoneDataAsync(Stream reader, List<Vector3> zones)
+        private static async UniTask<float> ReadBlockZoneDataAsync(Stream stream, List<Vector3> zones)
         {
             var buffer = BufferStream.Shared.ArrayPool.Rent(sizeof(int));
             try
             {
-                await reader.ReadAsync(buffer, 0, sizeof(int));
+                await stream.ReadAsync(buffer, 0, sizeof(int));
 
                 int offset = 0;
                 int payloadSize = Helpers.ReadInt32(buffer, ref offset);
@@ -754,7 +754,7 @@ public partial class AutoBuildSnapshot
                 BufferStream.Shared.ArrayPool.Return(buffer);
                 buffer = BufferStream.Shared.ArrayPool.Rent(payloadSize);
 
-                await reader.ReadAsync(buffer, 0, payloadSize);
+                await stream.ReadAsync(buffer, 0, payloadSize);
 
                 offset = 0;
                 var radius = Helpers.ReadSingle(buffer, ref offset);
