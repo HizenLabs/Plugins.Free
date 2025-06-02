@@ -18,6 +18,7 @@ public static class UserPreferenceUI
     private static readonly string[] _displayOptions = new string[2];
     private static readonly string[] _contrastOptions = new string[3];
 
+
     /// <summary>
     /// Displays a modal window allowing users to configure their visual preferences.
     /// </summary>
@@ -39,18 +40,18 @@ public static class UserPreferenceUI
         BasePlayer player,
         Action onConfirm = null,
         Action onCancel = null,
-        string title = "User Preference",
-        bool showColor = true,
-        string labelThemeColor = "Theme Color",
-        bool showDisplay = true,
-        string labelDisplay = "Display",
-        string optionDisplayLight = "Light",
-        string optionDisplayDark = "Dark",
-        bool showContrast = true,
-        string labelContrast = "Contrast",
-        string optionContrastStandard = "Standard",
-        string optionContrastMedium = "Medium",
-        string optionContrastHigh = "High"
+        string title = UIDefaults.Title,
+        bool showColor = UIDefaults.ShowColor,
+        string labelThemeColor = UIDefaults.LabelThemeColor,
+        bool showDisplay = UIDefaults.ShowDisplay,
+        string labelDisplay = UIDefaults.LabelDisplay,
+        string optionDisplayLight = UIDefaults.OptionDisplayLight,
+        string optionDisplayDark = UIDefaults.OptionDisplayDark,
+        bool showContrast = UIDefaults.ShowContrast,
+        string labelContrast = UIDefaults.LabelContrast,
+        string optionContrastStandard = UIDefaults.OptionContrastStandard,
+        string optionContrastMedium = UIDefaults.OptionContrastMedium,
+        string optionContrastHigh = UIDefaults.OptionContrastHigh
     )
     {
         var userPreferenceData = UserPreferenceData.Load(plugin, player);
