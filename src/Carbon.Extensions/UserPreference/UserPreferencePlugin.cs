@@ -6,7 +6,7 @@ using System;
 
 namespace HizenLabs.Extensions.UserPreference;
 
-[Info("User Preference API", "hizenxyz", "25.6.1962")]
+[Info("User Preference API", "hizenxyz", "25.6.1968")]
 [Description("Provides an API for the user preference extension, allowing users to customize their experience through settings and preferences.")]
 public class UserPreferencePlugin : CarbonPlugin
 {

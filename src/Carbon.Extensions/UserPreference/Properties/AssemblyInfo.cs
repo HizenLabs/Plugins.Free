@@ -29,8 +29,8 @@ using System.Runtime.InteropServices;
 //      Build Number
 //      Revision
 //
-[assembly: AssemblyVersion("25.6.1962.0")]
-[assembly: AssemblyFileVersion("25.6.1962.0")]
+[assembly: AssemblyVersion("25.6.1968.0")]
+[assembly: AssemblyFileVersion("25.6.1968.0")]
 
 // Expose internal members to the test project
 [assembly: InternalsVisibleTo("Carbon.Tests")]

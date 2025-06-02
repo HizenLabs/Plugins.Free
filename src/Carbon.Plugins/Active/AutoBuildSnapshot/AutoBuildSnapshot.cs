@@ -5,7 +5,7 @@ namespace Carbon.Plugins;
 /// <summary>
 /// Creates snapshots of user bases which can then be rolled back to at a later date.
 /// </summary>
-[Info("AutoBuildSnapshot", "hizenxyz", "25.6.733")]
+[Info("AutoBuildSnapshot", "hizenxyz", "25.6.1968")]
 [Description("Creates snapshots of user bases which can then be rolled back to at a later date.")]
 public partial class AutoBuildSnapshot : CarbonPlugin
 {
