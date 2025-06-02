@@ -1,11 +1,12 @@
-﻿// Reference: HizenLabs.Extensions.UserPreference
+﻿using HizenLabs.Extensions.UserPreference.Data;
+using HizenLabs.Extensions.UserPreference.Material.API;
 
 namespace Carbon.Plugins;
 
 /// <summary>
 /// Creates snapshots of user bases which can then be rolled back to at a later date.
 /// </summary>
-[Info("AutoBuildSnapshot", "hizenxyz", "25.6.1968")]
+[Info("AutoBuildSnapshot", "hizenxyz", "25.6.2469")]
 [Description("Creates snapshots of user bases which can then be rolled back to at a later date.")]
 public partial class AutoBuildSnapshot : CarbonPlugin
 {
@@ -19,6 +20,13 @@ public partial class AutoBuildSnapshot : CarbonPlugin
     void Init()
     {
         Puts("Begin initializing...");
+
+#if EXTENSION_USER_PREFERENCE
+        Puts("User Preference is loaded and customization will be available!");
+        UserPreferenceData.SetDefaultTheme(this, MaterialTheme.CreateFromRgbHex("#FFFFFF", isDarkMode: true));
+#else
+        Puts("User Preference is not active, customization will not be available.");
+#endif
 
         _instance = this;
 
@@ -122,5 +130,5 @@ public partial class AutoBuildSnapshot : CarbonPlugin
         UserInterface.HandleDisconnect(player);
     }
 
-    #endregion
+#endregion
 }

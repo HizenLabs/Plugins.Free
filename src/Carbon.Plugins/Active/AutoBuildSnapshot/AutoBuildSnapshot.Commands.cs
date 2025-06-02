@@ -1,8 +1,11 @@
 ﻿using Cysharp.Threading.Tasks;
-using HizenLabs.Extensions.UserPreference.UI;
 using Oxide.Game.Rust.Cui;
 using System.Collections.Generic;
 using UnityEngine;
+
+#if EXTENSION_USER_PREFERENCE
+using HizenLabs.Extensions.UserPreference.UI;
+#endif
 
 #pragma warning disable IDE0001 // Method signatures need to fully qualify in root plugin bc generated internal.cs is not including the refs
 
@@ -66,11 +69,39 @@ public partial class AutoBuildSnapshot
 
     #region Global
 
+#if EXTENSION_USER_PREFERENCE
+
     [ProtectedCommand(CommandPrefix + nameof(CommandMenuSettings))]
     private void CommandMenuSettings(BasePlayer player, string command, string[] args)
     {
         UserPreferenceUI.Show(this, player, onConfirm: () => UserInterface.ShowMenu(player));
+
+        /*
+        // Used for generating static user preference data.
+        var userPreferenceData = HizenLabs.Extensions.UserPreference.Data.UserPreferenceData.Load(this, player);
+        var theme = userPreferenceData.Theme;
+        Puts($"public readonly MaterialColor Outline = \"{theme.Outline}\";");
+        Puts($"public readonly MaterialColor OutlineVariant = \"{theme.OutlineVariant}\";");
+        Puts($"public readonly MaterialColor Background = \"{theme.Background}\";");
+        Puts($"public readonly MaterialColor PrimaryContainer = \"{theme.PrimaryContainer}\";");
+        Puts($"public readonly MaterialColor OnPrimaryContainer = \"{theme.OnPrimaryContainer}\";");
+        Puts($"public readonly MaterialColor SecondaryContainer = \"{theme.SecondaryContainer}\";");
+        Puts($"public readonly MaterialColor OnSecondaryContainer = \"{theme.OnSecondaryContainer}\";");
+        Puts($"public readonly MaterialColor TertiaryContainer = \"{theme.TertiaryContainer}\";");
+        Puts($"public readonly MaterialColor OnTertiaryContainer = \"{theme.OnTertiaryContainer}\";");
+        Puts($"public readonly MaterialColor SurfaceContainer = \"{theme.SurfaceContainer}\";");
+        Puts($"public readonly MaterialColor SurfaceContainerHigh = \"{theme.SurfaceContainerHigh}\";");
+        Puts($"public readonly MaterialColor Primary = \"{theme.Primary}\";");
+        Puts($"public readonly MaterialColor OnPrimary = \"{theme.OnPrimary}\";");
+        Puts($"public readonly MaterialColor Error = \"{theme.Error}\";");
+        Puts($"public readonly MaterialColor OnError = \"{theme.OnError}\";");
+        Puts($"public readonly MaterialColor Surface = \"{theme.Surface}\";");
+        Puts($"public readonly MaterialColor OnSurface = \"{theme.OnSurface}\";");
+        Puts($"public readonly MaterialColor Transparent = \"{theme.Transparent}\";");
+        */
     }
+
+#endif
 
     /// <summary>
     /// Handles the command to close the menu for the AutoBuildSnapshot plugin.
@@ -122,7 +153,7 @@ public partial class AutoBuildSnapshot
         player.AutoBuildSnapshot_OnCancel = null;
     }
 
-    #endregion
+#endregion
 
     #region Home
 
@@ -267,7 +298,7 @@ public partial class AutoBuildSnapshot
 
     #endregion
 
-    #endregion
+#endregion
 
     #region Helpers
 

@@ -2,14 +2,17 @@
 using Carbon.Components;
 using Carbon.Modules;
 using Facepunch;
-using HizenLabs.Extensions.UserPreference.Data;
-using HizenLabs.Extensions.UserPreference.Material.API;
 using Oxide.Game.Rust.Cui;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using static Carbon.Components.CUI.Handler;
+
+#if EXTENSION_USER_PREFERENCE
+using HizenLabs.Extensions.UserPreference.Data;
+using HizenLabs.Extensions.UserPreference.Material.API;
+#endif
 
 namespace Carbon.Plugins;
 
@@ -39,6 +42,85 @@ public partial class AutoBuildSnapshot
 
         private const string IconDisplaySettingsId = "md_display_settings";
         private const string IconDisplaySettingsUrl = $"{mdIconBaseUrl}/action/display_settings/materialicons/48dp/2x/baseline_display_settings_black_48dp.png";
+
+        #endregion
+
+        #region Static Theme
+
+#if !EXTENSION_USER_PREFERENCE
+
+        private class UserPreferenceData
+        {
+            private static readonly UserPreferenceData _instance;
+
+            public readonly MaterialTheme Theme = new();
+
+            static UserPreferenceData()
+            {
+                _instance = new();
+            }
+
+            public static UserPreferenceData Load(AutoBuildSnapshot instance, BasePlayer player)
+            {
+                return _instance;
+            }
+        }
+
+        /// <summary>
+        /// Static theme generated with User Preference Source Color: #FFFFFF
+        /// </summary>
+        private class MaterialTheme
+        {
+            public readonly MaterialColor Outline = "0.537 0.573 0.580 1.000";
+            public readonly MaterialColor OutlineVariant = "0.247 0.282 0.290 1.000";
+            public readonly MaterialColor Background = "0.055 0.078 0.082 1.000";
+            public readonly MaterialColor PrimaryContainer = "0.000 0.310 0.345 1.000";
+            public readonly MaterialColor OnPrimaryContainer = "0.620 0.937 0.992 1.000";
+            public readonly MaterialColor SecondaryContainer = "0.200 0.294 0.310 1.000";
+            public readonly MaterialColor OnSecondaryContainer = "0.804 0.906 0.925 1.000";
+            public readonly MaterialColor TertiaryContainer = "0.231 0.275 0.392 1.000";
+            public readonly MaterialColor OnTertiaryContainer = "0.855 0.886 1.000 1.000";
+            public readonly MaterialColor SurfaceContainer = "0.106 0.129 0.133 1.000";
+            public readonly MaterialColor SurfaceContainerHigh = "0.145 0.169 0.173 1.000";
+            public readonly MaterialColor Primary = "0.510 0.827 0.878 1.000";
+            public readonly MaterialColor OnPrimary = "0.000 0.212 0.239 1.000";
+            public readonly MaterialColor Error = "1.000 0.706 0.671 1.000";
+            public readonly MaterialColor OnError = "0.412 0.000 0.020 1.000";
+            public readonly MaterialColor Surface = "0.055 0.078 0.082 1.000";
+            public readonly MaterialColor OnSurface = "0.871 0.890 0.898 1.000";
+            public readonly MaterialColor Transparent = "0.000 0.000 0.000 0.000";
+        }
+
+        private class MaterialColor
+        {
+            public readonly string Value;
+
+            private readonly string ValueNoAlpha;
+
+            public MaterialColor(string color)
+            {
+                Value = color;
+                ValueNoAlpha = string.Join(" ", color.Split(' '), 0, 3);
+            }
+
+            public MaterialColor WithOpacity(float alpha)
+            {
+                alpha = Mathf.Clamp01(alpha);
+                return new($"{ValueNoAlpha} {alpha:F3}");
+            }
+
+            public static implicit operator MaterialColor(string color)
+            {
+                return new(color);
+            }
+
+            public static implicit operator string(MaterialColor color)
+            {
+                return color.Value;
+            }
+        }
+
+#endif
 
         #endregion
 
@@ -246,6 +328,8 @@ public partial class AutoBuildSnapshot
                     dbName: IconCloseId,
                     color: theme.OnPrimaryContainer);
 
+#if EXTENSION_USER_PREFERENCE
+
             var optionsButtonWidth = 0.08f;
             var optionsButtonX = closeButtonX - optionsButtonWidth;
             var optionsButton = CreateButton(cui, player, userPreference,
@@ -266,6 +350,8 @@ public partial class AutoBuildSnapshot
                     offset: new(-13, -13, 13, 13),
                     dbName: IconDisplaySettingsId,
                     color: theme.OnPrimaryContainer);
+
+#endif
 
             var content = cui.v2
                 .CreatePanel(
@@ -544,7 +630,6 @@ public partial class AutoBuildSnapshot
                     {
                         var iconMaskColor = theme.SecondaryContainer.WithOpacity(.7f);
 
-
                         cui.v2
                             .CreateItemIcon(
                                 container: button,
@@ -637,7 +722,6 @@ public partial class AutoBuildSnapshot
                     if (!isSelected)
                     {
                         var iconMaskColor = theme.SecondaryContainer.WithOpacity(.7f);
-
 
                         cui.v2
                             .CreateItemIcon(
