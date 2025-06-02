@@ -7,11 +7,13 @@ using System;
 
 namespace HizenLabs.Extensions.UserPreference;
 
-[Info("User Preference", "hizenxyz", "25.6.1880")]
+[Info("User Preference", "hizenxyz", "25.6.1962")]
 [Description("User Preference is an extension that enables plugin authors to allow their users to configure their visual preferences, such as theme color, display mode (light/dark), and contrast level.")]
 public class UserPreferenceExtension : ICarbonExtension
 {
     #region Fields
+
+    public const string CompilerSymbol = "EXTENSION_USER_PREFERENCE";
 
     public static bool Installed;
 
@@ -22,6 +24,8 @@ public class UserPreferenceExtension : ICarbonExtension
     public void OnLoaded(EventArgs args)
     {
         ThemeCache.Init();
+
+        Community.Runtime.Config.Compiler.ConditionalCompilationSymbols.Add(CompilerSymbol);
 
         Community.Runtime.Events.Subscribe(CarbonEvent.HooksInstalled, args =>
         {
@@ -52,6 +56,8 @@ public class UserPreferenceExtension : ICarbonExtension
 
     public void OnUnloaded(EventArgs args)
     {
+        Community.Runtime.Config.Compiler.ConditionalCompilationSymbols.Remove(CompilerSymbol);
+
         ThemeCache.Unload();
 
         foreach (var player in BasePlayer.activePlayerList)
