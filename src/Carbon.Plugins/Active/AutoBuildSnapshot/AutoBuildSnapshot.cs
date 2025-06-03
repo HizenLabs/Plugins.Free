@@ -1,12 +1,14 @@
-﻿using HizenLabs.Extensions.UserPreference.Data;
+﻿#if EXTENSION_USER_PREFERENCE
+using HizenLabs.Extensions.UserPreference.Data;
 using HizenLabs.Extensions.UserPreference.Material.API;
+#endif
 
 namespace Carbon.Plugins;
 
 /// <summary>
 /// Creates snapshots of user bases which can then be rolled back to at a later date.
 /// </summary>
-[Info("AutoBuildSnapshot", "hizenxyz", "25.6.2469")]
+[Info("AutoBuildSnapshot", "hizenxyz", "25.6.3970")]
 [Description("Creates snapshots of user bases which can then be rolled back to at a later date.")]
 public partial class AutoBuildSnapshot : CarbonPlugin
 {
