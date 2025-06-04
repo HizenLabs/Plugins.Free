@@ -580,7 +580,7 @@ public partial class AutoBuildSnapshot
     {
         base.LoadDefaultConfig();
 
-        Settings.InitDefault(this);
+        Settings.Init(this);
     }
 
     /// <summary>
@@ -608,8 +608,10 @@ public partial class AutoBuildSnapshot
         /// <inheritdoc cref="AutoBuildSnapshotConfig.GeneralSettings"/>
         public static AutoBuildSnapshotConfig.GeneralSettings General => _config.General;
 
+        /*
         /// <inheritdoc cref="AutoBuildSnapshotConfig.MultiTCSettings"/>
         public static AutoBuildSnapshotConfig.MultiTCSettings MultiTC => _config.MultiTC;
+        */
 
         /// <inheritdoc cref="AutoBuildSnapshotConfig.AdvancedSettings"/>
         public static AutoBuildSnapshotConfig.AdvancedSettings Advanced => _config.Advanced;
@@ -625,16 +627,11 @@ public partial class AutoBuildSnapshot
         {
             _config = ReadConfigOrCreateDefault(plugin);
 
-            plugin.SaveConfig();
-        }
+            plugin.AddCovalenceCommand(Commands.ToggleMenu.Command, nameof(CommandToggleMenu), Commands.ToggleMenu.Permission);
 
-        /// <summary>
-        /// Initializes the settings with default values and saves them to the file.
-        /// </summary>
-        /// <param name="plugin">The plugin instance.</param>
-        public static void InitDefault(AutoBuildSnapshot plugin)
-        {
-            _config = CreateDefault();
+            plugin.permission.RegisterPermission(Commands.Backup.Permission, plugin);
+            plugin.permission.RegisterPermission(Commands.Rollback.Permission, plugin);
+            plugin.permission.RegisterPermission(Commands.AdminPermission, plugin);
 
             plugin.SaveConfig();
         }
@@ -675,14 +672,6 @@ public partial class AutoBuildSnapshot
         public static void Save(AutoBuildSnapshot plugin)
         {
             plugin.Config.WriteObject(_config, true);
-
-            plugin.AddCovalenceCommand(Commands.ToggleMenu.Command, nameof(CommandToggleMenu), Commands.ToggleMenu.Permission);
-            plugin.permission.RegisterPermission(Commands.Backup.Permission, plugin);
-            plugin.permission.RegisterPermission(Commands.Rollback.Permission, plugin);
-            plugin.permission.RegisterPermission(Commands.AdminPermission, plugin);
-
-            // plugin.AddCovalenceCommand(Commands.Backup.Alias, nameof(CommandBackup), Commands.Backup.Permission);
-            // plugin.AddCovalenceCommand(Commands.Rollback.Alias, nameof(CommandRollback), Commands.Rollback.Permission);
         }
     }
 
@@ -773,11 +762,13 @@ public partial class AutoBuildSnapshot
         [JsonProperty("General Settings")]
         public GeneralSettings General { get; init; } = new();
 
+        /*
         /// <summary>
         /// The settings for multi-TC buildings.
         /// </summary>
         [JsonProperty("Multi-TC Settings")]
         public MultiTCSettings MultiTC { get; init; } = new();
+        */
 
         /// <summary>
         /// The alias and permission settings for each of the commands.
@@ -825,6 +816,7 @@ public partial class AutoBuildSnapshot
             public bool IncludeNonAuthorizedDeployables { get; set; } = SettingDefaults.General.IncludeNonAuthorizedDeployables;
         }
 
+        /*
         /// <inheritdoc cref="MultiTC"/>
         public class MultiTCSettings
         {
@@ -848,6 +840,7 @@ public partial class AutoBuildSnapshot
             [JsonProperty("Multi-TC Scan Radius (Automatic Mode)")]
             public float ScanRadius { get; set; } = SettingDefaults.MultiTC.ScanRadius;
         }
+        */
 
         /// <summary>
         /// Allows for customization of command names and permissions.
@@ -957,6 +950,7 @@ public partial class AutoBuildSnapshot
             [JsonProperty("Max Retry Attempts on Failure")]
             public int MaxSaveFailRetries { get; set; } = SettingDefaults.Advanced.MaxSaveFailRetries;
 
+            /*
             /// <summary>
             /// List of data formats that can be used to save the snapshot data.
             /// </summary>
@@ -967,10 +961,11 @@ public partial class AutoBuildSnapshot
                 ["Binary"] = DataFormat.Binary,
                 ["Binary (GZip Compressed)"] = DataFormat.GZip,
             };
+            */
 
             /// <inheritdoc cref="DataFormat"/>
-            [JsonProperty("Data Save Format")]
-            public DataFormat DataSaveFormat { get; set; } = SettingDefaults.Advanced.DataSaveFormat;
+            [JsonIgnore]
+            public DataFormat DataSaveFormat => DataFormat.GZip;
         }
     }
 

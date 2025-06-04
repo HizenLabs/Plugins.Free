@@ -8,14 +8,14 @@ namespace Carbon.Plugins;
 /// <summary>
 /// Creates snapshots of user bases which can then be rolled back to at a later date.
 /// </summary>
-[Info("AutoBuildSnapshot", "hizenxyz", "25.6.3970")]
+[Info("AutoBuildSnapshot", "hizenxyz", "25.6.4137")]
 [Description("Creates snapshots of user bases which can then be rolled back to at a later date.")]
 public partial class AutoBuildSnapshot : CarbonPlugin
 {
     private static AutoBuildSnapshot _instance;
 
     #region Hooks
-
+    
     /// <summary>
     /// Called when a plugin initializes (setting up on plugin load).
     /// </summary>
