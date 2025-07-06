@@ -732,6 +732,7 @@ public partial class AutoBuildSnapshot
                                 color: iconMaskColor);
                     }
 
+                    var localTimestamp = TimeZone.Localize(meta.TimeStamp);
                     cui.v2
                         .CreateText(
                             container: button,
@@ -739,7 +740,7 @@ public partial class AutoBuildSnapshot
                             offset: new(panelHeight, 0, panelWidth, panelHeight - 8),
                             fontSize: 8,
                             color: theme.OnSecondaryContainer,
-                            text: $"Time: {meta.TimeStamp}\nEntities: {meta.OriginalEntityCount} | Blocks: {meta.ZoneCount}",
+                            text: $"Time: {localTimestamp}\nEntities: {meta.OriginalEntityCount} | Blocks: {meta.ZoneCount}",
                             alignment: TextAnchor.UpperLeft
                         )
                         .SetTextFont(FontTypes.DroidSansMono);
@@ -761,7 +762,10 @@ public partial class AutoBuildSnapshot
             int line = 0;
             RenderInfoLine(cui, container, userPreference, Localizer.Text(LangKeys.info_snapshotid, player, meta.Id), line++);
             RenderInfoLine(cui, container, userPreference, Localizer.Text(LangKeys.info_position, player, meta.OriginPosition), line++);
-            RenderInfoLine(cui, container, userPreference, Localizer.Text(LangKeys.info_timestamp, player, meta.TimeStamp), line++);
+
+            var localTimestamp = TimeZone.Localize(meta.TimeStamp);
+            RenderInfoLine(cui, container, userPreference, Localizer.Text(LangKeys.info_timestamp, player, localTimestamp), line++);
+
             RenderInfoLine(cui, container, userPreference, Localizer.Text(LangKeys.info_entities, player, meta.OriginalEntityCount), line++);
             RenderInfoLine(cui, container, userPreference, Localizer.Text(LangKeys.info_buildingblocks, player, meta.ZoneCount), line++);
             RenderInfoLine(cui, container, userPreference, Localizer.Text(LangKeys.info_authorized, player, meta.AuthorizedCount), line++);

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using UnityEngine;
 
 namespace Carbon.Plugins;
@@ -265,7 +266,7 @@ public partial class AutoBuildSnapshot
                         var args = Shared.ArgumentsPool.Rent(4);
                         args[0] = message;
                         args[1] = logMessage.Timestamp;
-                        args[2] = logMessage.Timestamp.ToLocalTime();
+                        args[2] = TimeZone.Localize(logMessage.Timestamp);
                         args[3] = player.displayName;
 
                         message = string.Format(format, args);
@@ -747,5 +748,70 @@ public partial class AutoBuildSnapshot
         /// Length of the Vector3 data type.
         /// </summary>
         public const int Vector3 = Single * 3;
+    }
+
+    /// <summary>
+    /// For managing time zone related operations.
+    /// </summary>
+    internal static class TimeZone
+    {
+        public class Entry
+        {
+            public string Id;
+            public TimeZoneInfo TimeZoneInfo;
+        }
+
+        private static Dictionary<string, Entry> _timeZones;
+        private static TimeZoneInfo _defaultTimeZone = TimeZoneInfo.Utc;
+
+        public static Dictionary<string, string> Legend => _timeZones
+            .ToDictionary(kv => kv.Value.TimeZoneInfo.DisplayName, kv => kv.Key);
+
+        static TimeZone()
+        {
+            _timeZones = Pool.Get<Dictionary<string, Entry>>();
+
+            foreach (var timeZone in TimeZoneInfo.GetSystemTimeZones())
+            {
+                var entry = new Entry
+                {
+                    Id = timeZone.Id,
+                    TimeZoneInfo = timeZone
+                };
+                _timeZones[timeZone.Id] = entry;
+            }
+        }
+
+        public static DateTime Localize(DateTime timestamp)
+        {
+            if (timestamp.Kind != DateTimeKind.Utc)
+            {
+                timestamp = DateTime.SpecifyKind(timestamp, DateTimeKind.Utc);
+            }
+
+            if (Settings.General.CurrentTimeZone == null || Settings.General.CurrentTimeZone == TimeZoneInfo.Utc.Id)
+            {
+                return timestamp;
+            }
+
+            var currentTimeZone = GetTimeZone(Settings.General.CurrentTimeZone);
+
+            if (currentTimeZone == null)
+            {
+                return timestamp;
+            }
+
+            return TimeZoneInfo.ConvertTime(timestamp, TimeZoneInfo.Utc, currentTimeZone);
+        }
+
+        private static TimeZoneInfo GetTimeZone(string id)
+        {
+            if (_timeZones.TryGetValue(id, out var entry))
+            {
+                return entry.TimeZoneInfo;
+            }
+
+            return _defaultTimeZone;
+        }
     }
 }

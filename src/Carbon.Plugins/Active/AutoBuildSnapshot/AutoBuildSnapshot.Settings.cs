@@ -697,6 +697,9 @@ public partial class AutoBuildSnapshot
 
             /// <inheritdoc cref="AutoBuildSnapshotConfig.GeneralSettings.IncludeNonAuthorizedDeployables"/>
             public const bool IncludeNonAuthorizedDeployables = true;
+
+            /// <inheritdoc cref="AutoBuildSnapshotConfig.GeneralSettings.TimeZone"/>
+            public const string CurrentTimeZone = "UTC";
         }
 
         /// <inheritdoc cref="AutoBuildSnapshotConfig.MultiTC"/>
@@ -814,6 +817,19 @@ public partial class AutoBuildSnapshot
             /// </summary>
             [JsonProperty("Include Non-Authorized Deployables")]
             public bool IncludeNonAuthorizedDeployables { get; set; } = SettingDefaults.General.IncludeNonAuthorizedDeployables;
+
+            /// <summary>
+            /// Legend for time available zones.
+            /// </summary>
+            [JsonProperty("Current Time ZoneLegend")]
+            public Dictionary<string, string> CurrentTimeZoneLegend => _timeZoneLegend;
+            private static readonly Dictionary<string, string> _timeZoneLegend = TimeZone.Legend;
+
+            /// <summary>
+            /// Time Zone to be used for UI and logs.
+            /// </summary>
+            [JsonProperty("Current Time Zone")]
+            public string CurrentTimeZone { get; set; } = SettingDefaults.General.CurrentTimeZone;
         }
 
         /*
